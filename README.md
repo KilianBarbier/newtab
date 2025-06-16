@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="URL_DE_TA_SCREENSHOT" alt="Screenshot de NewTab" style="max-width: 90%; border-radius: 10px; box-shadow: 0 0 15px rgba(123,95,255,0.5);" />
+  <img src="/media/img/shortcut.png" alt="Screenshot de NewTab" style="max-width: 90%; border-radius: 10px; box-shadow: 0 0 15px rgba(123,95,255,0.5);" />
 </p>
 
 <p align="center">
