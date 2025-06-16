@@ -60,3 +60,4 @@ Les **données utilisateur restent strictement sur votre appareil**, avec une **
 ---
 
 > **NewTab** est l’alliance parfaite entre **esthétique moderne**, **fonctionnalités pratiques** et **respect de votre vie privée** pour une expérience de navigation personnalisée et efficace.
+📄 Licence : [Personal Proprietary License](LICENSE.txt) — utilisation commerciale strictement interdite sans autorisation.
