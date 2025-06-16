@@ -1,7 +1,7 @@
 <h1 align="center">NewTab</h1>
 <hr>
 <p align="center">
-  <img src="https://img.shields.io/badge/Projet-NewTab-black" alt="Projet Badge" />
+  <img src="https://img.shields.io/badge/Projet-NewTab-white" alt="Projet Badge" />
   <img src="https://img.shields.io/badge/Version-1.0.0-green" alt="Version Badge" />
   <img src="https://img.shields.io/badge/HTML-5-orange" alt="HTML Badge" />
   <img src="https://img.shields.io/badge/CSS-3-%231572B6" alt="CSS Badge" />

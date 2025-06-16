@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "New Tab",
+  "version": "1.0.0",
+  "description": "Un nouvel onglet moderne et personnalisable avec raccourcis et recherche intégrée",
+  "permissions": [
+    "storage"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "media/favicon.ico",
+    "32": "media/favicon.ico",
+    "48": "media/favicon.ico",
+    "128": "media/favicon.ico"
+  },
+  "content_security_policy": "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; object-src 'self'",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "newtab@kilianbarbier.fr",
+      "strict_min_version": "88.0"
+    }
+  }
+}

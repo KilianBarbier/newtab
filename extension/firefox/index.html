@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nouvel Onglet</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="media/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="media/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="media/favicon.ico"> 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sf: [
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "San Francisco",
+              "Helvetica Neue",
+              "sans-serif",
+            ],
+          },
+        },
+      },
+    };
+  </script>
+  <script>
+    // Extension-specific code for Chrome storage API
+    const isExtension = typeof chrome !== 'undefined' && chrome.storage;
+    
+    // Storage helper functions
+    async function getStorageData(key) {
+      if (isExtension) {
+        return new Promise((resolve) => {
+          chrome.storage.local.get([key], (result) => {
+            resolve(result[key] || null);
+          });
+        });
+      }
+      return localStorage.getItem(key);
+    }
+
+    async function setStorageData(key, value) {
+      if (isExtension) {
+        return new Promise((resolve) => {
+          chrome.storage.local.set({ [key]: value }, resolve);
+        });
+      }
+      localStorage.setItem(key, value);
+    }
+
+    async function getFaviconUrl(url) {
+      try {
+        const domain = new URL(url).hostname;
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      } catch (e) {
+        console.error("Erreur lors de la récupération du favicon:", e);
+        return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>';
+      }
+    }
+
+    function handleShortcutClick(event, position) {
+      event.preventDefault();
+      const shortcut = document.querySelector(
+        `[data-position="${position}"]`
+      );
+      const iconContainer = shortcut.querySelector(".shortcut-icon");
+      const isEmpty = iconContainer.getAttribute("data-empty") === "true";
+
+      if (event.type === "contextmenu") {
+        showContextMenu(event, position);
+      } else if (isEmpty) {
+        openConfigModal(position);
+      } else {
+        window.open(shortcut.href, '_blank');
+      }
+    }
+
+    function showContextMenu(event, position) {
+      event.preventDefault();
+      const contextMenu = document.getElementById("contextMenu");
+      contextMenu.style.left = `${event.pageX}px`;
+      contextMenu.style.top = `${event.pageY}px`;
+      contextMenu.setAttribute("data-position", position);
+      contextMenu.classList.remove("hidden");
+      contextMenu.style.background = "none";
+      contextMenu.style.backgroundColor = "transparent";
+
+      document.addEventListener("click", closeContextMenu);
+    }
+
+    function closeContextMenu() {
+      document.getElementById("contextMenu").classList.add("hidden");
+      document.removeEventListener("click", closeContextMenu);
+    }
+
+    function generateShortcut(i) {
+      return `
+          <div class="shortcut-container" 
+             ondragover="handleDragOver(event)" 
+             ondrop="handleDrop(event, '${i}')"
+             ondragenter="handleDragEnter(event)"
+             ondragleave="handleDragLeave(event)">
+            <a href="#" 
+             draggable="true"
+             ondragstart="handleDragStart(event, '${i}')"
+             onclick="handleShortcutClick(event, '${i}')" 
+             oncontextmenu="handleShortcutClick(event, '${i}')"
+             data-position="${i}"
+             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+              <div class="text-center">
+                <div class="shortcut-icon" data-empty="true">
+                  <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-white/50 flex items-center justify-center text-2xl">
+                    +
+                  </div>
+                </div>
+                <div class="text-white font-medium shortcut-title">Ajouter un raccourci</div>
+              </div>
+            </a>
+          </div>`;
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+
+    function handleDragEnter(event) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.add("bg-white/40");
+    }
+
+    function handleDragLeave(event) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.remove("bg-white/40");
+    }
+
+    async function handleDrop(event, newPosition) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.remove("bg-white/40");
+
+      const oldPosition = event.dataTransfer.getData('text/plain');
+
+      if (oldPosition === '') {
+        const data = event.dataTransfer.getData("text");
+        if (!data) return;
+        try {
+          reloadShortcuts();
+        } catch (e) {
+          console.error("Erreur lors du drop:", e);
+        }
+        return;
+      }
+
+      const activeTab = await getStorageData("activeTab") || "personal";
+      const shortcuts = JSON.parse(await getStorageData(`shortcuts_${activeTab}`) || "{}");
+
+      const temp = shortcuts[oldPosition];
+      shortcuts[oldPosition] = shortcuts[newPosition];
+      shortcuts[newPosition] = temp;
+
+      await setStorageData(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      await setStorageData("shortcuts", JSON.stringify(shortcuts));
+
+      reloadShortcuts();
+
+      document.querySelectorAll('.shortcut-container a').forEach(el => {
+        el.classList.remove('opacity-50');
+      });
+    }
+
+    function handleDragStart(event, position) {
+      event.dataTransfer.setData('text/plain', position);
+      event.currentTarget.classList.add('opacity-50');
+    }
+
+    function generateAddRowButton() {
+      return `
+          <button
+            onclick="addMoreShortcuts()"
+            id="addRowButton"
+            class="group p-6 backdrop-blur-xl bg-white/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-dashed border-white/30 hover:border-white/60"
+          >
+            <div class="text-center">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-white/30 flex items-center justify-center text-2xl text-white">
+                +
+              </div>
+              <div class="text-white font-medium">Ajouter une ligne</div>
+            </div>
+          </button>`;
+    }
+
+    async function addMoreShortcuts() {
+      const grid = document.getElementById("shortcutGrid");
+      const currentCount = document.querySelectorAll("[data-position]").length;
+      const addRowButton = document.getElementById("addRowButton");
+
+      for (let i = currentCount; i < currentCount + 4; i++) {
+        const shortcutElement = document.createElement('div');
+        shortcutElement.innerHTML = generateShortcut(i);
+        grid.insertBefore(shortcutElement.firstElementChild, addRowButton);
+      }
+
+      await setStorageData("shortcutCount", currentCount + 4);
+      reloadShortcuts();
+    }
+
+    async function saveShortcut() {
+      const modal = document.getElementById("configModal");
+      const position = modal.getAttribute("data-position");
+      const title = document.getElementById("shortcutTitle").value;
+      let url = document.getElementById("shortcutUrl").value.trim();
+
+      if (!url.match(/^https?:\/\//i)) {
+        url = "https://" + url;
+      }
+
+      try {
+        const faviconUrl = await getFaviconUrl(url);
+        const activeTab = await getStorageData("activeTab") || "personal";
+        const shortcuts = JSON.parse(await getStorageData(`shortcuts_${activeTab}`) || "{}");
+        shortcuts[position] = { title, url, faviconUrl };
+        await setStorageData(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+        await setStorageData("shortcuts", JSON.stringify(shortcuts));
+
+        closeConfigModal();
+        reloadShortcuts();
+      } catch (e) {
+        console.error("Erreur lors de la sauvegarde du raccourci:", e);
+      }
+    }
+
+    function openConfigModal(position) {
+      const modal = document.getElementById("configModal");
+      const titleInput = document.getElementById("shortcutTitle");
+
+      modal.setAttribute("data-position", position);
+      titleInput.value = "";
+      document.getElementById("shortcutUrl").value = "";
+      document.getElementById("saveButton").disabled = true;
+
+      modal.classList.remove("hidden");
+
+      titleInput.focus();
+      setTimeout(() => titleInput.focus(), 50);
+      setTimeout(() => {
+        titleInput.focus();
+        if (titleInput.value) {
+          titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length);
+        }
+      }, 150);
+    }
+
+    function closeConfigModal() {
+      document.getElementById("configModal").classList.add("hidden");
+    }
+
+    function editShortcut(position) {
+      openConfigModal(position, true);
+      closeContextMenu();
+    }
+
+    async function deleteShortcut() {
+      const position = document.getElementById("contextMenu").getAttribute("data-position");
+      const positionNum = parseInt(position);
+      const activeTab = await getStorageData("activeTab") || "personal";
+      
+      const shortcuts = JSON.parse(await getStorageData(`shortcuts_${activeTab}`) || "{}");
+      delete shortcuts[position];
+      
+      let lastUsedPosition = -1;
+      for (let i = 0; i < 100; i++) {
+        if (shortcuts[i.toString()]) {
+          lastUsedPosition = i;
+        }
+      }
+      
+      const newCount = Math.ceil((lastUsedPosition + 1) / 4) * 4;
+      const shortcutCount = Math.max(4, newCount);
+      
+      const shortcutElements = document.querySelectorAll(".shortcut-container");
+      if (shortcutElements[positionNum]) {
+        shortcutElements[positionNum].remove();
+      }
+      
+      await setStorageData("shortcutCount", shortcutCount);
+      await setStorageData(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      await setStorageData("shortcuts", JSON.stringify(shortcuts));
+      
+      closeContextMenu();
+      reloadShortcuts();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      function focusSearch() {
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }
+
+      focusSearch();
+      setTimeout(focusSearch, 100);
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          focusSearch();
+        }
+      });
+
+      window.addEventListener("focus", focusSearch);
+      document.addEventListener("mouseenter", focusSearch);
+      document.addEventListener("keydown", focusSearch, { once: true });
+
+      const grid = document.getElementById("shortcutGrid");
+      const shortcuts = JSON.parse(await getStorageData("shortcuts") || "{}");
+      const shortcutCount = parseInt(await getStorageData("shortcutCount") || "8");
+
+      for (let i = 0; i < shortcutCount; i++) {
+        grid.innerHTML += generateShortcut(i);
+      }
+
+      grid.innerHTML += generateAddRowButton();
+
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(`[data-position="${position}"]`);
+        if (shortcut) {
+          const iconContainer = shortcut.querySelector(".shortcut-icon");
+          const titleContainer = shortcut.querySelector(".shortcut-title");
+          
+          iconContainer.innerHTML = `<img src="${data.faviconUrl}" class="w-12 h-12 mx-auto mb-3 rounded-xl" alt="${data.title}">`;
+          iconContainer.setAttribute("data-empty", "false");
+          titleContainer.textContent = data.title;
+          shortcut.href = data.url;
+        }
+      });
+
+      const searchInput = document.getElementById("searchInput");
+      const searchButton = document.querySelector(".absolute svg");
+
+      if (searchInput) {
+        searchInput.addEventListener("keydown", handleSearch);
+      }
+      if (searchButton) {
+        searchButton.addEventListener("click", handleSearch);
+      }
+
+      const activeTab = await getStorageData("activeTab") || "personal";
+      switchTab(activeTab);
+    });
+
+    function handleSearch(event) {
+      if ((event.type === "keydown" && event.key === "Enter") || event.type === "click") {
+        event.preventDefault();
+
+        let query = document.getElementById("searchInput").value.trim();
+        let selectedEngine = document.getElementById("searchEngine").value;
+
+        const searchEngines = {
+          g: "https://www.google.com/search?q=",
+          yt: "https://www.youtube.com/results?search_query=",
+          gh: "https://github.com/search?q=",
+          w: "https://fr.wikipedia.org/wiki/Special:Search?search=",
+          r: "https://www.reddit.com/search/?q=",
+          so: "https://stackoverflow.com/search?q=",
+          a: "https://www.amazon.fr/s?k=",
+          n: "https://www.netflix.com/search?q=",
+          sp: "https://open.spotify.com/search/results",
+          tw: "https://twitter.com/search?q=",
+          ig: "https://www.instagram.com/explore/tags/",
+          maps: "https://www.google.com/maps/search/",
+          i: "https://www.google.com/images?q=",
+          ddg: "https://duckduckgo.com/?q=",
+          px: "https://www.perplexity.ai/search?q=",
+        };
+
+        if (query.startsWith("/")) {
+          const parts = query.substring(1).split(" ");
+          const command = parts[0].toLowerCase();
+          const searchTerms = parts.slice(1).join(" ");
+
+          if (searchEngines[command]) {
+            window.open(searchEngines[command] + encodeURIComponent(searchTerms), '_blank');
+            return;
+          }
+        }
+
+        const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
+        if (query) {
+          window.open(searchUrl + encodeURIComponent(query), '_blank');
+        }
+      }
+    }
+
+    async function reloadShortcuts() {
+      const grid = document.getElementById("shortcutGrid");
+      const activeTab = await getStorageData("activeTab") || "personal";
+      const shortcuts = JSON.parse(await getStorageData(`shortcuts_${activeTab}`) || "{}");
+
+      const addRowButton = document.getElementById("addRowButton");
+      grid.innerHTML = '';
+
+      const shortcutCount = parseInt(await getStorageData("shortcutCount") || "8");
+      
+      for (let i = 0; i < shortcutCount; i++) {
+        grid.innerHTML += generateShortcut(i);
+      }
+
+      for (const position in shortcuts) {
+        const shortcutData = shortcuts[position];
+        const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+        
+        if (shortcutElement && shortcutData) {
+          const iconContainer = shortcutElement.querySelector(".shortcut-icon");
+          const titleContainer = shortcutElement.querySelector(".shortcut-title");
+          
+          iconContainer.innerHTML = `<img src="${shortcutData.faviconUrl}" class="w-12 h-12 mx-auto mb-3 rounded-xl" alt="${shortcutData.title}">`;
+          iconContainer.setAttribute("data-empty", "false");
+          titleContainer.textContent = shortcutData.title;
+          shortcutElement.href = shortcutData.url;
+        }
+      }
+
+      grid.appendChild(addRowButton);
+    }
+
+    async function switchTab(tab) {
+      if (await getStorageData("activeTab") === tab) {
+        return;
+      }
+
+      document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
+      document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
+
+      await setStorageData("activeTab", tab);
+
+      const shortcuts = JSON.parse(await getStorageData(`shortcuts_${tab}`) || "{}");
+      await setStorageData("shortcuts", JSON.stringify(shortcuts));
+
+      reloadShortcuts();
+    }
+  </script>
+  <script src="aurora-animation.js"></script>
+</head>
+
+<body class="min-h-screen font-sf">
+  <div class="flex min-h-screen p-6">
+    <aside id="sidebar"
+      class="w-72 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block">
+      <div class="text-xl font-medium text-white mb-8">Accès Rapide</div>
+
+      <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
+        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z"/>
+        </svg>
+        <h3 class="text-white font-medium text-lg">Onglets</h3>
+      </div>
+
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        onclick="switchTab('personal')" id="personalTab">
+        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2a5 5 0 1 0 5 5 5 5 0 0 0-5-5Z"/>
+          <path d="M21 21v-1a8 8 0 0 0-8-8H11a8 8 0 0 0-8 8v1h18Z"/>
+        </svg>
+        <a id="perso" class="block w-full">Personnel</a>
+      </div>
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        onclick="switchTab('professional')" id="professionalTab">
+        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/>
+          <path d="M14 2v6h6"/>
+        </svg>
+        <a id="pro" class="block w-full">Professionnel</a>
+      </div>
+
+      <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
+        <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <h3 class="text-white font-medium text-lg">Les liens de Kiki</h3>
+      </div>
+
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
+        <img src="https://kbarbier.fr/wp-content/uploads/2025/03/cropped-Plan-de-travail-1@0.35x.png" class="pl-2 w-9"
+          alt="KBARBIER.FR logo" />
+        <a href="https://kbarbier.fr" target="_blank" class="block w-full">KBARBIER.FR</a>
+      </div>
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
+        <img src="https://dev.kilianbarbier.fr/media/img/coolnotes_128.png" class="pl-2 w-9" alt="CoolNotes" />
+        <a href="https://dev.kilianbarbier.fr" target="_blank" class="block w-full">CoolNotes</a>
+      </div>
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
+        <img src="https://dev.kilianbarbier.fr/media/img/coolnotes_128.png" class="pl-2 w-9" alt="CoolNotes" />
+        <a href="https://dev.kilianbarbier.fr/fr" target="_blank" class="block w-full">CoolNotes FR</a>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col lg:ml-72 pb-20 lg:pb-0">
+      <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
+        <div class="relative">
+          <button id="currentSearch"
+            class="px-4 py-2 bg-white/20 backdrop-blur-xl rounded-lg text-white border border-white/30 hover:bg-white/30 transition-all duration-300 flex items-center gap-2">
+            <span id="searchEngineText">Google</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div id="searchDropdown" class="hidden absolute top-full left-0 mt-2 bg-white/95 backdrop-blur-xl rounded-lg shadow-xl border border-white/30 min-w-48 z-50">
+            <select id="searchEngine" class="hidden">
+              <option value="g">Google</option>
+              <option value="yt">YouTube</option>
+              <option value="gh">GitHub</option>
+              <option value="w">Wikipedia</option>
+              <option value="r">Reddit</option>
+              <option value="so">Stack Overflow</option>
+              <option value="a">Amazon</option>
+              <option value="n">Netflix</option>
+              <option value="sp">Spotify</option>
+              <option value="tw">Twitter</option>
+              <option value="ig">Instagram</option>
+              <option value="maps">Google Maps</option>
+              <option value="i">Google Images</option>
+              <option value="ddg">DuckDuckGo</option>
+              <option value="px">Perplexity AI</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="relative flex-1">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Rechercher ou saisir une URL..."
+            class="w-full px-6 py-4 text-lg bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/30 transition-all duration-300"
+          />
+          <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="shortcutGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full">
+      </div>
+
+      <div id="configModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="modal-content bg-white/95 rounded-2xl p-6 w-96 shadow-2xl backdrop-blur-xl">
+          <h3 class="text-xl font-semibold mb-4 text-gray-800">Configurer le raccourci</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+              <input
+                type="text"
+                id="shortcutTitle"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Nom du site"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">URL</label>
+              <input
+                type="url"
+                id="shortcutUrl"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://example.com"
+              />
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button
+              id="saveButton"
+              onclick="saveShortcut()"
+              class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              Sauvegarder
+            </button>
+            <button
+              onclick="closeConfigModal()"
+              class="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="contextMenu"
+        class="hidden fixed bg-white/95 backdrop-blur-xl rounded-lg shadow-xl border border-white/30 py-2 min-w-48 z-50">
+        <button onclick="editShortcut(document.getElementById('contextMenu').getAttribute('data-position'))"
+          class="w-full px-4 py-2 text-left hover:bg-gray-100 text-gray-800">
+          Modifier
+        </button>
+        <button onclick="deleteShortcut()"
+          class="w-full px-4 py-2 text-left hover:bg-gray-100 text-red-600">
+          Supprimer
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Form validation
+    document.addEventListener('DOMContentLoaded', function() {
+      const titleInput = document.getElementById('shortcutTitle');
+      const urlInput = document.getElementById('shortcutUrl');
+      const saveButton = document.getElementById('saveButton');
+
+      function validateForm() {
+        const isValid = titleInput.value.trim() && urlInput.value.trim();
+        saveButton.disabled = !isValid;
+      }
+
+      titleInput.addEventListener('input', validateForm);
+      urlInput.addEventListener('input', validateForm);
+
+      // Search dropdown
+      const currentSearch = document.getElementById('currentSearch');
+      const searchDropdown = document.getElementById('searchDropdown');
+      const searchEngine = document.getElementById('searchEngine');
+      const searchEngineText = document.getElementById('searchEngineText');
+
+      currentSearch.addEventListener('click', () => {
+        searchDropdown.classList.toggle('hidden');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!currentSearch.contains(e.target) && !searchDropdown.contains(e.target)) {
+          searchDropdown.classList.add('hidden');
+        }
+      });
+
+      // Search engine options
+      const searchOptions = [
+        { value: 'g', name: 'Google' },
+        { value: 'yt', name: 'YouTube' },
+        { value: 'gh', name: 'GitHub' },
+        { value: 'w', name: 'Wikipedia' },
+        { value: 'r', name: 'Reddit' },
+        { value: 'so', name: 'Stack Overflow' },
+        { value: 'a', name: 'Amazon' },
+        { value: 'n', name: 'Netflix' },
+        { value: 'sp', name: 'Spotify' },
+        { value: 'tw', name: 'Twitter' },
+        { value: 'ig', name: 'Instagram' },
+        { value: 'maps', name: 'Google Maps' },
+        { value: 'i', name: 'Google Images' },
+        { value: 'ddg', name: 'DuckDuckGo' },
+        { value: 'px', name: 'Perplexity AI' }
+      ];
+
+      searchOptions.forEach(option => {
+        const button = document.createElement('button');
+        button.className = 'w-full px-4 py-2 text-left hover:bg-white/20 text-gray-800 transition-colors';
+        button.textContent = option.name;
+        button.addEventListener('click', () => {
+          searchEngine.value = option.value;
+          searchEngineText.textContent = option.name;
+          searchDropdown.classList.add('hidden');
+        });
+        searchDropdown.appendChild(button);
+      });
+    });
+  </script>
+  <script src="aurora-svelte.js"></script>
+</body>
+
+</html>

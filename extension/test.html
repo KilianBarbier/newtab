@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Extension</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .success { color: green; }
+        .error { color: red; }
+        .test { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test de l'Extension New Tab Pimpé</h1>
+    
+    <div id="tests">
+        <div class="test">
+            <strong>Test 1 - Détection API Extension:</strong>
+            <span id="test1">En cours...</span>
+        </div>
+        <div class="test">
+            <strong>Test 2 - Stockage:</strong>
+            <span id="test2">En cours...</span>
+        </div>
+        <div class="test">
+            <strong>Test 3 - Chargement CSS:</strong>
+            <span id="test3">En cours...</span>
+        </div>
+        <div class="test">
+            <strong>Test 4 - Tailwind CSS:</strong>
+            <span id="test4">En cours...</span>
+        </div>
+    </div>
+
+    <script>
+        // Test 1 - Détection API Extension
+        if (typeof chrome !== 'undefined' && chrome.storage) {
+            document.getElementById('test1').innerHTML = '<span class="success">✅ API Extension détectée</span>';
+        } else {
+            document.getElementById('test1').innerHTML = '<span class="error">❌ API Extension non disponible (normal en mode web)</span>';
+        }
+
+        // Test 2 - Stockage
+        try {
+            localStorage.setItem('test', 'ok');
+            localStorage.removeItem('test');
+            document.getElementById('test2').innerHTML = '<span class="success">✅ Stockage local fonctionnel</span>';
+        } catch(e) {
+            document.getElementById('test2').innerHTML = '<span class="error">❌ Problème de stockage</span>';
+        }
+
+        // Test 3 - CSS
+        setTimeout(() => {
+            const computed = getComputedStyle(document.body);
+            if (computed.fontFamily.includes('Arial')) {
+                document.getElementById('test3').innerHTML = '<span class="success">✅ CSS chargé correctement</span>';
+            } else {
+                document.getElementById('test3').innerHTML = '<span class="error">❌ Problème de CSS</span>';
+            }
+        }, 100);
+
+        // Test 4 - Tailwind
+        setTimeout(() => {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'bg-blue-500';
+            document.body.appendChild(testDiv);
+            const computed = getComputedStyle(testDiv);
+            if (computed.backgroundColor === 'rgb(59, 130, 246)') {
+                document.getElementById('test4').innerHTML = '<span class="success">✅ Tailwind CSS fonctionne</span>';
+            } else {
+                document.getElementById('test4').innerHTML = '<span class="error">❌ Tailwind CSS non chargé</span>';
+            }
+            document.body.removeChild(testDiv);
+        }, 500);
+
+        // Informations supplémentaires
+        setTimeout(() => {
+            const info = document.createElement('div');
+            info.innerHTML = `
+                <h3>Informations du navigateur:</h3>
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                <p><strong>URL actuelle:</strong> ${window.location.href}</p>
+                <p><strong>Protocole:</strong> ${window.location.protocol}</p>
+            `;
+            document.body.appendChild(info);
+        }, 1000);
+    </script>
+
+    <h3>Instructions de test:</h3>
+    <ol>
+        <li>Chargez cette page dans votre extension</li>
+        <li>Vérifiez que tous les tests sont verts</li>
+        <li>Ouvrez un nouvel onglet pour tester l'extension complète</li>
+        <li>Testez l'ajout/suppression de raccourcis</li>
+        <li>Testez la recherche avec différents moteurs</li>
+    </ol>
+</body>
+</html>
