@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Tab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="fr/style.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sf: [
+                            "-apple-system",
+                            "BlinkMacSystemFont",
+                            "San Francisco",
+                            "Helvetica Neue",
+                            "sans-serif",
+                        ],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+        }
+        
+        .onboarding-slide {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none;
+        }
+        
+        .onboarding-slide.active {
+            opacity: 1;
+            transform: translateY(0);
+            display: flex;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 4px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .progress-dot.active {
+            background-color: white;
+        }
+        
+        .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="font-sf">
+    <div class="h-screen w-screen flex flex-col items-center justify-center p-6">
+        <!-- Container du contenu de l'onboarding -->
+        <div class="max-w-4xl w-full relative">
+            <!-- Slide 1: Bienvenue -->
+            <div id="slide-1" class="onboarding-slide active flex flex-col items-center">
+                <img src="media/img/showcase.png" alt="New Tab Preview" class="w-3/4 rounded-lg shadow-2xl mb-8">
+                <h1 class="text-4xl font-bold mb-4">Bienvenue sur votre Nouvel Onglet</h1>
+                <p class="text-xl text-gray-300 mb-8 text-center">Un espace minimaliste et productif pour commencer votre navigation</p>
+            </div>
+            
+            <!-- Slide 2: Favoris -->
+            <div id="slide-2" class="onboarding-slide flex flex-col items-center">
+                <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Accédez rapidement à vos favoris</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Tous vos sites préférés à un clic de distance</p>
+            </div>
+            
+            <!-- Slide 3: Recherche -->
+            <div id="slide-3" class="onboarding-slide flex flex-col items-center">
+                <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Recherche instantanée</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Recherchez sur le web directement depuis votre nouvel onglet</p>
+            </div>
+            
+            <!-- Slide 4: Personnalisation -->
+            <div id="slide-4" class="onboarding-slide flex flex-col items-center">
+                <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Entièrement personnalisable</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Adaptez l'apparence et les fonctionnalités selon vos préférences</p>
+            </div>
+            
+            <!-- Slide 5: Démarrer -->
+            <div id="slide-5" class="onboarding-slide flex flex-col items-center">
+                <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-50"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Prêt à démarrer</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Choisissez votre langue et commencez à utiliser votre nouvel onglet</p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="fr/index.html" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Français</a>
+                    <a href="en/index.html" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg">English</a>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="flex justify-between items-center mt-8">
+                <button id="prev-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-lg">Précédent</button>
+                
+                <!-- Progress dots -->
+                <div class="flex space-x-2">
+                    <div class="progress-dot active" data-slide="1"></div>
+                    <div class="progress-dot" data-slide="2"></div>
+                    <div class="progress-dot" data-slide="3"></div>
+                    <div class="progress-dot" data-slide="4"></div>
+                    <div class="progress-dot" data-slide="5"></div>
+                </div>
+                
+                <button id="next-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg">Suivant</button>
+            </div>
+            
+            <!-- Skip button -->
+            <div class="mt-6 text-center">
+                <a href="#" id="skip-btn" class="text-gray-400 hover:text-white">Passer l'introduction</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentSlide = 1;
+            const totalSlides = 5;
+            
+            // Buttons
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const skipBtn = document.getElementById('skip-btn');
+            
+            // Navigation dots
+            const dots = document.querySelectorAll('.progress-dot');
+            
+            // Show slide function
+            function showSlide(slideNumber) {
+                // Hide all slides
+                document.querySelectorAll('.onboarding-slide').forEach(slide => {
+                    slide.classList.remove('active');
+                });
+                
+                // Show current slide
+                document.getElementById(`slide-${slideNumber}`).classList.add('active');
+                
+                // Update dots
+                dots.forEach(dot => {
+                    dot.classList.remove('active');
+                });
+                dots[slideNumber - 1].classList.add('active');
+                
+                // Update buttons
+                prevBtn.style.visibility = slideNumber === 1 ? 'hidden' : 'visible';
+                
+                if (slideNumber === totalSlides) {
+                    nextBtn.textContent = 'Terminer';
+                } else {
+                    nextBtn.textContent = 'Suivant';
+                }
+            }
+            
+            // Initialize
+            showSlide(currentSlide);
+            
+            // Event listeners
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 1) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < totalSlides) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                } else {
+                    // Redirect to French version by default
+                    window.location.href = 'fr/index.html';
+                }
+            });
+            
+            skipBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Redirect to French version when skipping
+                window.location.href = 'fr/index.html';
+            });
+            
+            // Make dots clickable
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    currentSlide = parseInt(dot.getAttribute('data-slide'));
+                    showSlide(currentSlide);
+                });
+            });
+            
+            // Handle keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
+                    currentSlide++;
+                    showSlide(currentSlide);
+                } else if (e.key === 'ArrowLeft' && currentSlide > 1) {
+                    currentSlide--;
+                    showSlide(currentSlide);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
