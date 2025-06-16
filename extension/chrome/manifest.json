@@ -14,8 +14,7 @@
     "32": "media/favicon.ico",
     "48": "media/favicon.ico",
     "128": "media/favicon.ico"
-  },
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; object-src 'self'"
+  },  "content_security_policy": {
+    "extension_pages": "script-src 'self' https://cdn.tailwindcss.com; object-src 'self'"
   }
 }
