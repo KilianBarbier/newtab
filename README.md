@@ -19,7 +19,6 @@
   📄 Ce projet est sous <a href="./LICENSE_FR.txt">licence personnelle (FR)</a> / <a href="./LICENSE_EN.txt">personal proprietary license (EN)</a> — toute utilisation commerciale ou redistribution est interdite sans autorisation écrite.
 </p>
 <hr>
----
 
 ## ✨ Caractéristiques principales
 
