@@ -191,22 +191,54 @@
                 <a href="#" id="skip-btn-en" class="text-gray-400 hover:text-white transition-colors duration-300 inline-block py-2 px-4 lang-content en" style="display: none;">Skip introduction</a>
             </div>
         </div>
-    </div>      <script>
+    </div>    <script>
         // Variables globales pour stocker l'état
         let currentSlide = 1;
         const totalSlides = 5;
         let isTransitioning = false; // Empêche les clics multiples rapides
         let selectedLanguage = ''; // Pour stocker la langue choisie
         
+        // Fonction pour changer la langue de l'interface
+        function switchLanguage(lang) {
+            selectedLanguage = lang;
+            localStorage.setItem('selectedLanguage', lang);
+            
+            // Cacher tous les contenus de langue
+            const allLangContent = document.querySelectorAll('.lang-content');
+            allLangContent.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Afficher le contenu de la langue sélectionnée
+            const selectedLangContent = document.querySelectorAll(`.lang-content.${lang}`);
+            selectedLangContent.forEach(content => {
+                content.style.display = content.tagName.toLowerCase() === 'div' ? 'block' : 'inline-block';
+            });
+            
+            console.log(`Langue changée vers: ${lang}`);
+        }
+        
         // Fonction d'initialisation
         function initializeOnboarding() {
             console.log("Initialisation de l'onboarding...");
             
-            // Buttons
-            const prevBtn = document.getElementById('prev-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const skipBtn = document.getElementById('skip-btn');
+            // Vérifier si une langue a été précédemment sélectionnée
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                selectedLanguage = savedLanguage;
+                switchLanguage(savedLanguage);
+                
+                // Mettre à jour l'affichage des boutons de langue
+                updateLanguageButtons();
+            }
             
+            // Buttons - nouvelle approche avec gestion des langues
+            const prevBtnFr = document.getElementById('prev-btn-fr');
+            const prevBtnEn = document.getElementById('prev-btn-en');
+            const nextBtnFr = document.getElementById('next-btn-fr');
+            const nextBtnEn = document.getElementById('next-btn-en');
+            const skipBtnFr = document.getElementById('skip-btn-fr');
+            const skipBtnEn = document.getElementById('skip-btn-en');            
             // Boutons de sélection de langue
             const selectFrBtn = document.getElementById('select-fr');
             const selectEnBtn = document.getElementById('select-en');
@@ -214,7 +246,45 @@
             // Navigation dots
             const dots = document.querySelectorAll('.progress-dot');
             
-            if (!prevBtn || !nextBtn || !skipBtn) {
+            // Fonction pour mettre à jour l'affichage des boutons de langue
+            function updateLanguageButtons() {
+                if (selectedLanguage === 'fr') {
+                    selectFrBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
+                    selectFrBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    selectEnBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    selectEnBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
+                } else if (selectedLanguage === 'en') {
+                    selectEnBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
+                    selectEnBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    selectFrBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    selectFrBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
+                }
+            }
+            
+            // Fonction pour obtenir les bons boutons selon la langue
+            function getCurrentButtons() {
+                if (selectedLanguage === 'fr') {
+                    return {
+                        prevBtn: prevBtnFr,
+                        nextBtn: nextBtnFr,
+                        skipBtn: skipBtnFr
+                    };
+                } else if (selectedLanguage === 'en') {
+                    return {
+                        prevBtn: prevBtnEn,
+                        nextBtn: nextBtnEn,
+                        skipBtn: skipBtnEn
+                    };
+                }
+                // Par défaut, retourner les boutons français
+                return {
+                    prevBtn: prevBtnFr,
+                    nextBtn: nextBtnFr,
+                    skipBtn: skipBtnFr
+                };
+            }
+            
+            if (!prevBtnFr || !nextBtnFr || !skipBtnFr || !prevBtnEn || !nextBtnEn || !skipBtnEn) {
                 console.error('Certains éléments de navigation ne sont pas trouvés');
                 return;
             }
@@ -264,20 +334,34 @@
                         dot.classList.remove('active');
                     }
                 });
+                  // Obtenir les boutons selon la langue actuelle
+                const buttons = getCurrentButtons();
                 
                 // Masquer le bouton Précédent sur la première diapositive
-                prevBtn.style.visibility = slideNumber === 1 ? 'hidden' : 'visible';
+                if (buttons.prevBtn) {
+                    buttons.prevBtn.style.visibility = slideNumber === 1 ? 'hidden' : 'visible';
+                }
                 
                 // Changer le texte du bouton Suivant sur la dernière diapositive
-                nextBtn.textContent = slideNumber === totalSlides ? 'Terminer' : 'Suivant';
+                if (buttons.nextBtn) {
+                    if (selectedLanguage === 'fr') {
+                        buttons.nextBtn.textContent = slideNumber === totalSlides ? 'Terminer' : 'Suivant';
+                    } else if (selectedLanguage === 'en') {
+                        buttons.nextBtn.textContent = slideNumber === totalSlides ? 'Finish' : 'Next';
+                    }
+                }
                 
                 // Désactiver le bouton Suivant sur la première slide si aucune langue n'est sélectionnée
                 if (slideNumber === 1 && !selectedLanguage) {
-                    nextBtn.disabled = true;
-                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    if (buttons.nextBtn) {
+                        buttons.nextBtn.disabled = true;
+                        buttons.nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                 } else {
-                    nextBtn.disabled = false;
-                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    if (buttons.nextBtn) {
+                        buttons.nextBtn.disabled = false;
+                        buttons.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                 }
                 
                 // Mettre à jour la variable globale
@@ -286,46 +370,78 @@
                 // Réactiver les transitions après un court délai
                 setTimeout(() => {
                     isTransitioning = false;
-                }, 500); // Attendre la fin de l'animation de transition (0.5s)
+                }, 500); // Attendre la fin de l'animation de transition (0.5s)            
             }
             
-            // Gestionnaire de clic pour le bouton Précédent
-            prevBtn.addEventListener('click', () => {
-                if (currentSlide > 1 && !isTransitioning) {
-                    showSlide(currentSlide - 1);
-                }
-            });
-            
-            // Gestionnaire de clic pour le bouton Suivant
-            nextBtn.addEventListener('click', () => {
-                if (currentSlide < totalSlides && !isTransitioning) {
-                    showSlide(currentSlide + 1);
-                } else if (currentSlide === totalSlides) {
-                    // Rediriger vers la version choisie
-                    if (selectedLanguage === 'fr') {
-                        window.location.href = 'fr/index.html';
-                    } else if (selectedLanguage === 'en') {
-                        window.location.href = 'en/index.html';
-                    } else {
-                        // Par défaut, rediriger vers le français
-                        window.location.href = 'fr/index.html';
+            // Gestionnaires d'événements pour tous les boutons (français et anglais)
+            function setupButtonEventListeners() {
+                // Boutons Précédent
+                [prevBtnFr, prevBtnEn].forEach(btn => {
+                    if (btn) {
+                        btn.addEventListener('click', () => {
+                            if (currentSlide > 1 && !isTransitioning) {
+                                showSlide(currentSlide - 1);
+                            }
+                        });
                     }
-                }
-            });
+                });
+                
+                // Boutons Suivant
+                [nextBtnFr, nextBtnEn].forEach(btn => {
+                    if (btn) {
+                        btn.addEventListener('click', () => {
+                            if (currentSlide < totalSlides && !isTransitioning) {
+                                showSlide(currentSlide + 1);
+                            } else if (currentSlide === totalSlides) {
+                                // Rediriger vers la version choisie
+                                if (selectedLanguage === 'fr') {
+                                    window.location.href = 'fr/index.html';
+                                } else if (selectedLanguage === 'en') {
+                                    window.location.href = 'en/index.html';
+                                } else {
+                                    // Par défaut, rediriger vers le français
+                                    window.location.href = 'fr/index.html';
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                // Boutons Passer
+                [skipBtnFr, skipBtnEn].forEach(btn => {
+                    if (btn) {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            // Si une langue a été sélectionnée, rediriger vers cette version
+                            if (selectedLanguage === 'fr') {
+                                window.location.href = 'fr/index.html';
+                            } else if (selectedLanguage === 'en') {
+                                window.location.href = 'en/index.html';
+                            } else {
+                                // Sinon, afficher la première diapositive pour forcer un choix de langue
+                                showSlide(1);
+                            }
+                        });
+                    }
+                });            }
             
+            // Appeler la fonction pour configurer les événements
+            setupButtonEventListeners();
             // Gestionnaire de clic pour les boutons de langue
             if (selectFrBtn) {
                 selectFrBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     selectedLanguage = 'fr';
-                    selectFrBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
-                    selectFrBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    selectEnBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    selectEnBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
+                    switchLanguage('fr');
+                    updateLanguageButtons();
                     
-                    // Activer le bouton Suivant
-                    nextBtn.disabled = false;
-                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    // Activer les boutons Suivant pour toutes les langues
+                    [nextBtnFr, nextBtnEn].forEach(btn => {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    });
                 });
             }
             
@@ -333,30 +449,18 @@
                 selectEnBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     selectedLanguage = 'en';
-                    selectEnBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
-                    selectEnBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    selectFrBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    selectFrBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
+                    switchLanguage('en');
+                    updateLanguageButtons();
                     
-                    // Activer le bouton Suivant
-                    nextBtn.disabled = false;
-                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    // Activer les boutons Suivant pour toutes les langues
+                    [nextBtnFr, nextBtnEn].forEach(btn => {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    });
                 });
             }
-            
-            // Gestionnaire de clic pour le bouton Passer
-            skipBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Si une langue a été sélectionnée, rediriger vers cette version
-                if (selectedLanguage === 'fr') {
-                    window.location.href = 'fr/index.html';
-                } else if (selectedLanguage === 'en') {
-                    window.location.href = 'en/index.html';
-                } else {
-                    // Sinon, afficher la première diapositive pour forcer un choix de langue
-                    showSlide(1);
-                }
-            });
             
             // Rendre les points cliquables
             dots.forEach((dot, index) => {
@@ -382,17 +486,20 @@
                 if (e.key === 'ArrowRight' && currentSlide === 1 && !selectedLanguage) {
                     return;
                 }
-                
-                if (e.key === 'ArrowRight' && currentSlide < totalSlides && !isTransitioning) {
+                  if (e.key === 'ArrowRight' && currentSlide < totalSlides && !isTransitioning) {
                     showSlide(currentSlide + 1);
                 } else if (e.key === 'ArrowLeft' && currentSlide > 1 && !isTransitioning) {
                     showSlide(currentSlide - 1);
                 }
             });
             
-            // Désactiver initialement le bouton Suivant
-            nextBtn.disabled = true;
-            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            // Désactiver initialement tous les boutons Suivant
+            [nextBtnFr, nextBtnEn].forEach(btn => {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            });
             
             // Initialiser l'affichage de la première diapositive
             showSlide(1);
