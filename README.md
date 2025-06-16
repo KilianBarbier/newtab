@@ -14,15 +14,11 @@
 <p align="center">
   <img src="/media/img/showcase.png" alt="Screenshot de NewTab" style="max-width: 90%; border-radius: 10px; box-shadow: 0 0 15px rgba(123,95,255,0.5);" />
 </p>
-
+<hr>
 <p align="center">
   📄 Ce projet est sous <a href="./LICENSE_FR.txt">licence personnelle (FR)</a> / <a href="./LICENSE_EN.txt">personal proprietary license (EN)</a> — toute utilisation commerciale ou redistribution est interdite sans autorisation écrite.
 </p>
 <hr>
-<p align="center">
-  <img src="/media/img/showcase.png" alt="Screenshot de NewTab" style="max-width: 90%; border-radius: 10px; box-shadow: 0 0 15px rgba(123,95,255,0.5);" />
-</p>
-
 ---
 
 ## ✨ Caractéristiques principales
