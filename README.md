@@ -16,7 +16,7 @@
 </p>
 <hr>
 <p align="center">
-  📄 Ce projet est sous <a href="Licence.txt">licence personnelle (FR)</a> / <a href="Licence.txt">personal proprietary license (EN)</a> — toute utilisation commerciale ou redistribution est interdite sans autorisation écrite.
+  📄 Ce projet est sous <a href="https://github.com/KilianBarbier/newtab?tab=License-1-ov-file">licence personnelle (FR)</a> / <a href="https://github.com/KilianBarbier/newtab?tab=License-2-ov-file">personal proprietary license (EN)</a> — toute utilisation commerciale ou redistribution est interdite sans autorisation écrite.
 </p>
 <hr>
 
