@@ -1,0 +1,29 @@
+PERSONAL PROPRIETARY LICENSE v1.0
+
+Copyright (c) 2025 Kilian BARBIER
+
+Tous droits réservés.
+
+Par la présente licence, l’auteur (ci-après dénommé « le Titulaire des droits ») accorde un droit strictement limité à consulter, utiliser et modifier le code source contenu dans ce dépôt (ci-après dénommé « le Logiciel ») **à des fins personnelles, non commerciales, et uniquement par des tiers à titre d’étude ou de test**.
+
+## Conditions d’utilisation
+
+1. Le Logiciel est la propriété exclusive du Titulaire des droits.
+2. Toute utilisation commerciale, y compris mais sans s'y limiter à la vente, la location, la prestation de services, l’intégration dans un produit tiers ou toute forme de monétisation, est strictement interdite sans autorisation écrite préalable du Titulaire des droits.
+3. La redistribution, sous quelque forme que ce soit (modifiée, dérivée ou non), est interdite sans consentement explicite du Titulaire des droits.
+4. L’utilisation du Logiciel ne confère **aucun droit de propriété** intellectuelle ni licence implicite sur les droits du Titulaire.
+
+## Garantie limitée
+
+Le Logiciel est fourni « tel quel », sans garantie d’aucune sorte, explicite ou implicite, y compris mais sans s'y limiter aux garanties de qualité marchande, d’adéquation à un usage particulier ou d’absence de contrefaçon.
+
+En aucun cas, le Titulaire des droits ne saurait être tenu responsable de tout dommage, direct ou indirect, résultant de l’utilisation du Logiciel.
+
+## Résiliation
+
+Toute violation des termes de cette licence entraîne la révocation immédiate de tout droit d’utilisation.
+
+---
+
+Pour toute demande d’autorisation ou de licence commerciale, veuillez contacter :  
+**Kilian BARBIER — [ton adresse email ici]**

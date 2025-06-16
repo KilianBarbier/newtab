@@ -1,0 +1,29 @@
+PERSONAL PROPRIETARY LICENSE v1.0
+
+Copyright (c) 2025 Kilian BARBIER
+
+All rights reserved.
+
+This license grants limited rights to view, use, and modify the source code contained in this repository (“the Software”) **solely for personal, non-commercial purposes, and exclusively for study or testing by third parties**.
+
+## Terms of Use
+
+1. The Software is the exclusive property of the Copyright Holder (hereafter “the Owner”).
+2. Any commercial use, including but not limited to resale, rental, service provision, integration into third-party products, or any form of monetization, is strictly prohibited without prior written consent from the Owner.
+3. Redistribution in any form (modified, derivative or not) is forbidden without the explicit permission of the Owner.
+4. Use of the Software does **not** grant any intellectual property rights or implied licenses.
+
+## Limited Warranty
+
+The Software is provided “as is”, without any warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+In no event shall the Owner be held liable for any direct or indirect damage resulting from the use of the Software.
+
+## Termination
+
+Any breach of this license immediately terminates all granted rights.
+
+---
+
+For commercial use inquiries or license requests, contact:  
+**Kilian BARBIER — [your contact email here]**
