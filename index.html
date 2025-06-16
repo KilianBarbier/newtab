@@ -193,12 +193,14 @@
                 <a href="#" id="skip-btn-en" class="text-gray-400 hover:text-white transition-colors duration-300 inline-block py-2 px-4 lang-content en" style="display: none;">Skip introduction</a>
             </div>
         </div>
-    </div>    <script>
-        // Variables globales pour stocker l'état
+    </div>    <script>        // Variables globales pour stocker l'état
         let currentSlide = 1;
         const totalSlides = 5;
         let isTransitioning = false; // Empêche les clics multiples rapides
-        let selectedLanguage = ''; // Pour stocker la langue choisie
+        let selectedLanguage = ''; // Pour stocker la langue choisie DANS CETTE SESSION uniquement
+        
+        // IMPORTANT: Cette page (index.html racine) est TOUJOURS l'onboarding
+        // Elle ne doit jamais rediriger automatiquement, même si une langue a été sauvegardée précédemment
         
         // Fonction pour changer la langue de l'interface
         function switchLanguage(lang) {
@@ -219,20 +221,13 @@
             
             console.log(`Langue changée vers: ${lang}`);
         }
-        
-        // Fonction d'initialisation
+          // Fonction d'initialisation
         function initializeOnboarding() {
             console.log("Initialisation de l'onboarding...");
             
-            // Vérifier si une langue a été précédemment sélectionnée
-            const savedLanguage = localStorage.getItem('selectedLanguage');
-            if (savedLanguage) {
-                selectedLanguage = savedLanguage;
-                switchLanguage(savedLanguage);
-                
-                // Mettre à jour l'affichage des boutons de langue
-                updateLanguageButtons();
-            }
+            // IMPORTANT: Ne pas restaurer automatiquement la langue sauvegardée
+            // car l'index.html racine doit toujours montrer l'onboarding complet
+            // La sauvegarde est utilisée uniquement pour les sous-pages
             
             // Buttons - nouvelle approche avec gestion des langues
             const prevBtnFr = document.getElementById('prev-btn-fr');
