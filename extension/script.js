@@ -1,18 +1,21 @@
-tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sf: [
-              "-apple-system",
-              "BlinkMacSystemFont",
-              "San Francisco",
-              "Helvetica Neue",
-              "sans-serif",
-            ],
+    // Configure Tailwind only if it's available
+    if (typeof tailwind !== 'undefined') {
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sf: [
+                "-apple-system",
+                "BlinkMacSystemFont",
+                "San Francisco",
+                "Helvetica Neue",
+                "sans-serif",
+              ],
+            },
           },
         },
-      },
-    };
+      };
+    }
     async function getFaviconUrl(url) {
       try {        const domain = new URL(url).hostname;
         // Directly use the Google Favicons API which is more reliable
@@ -38,11 +41,12 @@ tailwind.config = {
       } else {
         window.location.href = shortcut.href;
       }
-    }
-
-    function showContextMenu(event, position) {
+    }    function showContextMenu(event, position) {
       event.preventDefault();
       const contextMenu = document.getElementById("contextMenu");
+      if (!contextMenu) {
+        return;
+      }
       contextMenu.style.left = `${event.pageX}px`;
       contextMenu.style.top = `${event.pageY}px`;
       contextMenu.setAttribute("data-position", position);
@@ -311,127 +315,32 @@ tailwind.config = {
 
       window.addEventListener("focus", focusSearch);
       document.addEventListener("mouseenter", focusSearch);
-      document.addEventListener("keydown", focusSearch, { once: true });
-
-      const grid = document.getElementById("shortcutGrid");
-      const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "{}");
-      const shortcutCount = parseInt(
-        localStorage.getItem("shortcutCount") || "8"
-      );
-
-      for (let i = 0; i < shortcutCount; i++) {
-        grid.innerHTML += generateShortcut(i);
-      }
-
-      grid.innerHTML += generateAddRowButton();
-
-      Object.entries(shortcuts).forEach(([position, data]) => {
-        const shortcut = document.querySelector(
-          `[data-position="${position}"]`
-        );
-        if (shortcut) {
-          shortcut.href = data.url;
-          shortcut.onclick = (e) => {
-            e.preventDefault();
-            window.location.href = data.url;
-          };
-          shortcut.querySelector(".shortcut-title").textContent = data.title;
-          const iconContainer = shortcut.querySelector(".shortcut-icon");
-          iconContainer.removeAttribute("data-empty");
-          iconContainer.innerHTML = `
-              <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
-                 alt="${data.title}" 
-                 data-fallback="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+      document.addEventListener("keydown", focusSearch, { once: true });      // Initialize shortcuts with reloadShortcuts function
+      reloadShortcuts();
+      
+      // Fallback: add test content if grid is still empty after 1 second
+      setTimeout(() => {
+        const grid = document.getElementById("shortcutGrid");
+        if (grid && grid.innerHTML.trim() === '') {
+          console.log("Grid is empty, adding test content");
+          grid.innerHTML = `
+            <div class="shortcut-container">
+              <a href="#" class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+                <div class="text-center">
+                  <div class="shortcut-icon">
+                    <div class="w-12 h-12 bg-white/20 rounded-lg mx-auto flex items-center justify-center">
+                      <span class="text-2xl">🌐</span>
+                    </div>
+                  </div>
+                  <div class="text-white font-medium shortcut-title mt-2">Test Shortcut</div>
+                </div>
+              </a>
+            </div>
+          `;
         }
-      });
+      }, 1000);
 
-      const searchInput = document.getElementById("searchInput");
-      const searchButton = document.querySelector(".absolute svg");
-
-      searchInput.addEventListener("keydown", handleSearch);
-      searchButton.addEventListener("click", handleSearch);
-
-      const menuButton = document.getElementById("mobileMenuButton");
-      const sidebar = document.getElementById("sidebar");
-
-      if (menuButton) {
-        menuButton.addEventListener("click", () => {
-          sidebar.classList.toggle("mobile-hidden");
-          menuButton.classList.toggle("open");
-        });
-      }
-
-      const searchIcon = document.querySelector(".absolute svg");
-      const currentSearch = document.getElementById("currentSearch");
-
-      if (searchInput && searchIcon && currentSearch) {
-        searchInput.addEventListener("keydown", handleSearch);
-        searchIcon.addEventListener("click", handleSearch);
-        currentSearch.addEventListener("click", () => {
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.toggle("hidden");
-          }
-        });
-      }
-
-      document.querySelectorAll(".search-option").forEach((option) => {
-        option.addEventListener("click", (e) => {
-          const value = e.currentTarget.dataset.value;
-          const img = e.currentTarget.querySelector("img");
-          const searchBtn = document.querySelector("#currentSearch img");
-
-          if (searchBtn && img) {
-            searchBtn.src = img.src;
-          }
-
-          const searchEngine = document.getElementById("searchEngine");
-          if (searchEngine) {
-            searchEngine.value = value;
-          }
-
-          const searchInput = document.getElementById("searchInput");
-          if (searchInput) {
-            const currentText = searchInput.value.trim();
-            let newText = currentText;
-
-            if (currentText.startsWith("/")) {
-              const parts = currentText.substring(1).split(" ");
-              const possibleCommand = parts[0].toLowerCase();
-              const validCommands = [
-                "g",
-                "yt",
-                "gh",
-                "w",
-                "r",
-                "so",
-                "a",
-                "n",
-                "sp",
-                "tw",
-                "ig",
-                "maps",
-                "i",
-              ];
-              if (validCommands.includes(possibleCommand)) {
-                newText = parts.slice(1).join(" ");
-              }
-            }
-
-            searchInput.value =
-              newText.length > 0 ? `/${value} ${newText}` : `/${value} `;
-            searchInput.focus();
-            searchInput.selectionStart = searchInput.value.length;
-            searchInput.selectionEnd = searchInput.value.length;
-          }
-
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.add("hidden");
-          }
-        });
-      });      // Initialiser l'onglet actif
+      // Initialiser l'onglet actif
       const activeTab = localStorage.getItem("activeTab") || "personal";
       switchTab(activeTab);
 
@@ -681,14 +590,16 @@ tailwind.config = {
       }
 
       // Fallback: execute the search via handleSearch
-      handleSearch({ type: "click" });
-    }function reloadShortcuts() {
+      handleSearch({ type: "click" });    }function reloadShortcuts() {
       const grid = document.getElementById("shortcutGrid");
+      if (!grid) {
+        return;
+      }
+      
       const activeTab = localStorage.getItem("activeTab") || "personal";
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
 
-      // Supprimer tous les raccourcis existants mais garder le bouton d'ajout
-      const addRowButton = document.getElementById("addRowButton");
+      // Vider la grille
       grid.innerHTML = '';
 
       // Déterminer le nombre réel de raccourcis à afficher
@@ -696,8 +607,15 @@ tailwind.config = {
       
       // Recréer les raccourcis
       for (let i = 0; i < shortcutCount; i++) {
-        grid.innerHTML += generateShortcut(i);
+        const shortcutHTML = generateShortcut(i);
+        grid.innerHTML += shortcutHTML;
       }
+
+      // Ajouter le bouton d'ajout
+      const addButtonHTML = generateAddRowButton();
+      console.log("Generated add button:", addButtonHTML);
+      grid.innerHTML += addButtonHTML;
+        console.log("Grid innerHTML after generation:", grid.innerHTML);
 
       // Mettre à jour l'apparence des raccourcis avec les données stockées
       for (const position in shortcuts) {
@@ -722,14 +640,25 @@ tailwind.config = {
             shortcutElement.href = shortcutData.url;
           }
         }
-      }      // Remettre le bouton d'ajout
-      grid.appendChild(addRowButton);
-
-      // Setup event listeners for all shortcuts
-      setupShortcutEventListeners();      // Add event listener for the add row button
-      const newAddRowButton = document.getElementById("addRowButton");
-      if (newAddRowButton) {
-        newAddRowButton.addEventListener("click", addMoreShortcuts);
+      }      // Setup event listeners manually
+      document.querySelectorAll('a[data-position]').forEach(link => {
+        const position = link.getAttribute('data-position');
+        
+        link.addEventListener("click", (e) => {
+          handleShortcutClick(e, position);
+        });
+        
+        link.addEventListener("contextmenu", (e) => {
+          handleShortcutClick(e, position);
+        });
+      });
+      
+      // Setup add button listener
+      const addButton = document.getElementById('addRowButton');
+      if (addButton) {
+        addButton.addEventListener('click', () => {
+          addMoreShortcuts();
+        });
       }
 
       // Setup favicon error handling
@@ -853,9 +782,7 @@ document
           });
 
           // Make sure the search button triggers search with the selected engine
-          document
-            .querySelector(".absolute svg")
-            .addEventListener("click", function (event) {
+          document.querySelector(".absolute svg").addEventListener("click", function (event) {
               handleSearch(event);
             });
 
@@ -1098,23 +1025,32 @@ function showSearchHelp() {
 
     // Function to setup event listeners for shortcuts (called after generating new shortcuts)
     function setupShortcutEventListeners() {
+      console.log("Setting up shortcut event listeners");
       document.querySelectorAll('.shortcut-container').forEach(container => {
-        const index = container.getAttribute('data-shortcut-index');
         const shortcutLink = container.querySelector('a[data-position]');
         
-        if (shortcutLink && index) {
+        if (shortcutLink) {
+          const position = shortcutLink.getAttribute('data-position');
+          console.log("Setting up listeners for position:", position);
+          
           // Remove existing listeners to avoid duplicates
           shortcutLink.replaceWith(shortcutLink.cloneNode(true));
           const newShortcutLink = container.querySelector('a[data-position]');
           
           // Add event listeners
-          newShortcutLink.addEventListener("click", (e) => handleShortcutClick(e, index));
-          newShortcutLink.addEventListener("contextmenu", (e) => handleShortcutClick(e, index));
-          newShortcutLink.addEventListener("dragstart", (e) => handleDragStart(e, index));
+          newShortcutLink.addEventListener("click", (e) => {
+            console.log("Shortcut clicked, position:", position);
+            handleShortcutClick(e, position);
+          });
+          newShortcutLink.addEventListener("contextmenu", (e) => {
+            console.log("Shortcut right-clicked, position:", position);
+            handleShortcutClick(e, position);
+          });
+          newShortcutLink.addEventListener("dragstart", (e) => handleDragStart(e, position));
           
           // Container drag events
           container.addEventListener("dragover", handleDragOver);
-          container.addEventListener("drop", (e) => handleDrop(e, index));
+          container.addEventListener("drop", (e) => handleDrop(e, position));
           container.addEventListener("dragenter", handleDragEnter);
           container.addEventListener("dragleave", handleDragLeave);
         }
@@ -1124,16 +1060,14 @@ function showSearchHelp() {
     // Function to setup favicon error handling
     function setupFaviconErrorHandling() {
       document.querySelectorAll('.shortcut-icon img').forEach(img => {
-        // Remove existing error handler if any
         img.removeEventListener('error', handleFaviconError);
-        // Add new error handler
         img.addEventListener('error', handleFaviconError);
       });
-    }
-
-    function handleFaviconError(event) {
+    }    function handleFaviconError(event) {
       event.target.src = 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>';
-    }    // Function to create favicon image with proper error handling
+    }
+    
+    // Function to create favicon image with proper error handling
     function createFaviconImage(faviconUrl, title) {
       const img = document.createElement('img');
       img.src = faviconUrl;
@@ -1142,3 +1076,4 @@ function showSearchHelp() {
       img.addEventListener('error', handleFaviconError);
       return img;
     }
+  

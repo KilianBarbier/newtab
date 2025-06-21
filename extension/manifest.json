@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab",
+  "version": "1.0.0",
+  "description": "Une extension personnalisée pour remplacer la page nouvel onglet avec des raccourcis et une recherche intelligente",  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "favicon.ico",
+    "32": "favicon.ico",
+    "48": "favicon.ico",
+    "128": "favicon.ico"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "media/*",
+        "*.css",
+        "*.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

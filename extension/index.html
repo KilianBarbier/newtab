@@ -4,24 +4,89 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>New Tab</title>
-    <link rel="stylesheet" href="extension/style.css" />
-    <script src="extension/script.js" defer></script>
-    <script src="extension/tailwindcss_cdn_410.js"></script>
+    <script src="tailwindcss_cdn_410.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="storage.js" defer></script>
+    <script src="script.js" defer></script>
 
-    <link rel="icon" href="extension/favicon.ico" type="image/x-icon" />
-    <link
-      rel="shortcut icon"
-      href="extension/favicon.ico"
-      type="image/x-icon"
-    />
-    <link rel="apple-touch-icon" href="extension/favicon.ico" />
+    <style>
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        min-height: 100vh !important;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: white !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      #sidebar {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        width: 288px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 24px !important;
+        padding: 24px !important;
+        margin-right: 24px !important;
+      }
+      
+      main {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        margin-left: 0 !important;
+      }
+        #shortcutGrid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 24px !important;
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* Debug styles for shortcut grid */
+      #shortcutGrid {
+        background: rgba(255, 0, 0, 0.1) !important; /* Rouge transparent pour voir la zone */
+        min-height: 200px !important;
+        border: 2px dashed rgba(255, 255, 255, 0.3) !important;
+      }
+      
+      .shortcut-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      
+      /* Force display of add button */
+      #addRowButton {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+        /* Force modal visibility rules */
+      .hidden {
+        display: none !important;
+      }
+      
+      .flex {
+        display: flex !important;
+      }      .min-h-screen {
+        min-height: 100vh !important;
+      }
+    </style>
   </head>
 
   <body class="min-h-screen font-sf">
     <div class="flex min-h-screen p-6">
       <aside
         id="sidebar"
-        class="w-72 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block"
+        class="w-72 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto block"
       >
         <div class="text-xl font-medium text-white mb-8">Quick Access</div>
         <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
@@ -128,7 +193,7 @@
         </div>
       </aside>
 
-      <main class="flex-1 flex flex-col lg:ml-72 pb-20 lg:pb-0">
+      <main class="flex-1 flex flex-col ml-72 pb-20 lg:pb-0">
         <div
           class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30"
         >
@@ -141,7 +206,7 @@
                 >Search on:</span
               >
               <img
-                src="extension/media/icons/googleg_lodp.ico"
+                src="media/icons/googleg_lodp.ico"
                 class="w-6 h-6"
                 alt="Google"
               />
@@ -158,13 +223,13 @@
             >
               <button class="search-option rounded-lg" data-value="g">
                 <img
-                  src="extension/media/icons/www.google.com.ico"
+                  src="media/icons/www.google.com.ico"
                   alt="Google"
                 />
               </button>
               <button class="search-option rounded-lg" data-value="yt">
                 <img
-                  src="extension/media/icons/youtube_logo.svg"
+                  src="media/icons/youtube_logo.svg"
                   alt="YouTube"
                 />
               </button>
@@ -173,7 +238,7 @@
                 data-value="gh"
               >
                 <img
-                  src="extension/media/icons/github.com.ico"
+                  src="media/icons/github.com.ico"
                   class="w-6 h-6"
                   alt="GitHub"
                 />
@@ -183,7 +248,7 @@
                 data-value="w"
               >
                 <img
-                  src="extension/media/icons/wikipedia.org.ico"
+                  src="media/icons/wikipedia.org.ico"
                   class="w-6 h-6"
                   alt="Wikipedia"
                 />
@@ -193,7 +258,7 @@
                 data-value="r"
               >
                 <img
-                  src="extension/media/icons/www.reddit.com.ico"
+                  src="media/icons/www.reddit.com.ico"
                   class="w-6 h-6"
                   alt="Reddit"
                 />
@@ -203,7 +268,7 @@
                 data-value="so"
               >
                 <img
-                  src="extension/media/icons/stackoverflow.com.ico"
+                  src="media/icons/stackoverflow.com.ico"
                   class="w-6 h-6"
                   alt="Stack"
                 />
@@ -213,7 +278,7 @@
                 data-value="a"
               >
                 <img
-                  src="extension/media/icons/www.amazon.com.ico"
+                  src="media/icons/www.amazon.com.ico"
                   class="w-6 h-6"
                   alt="Amazon"
                 />
@@ -223,7 +288,7 @@
                 data-value="n"
               >
                 <img
-                  src="extension/media/icons/www.netflix.com.ico"
+                  src="media/icons/www.netflix.com.ico"
                   class="w-6 h-6"
                   alt="Netflix"
                 />
@@ -233,7 +298,7 @@
                 data-value="sp"
               >
                 <img
-                  src="extension/media/icons/open.spotify.com.ico"
+                  src="media/icons/open.spotify.com.ico"
                   class="w-6 h-6"
                   alt="Spotify"
                 />
@@ -243,7 +308,7 @@
                 data-value="tw"
               >
                 <img
-                  src="extension/media/icons/twitter.com.ico"
+                  src="media/icons/twitter.com.ico"
                   class="w-6 h-6"
                   alt="Twitter"
                 />
@@ -253,7 +318,7 @@
                 data-value="ig"
               >
                 <img
-                  src="extension/media/icons/www.instagram.com.ico"
+                  src="media/icons/www.instagram.com.ico"
                   class="w-6 h-6"
                   alt="Instagram"
                 />
@@ -263,7 +328,7 @@
                 data-value="maps"
               >
                 <img
-                  src="extension/media/icons/maps.google.com.ico"
+                  src="media/icons/maps.google.com.ico"
                   class="w-6 h-6"
                   alt="Maps"
                 />
@@ -273,7 +338,7 @@
                 data-value="i"
               >
                 <img
-                  src="extension/media/icons/google_img_logo.svg"
+                  src="media/icons/google_img_logo.svg"
                   class="w-6 h-6"
                   alt="Images"
                 />
@@ -283,7 +348,7 @@
                 data-value="ddg"
               >
                 <img
-                  src="extension/media/icons/duckduckgo.com.ico"
+                  src="media/icons/duckduckgo.com.ico"
                   class="w-6 h-6"
                   alt="DuckDuckGo"
                 />
@@ -293,7 +358,7 @@
                 data-value="px"
               >
                 <img
-                  src="extension/media/icons/www.perplexity.ai.ico"
+                  src="media/icons/www.perplexity.ai.ico"
                   class="w-6 h-6"
                   alt="Perplexity"
                 />
@@ -406,15 +471,17 @@
                       <path
                         class="opacity-75"
                         fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span id="saveText">Add</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+                        d="M4 12a8 8 0 018-8V0C5
+          </button>
+          <button
+            id="deleteShortcutButton"
+            class="w-full border-b-0 border-r-0 border-l-0 px-4 py-4 text-left hover:bg-red-500/20 text-red-300 transition-colors duration-200 transform hover:translate-y-0"
+            style="
+              border-bottom-left-radius: 8px;
+              border-bottom-right-radius: 8px;
+            "
+          >            Delete Shortcut
+          </button>
         </div>
 
         <div
