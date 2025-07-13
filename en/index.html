@@ -817,240 +817,262 @@
         </svg>
         <a id="pro" class="block w-full">Professional</a>
       </div>
-      <!-- Weather Widget -->
-      <div class="mt-6 mb-2 pr-4 pt-4 pb-2 pl-2 flex items-center gap-2">
-        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <h3 class="text-white font-medium text-lg">Weather</h3>
-      </div>
-
-      <div id="weather-widget"
-        class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
-        style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-        
-        <!-- City Input -->
-        <div id="weather-input" class="mb-4">
-          <div class="flex gap-2">
-            <input type="text" 
-                   id="weather-city-input" 
-                   placeholder="Enter city name..." 
-                   class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
-                   onkeypress="if(event.key==='Enter') loadWeatherForCity()">
-            <button onclick="loadWeatherForCity()" 
-                    class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
-              Get Weather
+      <!-- Widgets Slider -->
+      <div class="mt-6">
+        <!-- Slider Header with Navigation -->
+        <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
+          <div class="flex items-center gap-2">
+            <div id="current-widget-icon" class="w-6 h-6 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
+          </div>
+          
+          <!-- Navigation Controls -->
+          <div class="flex items-center gap-2">
+            <button onclick="previousWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button onclick="nextWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
             </button>
           </div>
-          <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
-        </div>
-        
-        <div id="weather-loading" class="hidden flex items-center justify-center py-8">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-          <span class="ml-2">Loading weather...</span>
-        </div>
-        
-        <div id="weather-content" class="hidden">
-          <!-- Weather Header -->
-          <div class="text-center mb-6">
-            <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
-            <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider" style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
-          </div>
-          
-          <!-- Current Weather Icon and Temperature -->
-          <div class="text-center mb-6">
-            <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]">☀️</div>
-            <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
-            <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
-            <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
-          </div>
-          
-          <!-- Weather Forecast -->
-          <div id="weather-forecast" class="space-y-3">
-            <!-- Forecast items will be populated here -->
-          </div>
-          
-          <button onclick="showCityInput()" 
-                  class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
-            Change city
-          </button>
-        </div>
-        
-        <div id="weather-error" class="hidden text-center py-4">
-          <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
-          <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
-          <button onclick="showCityInput()" class="text-sm text-blue-300 hover:text-blue-200 underline">
-            Try again
-          </button>
-        </div>
-      </div>
-
-      <!-- Notes Widget -->
-      <div class="mt-6 mb-2 pr-4 pt-4 pb-2 pl-2 flex items-center gap-2">
-        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-        <h3 class="text-white font-medium text-lg">Notes</h3>
-      </div>
-
-      <div id="notes-widget"
-        class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
-        style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-        
-        <!-- Add Note Button -->
-        <div class="mb-4">
-          <button onclick="showAddNoteForm()" 
-                  class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            New note
-          </button>
         </div>
 
-        <!-- Add Note Form -->
-        <div id="add-note-form" class="hidden mb-4">
-          <div class="space-y-3">
-            <textarea id="note-text" 
-                      placeholder="Write your note..." 
-                      class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
-                      rows="3"></textarea>
-            <div class="flex gap-2">
-              <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-              <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-              <button onclick="addNote('pink')" class="flex-1 h-8 bg-pink-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-              <button onclick="addNote('blue')" class="flex-1 h-8 bg-blue-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+        <!-- Slider Container -->
+        <div class="relative overflow-hidden rounded-xl">
+          <div id="widgets-slider" class="flex transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
+            
+            <!-- Weather Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="weather-widget"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- City Input -->
+                <div id="weather-input" class="mb-4">
+                  <div class="flex gap-2">
+                    <input type="text" 
+                           id="weather-city-input" 
+                           placeholder="Enter city name..." 
+                           class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
+                           onkeypress="if(event.key==='Enter') loadWeatherForCity()">
+                    <button onclick="loadWeatherForCity()" 
+                            class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
+                      Get Weather
+                    </button>
+                  </div>
+                  <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
+                </div>
+                
+                <div id="weather-loading" class="hidden flex items-center justify-center py-8">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  <span class="ml-2">Loading weather...</span>
+                </div>
+                
+                <div id="weather-content" class="hidden">
+                  <!-- Weather Header -->
+                  <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
+                    <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider" style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
+                  </div>
+                  
+                  <!-- Current Weather Icon and Temperature -->
+                  <div class="text-center mb-6">
+                    <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]">☀️</div>
+                    <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
+                    <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
+                    <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
+                  </div>
+                  
+                  <!-- Weather Forecast -->
+                  <div id="weather-forecast" class="space-y-3">
+                    <!-- Forecast items will be populated here -->
+                  </div>
+                  
+                  <button onclick="showCityInput()" 
+                          class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
+                    Change city
+                  </button>
+                </div>
+                
+                <div id="weather-error" class="hidden text-center py-4">
+                  <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
+                  <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
+                  <button onclick="showCityInput()" class="text-sm text-blue-300 hover:text-blue-200 underline">
+                    Try again
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="flex gap-2">
-              <button onclick="hideAddNoteForm()" class="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">
-                Cancel
-              </button>
-              <button onclick="addNote('yellow')" class="flex-1 px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-xs transition-colors">
-                Add Note
-              </button>
+
+            <!-- Notes Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="notes-widget"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- Add Note Button -->
+                <div class="mb-4">
+                  <button onclick="showAddNoteForm()" 
+                          class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New note
+                  </button>
+                </div>
+
+                <!-- Add Note Form -->
+                <div id="add-note-form" class="hidden mb-4">
+                  <div class="space-y-3">
+                    <textarea id="note-text" 
+                              placeholder="Write your note..." 
+                              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
+                              rows="3"></textarea>
+                    <div class="flex gap-2">
+                      <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('pink')" class="flex-1 h-8 bg-pink-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('blue')" class="flex-1 h-8 bg-blue-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="hideAddNoteForm()" class="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">
+                        Cancel
+                      </button>
+                      <button onclick="addNote('yellow')" class="flex-1 px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-xs transition-colors">
+                        Add Note
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes Container -->
+                <div id="notes-container" class="space-y-3">
+                  <!-- Notes will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="notes-empty" class="text-center py-8 text-white/60">
+                  <div class="text-4xl mb-2">📝</div>
+                  <div class="text-sm">No notes yet</div>
+                  <div class="text-xs mt-1">Click "New note" to get started</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pomodoro Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="pomodoro-widget"
+                class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- Close button (like in the design) -->
+                <div class="absolute top-4 right-4">
+                  <button onclick="resetPomodoro()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Header with task name -->
+                <div class="text-center mb-6">
+                  <div id="pomodoro-task" class="text-lg font-medium text-white/90 mb-4 px-8">Project research</div>
+                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work<br><span class="text-2xl font-bold">Kilian !</span></div>
+                </div>
+
+                <!-- Large Timer Display -->
+                <div class="text-center mb-8">
+                  <div id="pomodoro-timer" class="font-bold text-white tracking-tight font-mono mb-2" style="font-size: 5rem; line-height: 0.9;">25:00</div>
+                </div>
+
+                <!-- Progress Ring with Emoji -->
+                <div class="flex justify-center mb-8">
+                  <div class="relative w-32 h-32">
+                    <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                      <!-- Background circle -->
+                      <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.15)" stroke-width="12" fill="none"/>
+                      <!-- Progress circle -->
+                      <circle id="pomodoro-progress" cx="50" cy="50" r="42" stroke="#22D3EE" stroke-width="12" fill="none"
+                              stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+                              class="transition-all duration-1000 ease-linear"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span id="pomodoro-emoji" class="text-4xl">🧠</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Simple Controls -->
+                <div class="flex gap-3 mb-6">
+                  <button id="pomodoro-start" onclick="startPomodoro()" 
+                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg">
+                    Start Focus
+                  </button>
+                  <button id="pomodoro-pause" onclick="pausePomodoro()" 
+                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg hidden">
+                    Pause
+                  </button>
+                </div>
+
+                <!-- Mode and Session Info -->
+                <div class="text-center">
+                  <div id="pomodoro-mode" class="text-sm text-white/70 mb-1">FOCUS SESSION</div>
+                  <div id="pomodoro-session" class="text-sm text-white/70">Session 1 of 4</div>
+                </div>
+
+                <!-- Settings Toggle -->
+                <div class="mt-4 mb-0 text-center">
+                  <button onclick="togglePomodoroSettings()" class="text-sm text-white/60 hover:text-white/80 transition-colors">
+                    ⚙️ Settings
+                  </button>
+                </div>
+
+                <!-- Collapsible Settings -->
+                <div id="pomodoro-settings" class="hidden mt-4 pt-4 border-t border-white/20 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-white/80">Focus time</span>
+                    <div class="flex items-center gap-2">
+                      <button onclick="adjustTime('focus', -5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <span id="focus-time" class="text-xs font-medium min-w-[3rem] text-center">25 min</span>
+                      <button onclick="adjustTime('focus', 5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-white/80">Break time</span>
+                    <div class="flex items-center gap-2">
+                      <button onclick="adjustTime('break', -1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <span id="break-time" class="text-xs font-medium min-w-[3rem] text-center">5 min</span>
+                      <button onclick="adjustTime('break', 1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Stats in settings -->
+                  <div class="pt-3 border-t border-white/10">
+                    <div class="flex justify-between text-xs text-white/60">
+                      <span>Today: <span id="today-sessions">0</span></span>
+                      <span>Total: <span id="total-sessions">0</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Notes Container -->
-        <div id="notes-container" class="space-y-3">
-          <!-- Notes will be populated here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="notes-empty" class="text-center py-8 text-white/60">
-          <div class="text-4xl mb-2">📝</div>
-          <div class="text-sm">No notes yet</div>
-          <div class="text-xs mt-1">Click "New note" to get started</div>
-        </div>
-      </div>
-
-      <!-- Pomodoro Widget -->
-      <div class="mt-6 mb-2 pr-4 pt-4 pb-2 pl-2 flex items-center gap-2">
-        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12,6 12,12 16,14"/>
-        </svg>
-        <h3 class="text-white font-medium text-lg">Pomodoro</h3>
-      </div>
-
-      <div id="pomodoro-widget"
-        class="pr-4 pt-6 pb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
-        style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-        
-        <!-- Close button (like in the design) -->
-        <div class="absolute top-4 right-4">
-          <button onclick="resetPomodoro()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Header with task name -->
-        <div class="text-center mb-6">
-          <div id="pomodoro-task" class="text-lg font-medium text-white/90 mb-4 px-8">Project research</div>
-          <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work<br><span class="text-2xl font-bold">Kilian !</span></div>
-        </div>
-
-        <!-- Large Timer Display -->
-        <div class="text-center mb-8">
-          <div id="pomodoro-timer" class="font-bold text-white tracking-tight font-mono mb-2" style="font-size: 5rem; line-height: 0.9;">25:00</div>
-        </div>
-
-        <!-- Progress Ring with Emoji -->
-        <div class="flex justify-center mb-8">
-          <div class="relative w-32 h-32">
-            <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
-              <!-- Background circle -->
-              <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.15)" stroke-width="12" fill="none"/>
-              <!-- Progress circle -->
-              <circle id="pomodoro-progress" cx="50" cy="50" r="42" stroke="#22D3EE" stroke-width="12" fill="none"
-                      stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
-                      class="transition-all duration-1000 ease-linear"/>
-            </svg>
-            <div class="absolute inset-0 flex items-center justify-center">
-              <span id="pomodoro-emoji" class="text-4xl">🧠</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Simple Controls -->
-        <div class="flex gap-3 mb-6">
-          <button id="pomodoro-start" onclick="startPomodoro()" 
-                  class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg">
-            Start Focus
-          </button>
-          <button id="pomodoro-pause" onclick="pausePomodoro()" 
-                  class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg hidden">
-            Pause
-          </button>
-        </div>
-
-        <!-- Mode and Session Info -->
-        <div class="text-center">
-          <div id="pomodoro-mode" class="text-sm text-white/70 mb-1">FOCUS SESSION</div>
-          <div id="pomodoro-session" class="text-sm text-white/70">Session 1 of 4</div>
-        </div>
-
-        <!-- Settings Toggle -->
-        <div class="mt-6 text-center">
-          <button onclick="togglePomodoroSettings()" class="text-sm text-white/60 hover:text-white/80 transition-colors">
-            ⚙️ Settings
-          </button>
-        </div>
-
-        <!-- Collapsible Settings -->
-        <div id="pomodoro-settings" class="hidden mt-4 pt-4 border-t border-white/20 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-white/80">Focus time</span>
-            <div class="flex items-center gap-2">
-              <button onclick="adjustTime('focus', -5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
-              <span id="focus-time" class="text-xs font-medium min-w-[3rem] text-center">25 min</span>
-              <button onclick="adjustTime('focus', 5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
-            </div>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-white/80">Break time</span>
-            <div class="flex items-center gap-2">
-              <button onclick="adjustTime('break', -1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
-              <span id="break-time" class="text-xs font-medium min-w-[3rem] text-center">5 min</span>
-              <button onclick="adjustTime('break', 1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
-            </div>
-          </div>
-          
-          <!-- Stats in settings -->
-          <div class="pt-3 border-t border-white/10">
-            <div class="flex justify-between text-xs text-white/60">
-              <span>Today: <span id="today-sessions">0</span></span>
-              <span>Total: <span id="total-sessions">0</span></span>
-            </div>
-          </div>
+        <!-- Widget Indicators -->
+        <div class="flex justify-center gap-2 mt-0">
+          <button onclick="goToWidget(0)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/60" id="indicator-0"></button>
+          <button onclick="goToWidget(1)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-1"></button>
+          <button onclick="goToWidget(2)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-2"></button>
         </div>
       </div>
     </aside>
@@ -2353,6 +2375,133 @@
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+
+    // ==================== WIDGETS SLIDER FUNCTIONALITY ====================
+
+    let currentWidgetIndex = 0;
+    const widgets = [
+      {
+        name: 'Weather',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path stroke-linecap="round" stroke-linejoin="round"
+                   d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+               </svg>`
+      },
+      {
+        name: 'Notes',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path stroke-linecap="round" stroke-linejoin="round"
+                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+               </svg>`
+      },
+      {
+        name: 'Pomodoro',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="12" r="10"/>
+                 <polyline points="12,6 12,12 16,14"/>
+               </svg>`
+      }
+    ];
+
+    function updateWidgetDisplay() {
+      const slider = document.getElementById('widgets-slider');
+      const titleElement = document.getElementById('current-widget-title');
+      const iconElement = document.getElementById('current-widget-icon');
+      
+      // Update slider position
+      const translateX = -currentWidgetIndex * 100;
+      slider.style.transform = `translateX(${translateX}%)`;
+      
+      // Update header
+      titleElement.textContent = widgets[currentWidgetIndex].name;
+      iconElement.innerHTML = widgets[currentWidgetIndex].icon;
+      
+      // Update indicators
+      widgets.forEach((_, index) => {
+        const indicator = document.getElementById(`indicator-${index}`);
+        if (indicator) {
+          if (index === currentWidgetIndex) {
+            indicator.classList.remove('bg-white/30');
+            indicator.classList.add('bg-white/60');
+          } else {
+            indicator.classList.remove('bg-white/60');
+            indicator.classList.add('bg-white/30');
+          }
+        }
+      });
+    }
+
+    function goToWidget(index) {
+      if (index >= 0 && index < widgets.length) {
+        currentWidgetIndex = index;
+        updateWidgetDisplay();
+      }
+    }
+
+    function nextWidget() {
+      currentWidgetIndex = (currentWidgetIndex + 1) % widgets.length;
+      updateWidgetDisplay();
+    }
+
+    function previousWidget() {
+      currentWidgetIndex = (currentWidgetIndex - 1 + widgets.length) % widgets.length;
+      updateWidgetDisplay();
+    }
+
+    // Touch/swipe support for mobile
+    let startX = 0;
+    let isDragging = false;
+
+    function handleTouchStart(e) {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }
+
+    function handleTouchEnd(e) {
+      if (!isDragging) return;
+      
+      const endX = e.changedTouches[0].clientX;
+      const diffX = startX - endX;
+      
+      // Minimum swipe distance to trigger navigation
+      if (Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+          nextWidget(); // Swipe left = next
+        } else {
+          previousWidget(); // Swipe right = previous
+        }
+      }
+      
+      isDragging = false;
+    }
+
+    // Keyboard navigation
+    function handleKeyNavigation(e) {
+      if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+        return; // Don't interfere with input fields
+      }
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        previousWidget();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextWidget();
+      }
+    }
+
+    // Initialize slider
+    document.addEventListener('DOMContentLoaded', () => {
+      updateWidgetDisplay();
+      
+      // Add touch support
+      const slider = document.getElementById('widgets-slider');
+      slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+      slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+      
+      // Add keyboard support
+      document.addEventListener('keydown', handleKeyNavigation);
+    });
 
   </script>
   <script src="aurora-svelte.js"></script>
