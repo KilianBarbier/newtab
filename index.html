@@ -77,97 +77,45 @@
 <body class="font-sf">
     <div class="h-screen w-screen flex flex-col items-center justify-center p-6">        <!-- Container du contenu de l'onboarding -->
         <div class="max-w-4xl w-full relative">            
-            <!-- Slide 1: Choix de langue -->
+            <!-- Slide 1: Welcome -->
             <div id="slide-1" class="onboarding-slide active flex flex-col items-center" style="display: flex !important; opacity: 1 !important;">
-                <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8 relative overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 opacity-50"></div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                    </svg>
-                </div>
-                <h2 class="text-3xl font-bold mb-4">Choisissez votre langue / Choose your language</h2>
-                <p class="text-xl text-gray-300 mb-8 text-center">Sélectionnez votre langue préférée pour continuer / Select your preferred language to continue</p>
-                <div class="flex space-x-4 mt-4">
-                    <a href="#" id="select-fr" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">Français</a>
-                    <a href="#" id="select-en" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg">English</a>
-                </div>
-            </div>
-              <!-- Slide 2: Bienvenue -->
-            <div id="slide-2" class="onboarding-slide flex flex-col items-center">
                 <img src="media/img/showcase.png" alt="New Tab Preview" class="w-3/4 rounded-lg shadow-2xl mb-8">
-                <!-- Contenu en français -->
-                <div class="lang-content fr">
-                    <h1 class="text-4xl font-bold mb-4">Bienvenue sur votre Nouvel Onglet</h1>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Un espace minimaliste et productif pour commencer votre navigation</p>
-                </div>
-                <!-- Contenu en anglais -->
-                <div class="lang-content en" style="display: none;">
-                    <h1 class="text-4xl font-bold mb-4">Welcome to your New Tab</h1>
-                    <p class="text-xl text-gray-300 mb-8 text-center">A minimalist and productive space to start your browsing</p>
-                </div>
+                <h1 class="text-4xl font-bold mb-4">Welcome to your New Tab</h1>
+                <p class="text-xl text-gray-300 mb-8 text-center">A minimalist and productive space to start your browsing</p>
             </div>
-            
-            <!-- Slide 3: Favoris -->
-            <div id="slide-3" class="onboarding-slide flex flex-col items-center">
+            <!-- Slide 2: Favorites -->
+            <div id="slide-2" class="onboarding-slide flex flex-col items-center">
                 <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                     </svg>
                 </div>
-                <!-- Contenu en français -->
-                <div class="lang-content fr">
-                    <h2 class="text-3xl font-bold mb-4">Accédez rapidement à vos favoris</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Tous vos sites préférés à un clic de distance</p>
-                </div>
-                <!-- Contenu en anglais -->
-                <div class="lang-content en" style="display: none;">
-                    <h2 class="text-3xl font-bold mb-4">Quick Access to Favorites</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">All your favorite sites just a click away</p>
-                </div>
+                <h2 class="text-3xl font-bold mb-4">Quick Access to Favorites</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">All your favorite sites just a click away</p>
             </div>
             
-            <!-- Slide 4: Recherche -->
-            <div id="slide-4" class="onboarding-slide flex flex-col items-center">
+            <!-- Slide 3: Search -->
+            <div id="slide-3" class="onboarding-slide flex flex-col items-center">
                 <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-                <!-- Contenu en français -->
-                <div class="lang-content fr">
-                    <h2 class="text-3xl font-bold mb-4">Recherche instantanée</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Recherchez sur le web directement depuis votre nouvel onglet</p>
-                </div>
-                <!-- Contenu en anglais -->
-                <div class="lang-content en" style="display: none;">
-                    <h2 class="text-3xl font-bold mb-4">Instant Search</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Search the web directly from your new tab</p>
-                </div>
+                <h2 class="text-3xl font-bold mb-4">Instant Search</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Search the web directly from your new tab</p>
             </div>
-              <!-- Slide 5: Personnalisation -->
-            <div id="slide-5" class="onboarding-slide flex flex-col items-center">
+              <!-- Slide 4: Customization -->
+            <div id="slide-4" class="onboarding-slide flex flex-col items-center">
                 <div class="w-3/4 h-64 bg-gray-800 rounded-lg flex items-center justify-center mb-8">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                     </svg>
                 </div>
-                <!-- Contenu en français -->
-                <div class="lang-content fr">
-                    <h2 class="text-3xl font-bold mb-4">Entièrement personnalisable</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Adaptez l'apparence et les fonctionnalités selon vos préférences</p>
-                </div>
-                <!-- Contenu en anglais -->
-                <div class="lang-content en" style="display: none;">
-                    <h2 class="text-3xl font-bold mb-4">Fully Customizable</h2>
-                    <p class="text-xl text-gray-300 mb-8 text-center">Adapt the appearance and features to your preferences</p>
-                </div>
+                <h2 class="text-3xl font-bold mb-4">Fully Customizable</h2>
+                <p class="text-xl text-gray-300 mb-8 text-center">Adapt the appearance and features to your preferences</p>
             </div>              <!-- Navigation -->
             <div class="flex justify-between items-center mt-8 w-full">
-                <!-- Bouton Précédent en français -->
-                <button id="prev-btn-fr" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-lg w-28 lang-content fr">Précédent</button>
-                
-                <!-- Bouton Previous en anglais -->
-                <button id="prev-btn-en" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-lg w-28 lang-content en" style="display: none;">Previous</button>
+                <button id="prev-btn" class="btn bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-lg w-28">Previous</button>
                 
                 <!-- Progress dots -->
                 <div class="flex-1 flex justify-center items-center">
@@ -175,114 +123,35 @@
                     <div class="progress-dot" data-slide="2" role="button" aria-label="Slide 2"></div>
                     <div class="progress-dot" data-slide="3" role="button" aria-label="Slide 3"></div>
                     <div class="progress-dot" data-slide="4" role="button" aria-label="Slide 4"></div>
-                    <div class="progress-dot" data-slide="5" role="button" aria-label="Slide 5"></div>
                 </div>
                 
-                <!-- Bouton Suivant en français -->
-                <button id="next-btn-fr" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg w-28 lang-content fr">Suivant</button>
-                
-                <!-- Bouton Next en anglais -->
-                <button id="next-btn-en" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg w-28 lang-content en" style="display: none;">Next</button>
+                <button id="next-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg w-28">Next</button>
             </div>
               <!-- Skip button -->
             <div class="mt-6 w-full text-center flex justify-center">
-                <!-- Lien Passer en français -->
-                <a href="#" id="skip-btn-fr" class="text-gray-400 hover:text-white transition-colors duration-300 inline-block py-2 px-4 lang-content fr">Passer l'introduction</a>
-                
-                <!-- Lien Skip en anglais -->
-                <a href="#" id="skip-btn-en" class="text-gray-400 hover:text-white transition-colors duration-300 inline-block py-2 px-4 lang-content en" style="display: none;">Skip introduction</a>
+                <a href="#" id="skip-btn" class="text-gray-400 hover:text-white transition-colors duration-300 inline-block py-2 px-4">Skip introduction</a>
             </div>
         </div>
-    </div>    <script>        // Variables globales pour stocker l'état
+    </div>    <script>
+        // Variables globales pour stocker l'état
         let currentSlide = 1;
-        const totalSlides = 5;
+        const totalSlides = 4;
         let isTransitioning = false; // Empêche les clics multiples rapides
-        let selectedLanguage = ''; // Pour stocker la langue choisie DANS CETTE SESSION uniquement
         
-        // IMPORTANT: Cette page (index.html racine) est TOUJOURS l'onboarding
-        // Elle ne doit jamais rediriger automatiquement, même si une langue a été sauvegardée précédemment
-        
-        // Fonction pour changer la langue de l'interface
-        function switchLanguage(lang) {
-            selectedLanguage = lang;
-            localStorage.setItem('selectedLanguage', lang);
-            
-            // Cacher tous les contenus de langue
-            const allLangContent = document.querySelectorAll('.lang-content');
-            allLangContent.forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            // Afficher le contenu de la langue sélectionnée
-            const selectedLangContent = document.querySelectorAll(`.lang-content.${lang}`);
-            selectedLangContent.forEach(content => {
-                content.style.display = content.tagName.toLowerCase() === 'div' ? 'block' : 'inline-block';
-            });
-            
-            console.log(`Langue changée vers: ${lang}`);
-        }
-          // Fonction d'initialisation
+        // Fonction d'initialisation
         function initializeOnboarding() {
-            console.log("Initialisation de l'onboarding...");
+            console.log("Initializing onboarding...");
             
-            // IMPORTANT: Ne pas restaurer automatiquement la langue sauvegardée
-            // car l'index.html racine doit toujours montrer l'onboarding complet
-            // La sauvegarde est utilisée uniquement pour les sous-pages
-            
-            // Buttons - nouvelle approche avec gestion des langues
-            const prevBtnFr = document.getElementById('prev-btn-fr');
-            const prevBtnEn = document.getElementById('prev-btn-en');
-            const nextBtnFr = document.getElementById('next-btn-fr');
-            const nextBtnEn = document.getElementById('next-btn-en');
-            const skipBtnFr = document.getElementById('skip-btn-fr');
-            const skipBtnEn = document.getElementById('skip-btn-en');            
-            // Boutons de sélection de langue
-            const selectFrBtn = document.getElementById('select-fr');
-            const selectEnBtn = document.getElementById('select-en');
+            // Buttons
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const skipBtn = document.getElementById('skip-btn');
             
             // Navigation dots
             const dots = document.querySelectorAll('.progress-dot');
             
-            // Fonction pour mettre à jour l'affichage des boutons de langue
-            function updateLanguageButtons() {
-                if (selectedLanguage === 'fr') {
-                    selectFrBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
-                    selectFrBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    selectEnBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    selectEnBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
-                } else if (selectedLanguage === 'en') {
-                    selectEnBtn.classList.remove('bg-gray-700', 'hover:bg-gray-800');
-                    selectEnBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                    selectFrBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    selectFrBtn.classList.add('bg-gray-700', 'hover:bg-gray-800');
-                }
-            }
-            
-            // Fonction pour obtenir les bons boutons selon la langue
-            function getCurrentButtons() {
-                if (selectedLanguage === 'fr') {
-                    return {
-                        prevBtn: prevBtnFr,
-                        nextBtn: nextBtnFr,
-                        skipBtn: skipBtnFr
-                    };
-                } else if (selectedLanguage === 'en') {
-                    return {
-                        prevBtn: prevBtnEn,
-                        nextBtn: nextBtnEn,
-                        skipBtn: skipBtnEn
-                    };
-                }
-                // Par défaut, retourner les boutons français
-                return {
-                    prevBtn: prevBtnFr,
-                    nextBtn: nextBtnFr,
-                    skipBtn: skipBtnFr
-                };
-            }
-            
-            if (!prevBtnFr || !nextBtnFr || !skipBtnFr || !prevBtnEn || !nextBtnEn || !skipBtnEn) {
-                console.error('Certains éléments de navigation ne sont pas trouvés');
+            if (!prevBtn || !nextBtn || !skipBtn) {
+                console.error('Some navigation elements are not found');
                 return;
             }
             
@@ -290,17 +159,17 @@
             function showSlide(slideNumber) {
                 // Protection contre les valeurs invalides
                 if (slideNumber < 1 || slideNumber > totalSlides) {
-                    console.error('Numéro de diapositive invalide:', slideNumber);
+                    console.error('Invalid slide number:', slideNumber);
                     return;
                 }
                 
                 if (isTransitioning) {
-                    console.log('Transition en cours, action ignorée');
+                    console.log('Transition in progress, action ignored');
                     return;
                 }
                 
                 isTransitioning = true;
-                console.log('Affichage de la diapositive', slideNumber);
+                console.log('Showing slide', slideNumber);
                 
                 // Masquer toutes les diapositives
                 const allSlides = document.querySelectorAll('.onboarding-slide');
@@ -313,7 +182,7 @@
                 // Afficher la diapositive actuelle
                 const targetSlide = document.getElementById(`slide-${slideNumber}`);
                 if (!targetSlide) {
-                    console.error(`La diapositive #${slideNumber} est introuvable`);
+                    console.error(`Slide #${slideNumber} not found`);
                     isTransitioning = false;
                     return;
                 }
@@ -331,35 +200,12 @@
                         dot.classList.remove('active');
                     }
                 });
-                  // Obtenir les boutons selon la langue actuelle
-                const buttons = getCurrentButtons();
                 
                 // Masquer le bouton Précédent sur la première diapositive
-                if (buttons.prevBtn) {
-                    buttons.prevBtn.style.visibility = slideNumber === 1 ? 'hidden' : 'visible';
-                }
+                prevBtn.style.visibility = slideNumber === 1 ? 'hidden' : 'visible';
                 
                 // Changer le texte du bouton Suivant sur la dernière diapositive
-                if (buttons.nextBtn) {
-                    if (selectedLanguage === 'fr') {
-                        buttons.nextBtn.textContent = slideNumber === totalSlides ? 'Terminer' : 'Suivant';
-                    } else if (selectedLanguage === 'en') {
-                        buttons.nextBtn.textContent = slideNumber === totalSlides ? 'Finish' : 'Next';
-                    }
-                }
-                
-                // Désactiver le bouton Suivant sur la première slide si aucune langue n'est sélectionnée
-                if (slideNumber === 1 && !selectedLanguage) {
-                    if (buttons.nextBtn) {
-                        buttons.nextBtn.disabled = true;
-                        buttons.nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    }
-                } else {
-                    if (buttons.nextBtn) {
-                        buttons.nextBtn.disabled = false;
-                        buttons.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    }
-                }
+                nextBtn.textContent = slideNumber === totalSlides ? 'Get Started' : 'Next';
                 
                 // Mettre à jour la variable globale
                 currentSlide = slideNumber;
@@ -367,111 +213,37 @@
                 // Réactiver les transitions après un court délai
                 setTimeout(() => {
                     isTransitioning = false;
-                }, 500); // Attendre la fin de l'animation de transition (0.5s)            
+                }, 500); // Attendre la fin de l'animation de transition (0.5s)
             }
             
-            // Gestionnaires d'événements pour tous les boutons (français et anglais)
-            function setupButtonEventListeners() {
-                // Boutons Précédent
-                [prevBtnFr, prevBtnEn].forEach(btn => {
-                    if (btn) {
-                        btn.addEventListener('click', () => {
-                            if (currentSlide > 1 && !isTransitioning) {
-                                showSlide(currentSlide - 1);
-                            }
-                        });
-                    }
-                });
-                
-                // Boutons Suivant
-                [nextBtnFr, nextBtnEn].forEach(btn => {
-                    if (btn) {
-                        btn.addEventListener('click', () => {
-                            if (currentSlide < totalSlides && !isTransitioning) {
-                                showSlide(currentSlide + 1);
-                            } else if (currentSlide === totalSlides) {
-                                // Rediriger vers la version choisie
-                                if (selectedLanguage === 'fr') {
-                                    window.location.href = 'fr/index.html';
-                                } else if (selectedLanguage === 'en') {
-                                    window.location.href = 'en/index.html';
-                                } else {
-                                    // Par défaut, rediriger vers le français
-                                    window.location.href = 'fr/index.html';
-                                }
-                            }
-                        });
-                    }
-                });
-                
-                // Boutons Passer
-                [skipBtnFr, skipBtnEn].forEach(btn => {
-                    if (btn) {
-                        btn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            // Si une langue a été sélectionnée, rediriger vers cette version
-                            if (selectedLanguage === 'fr') {
-                                window.location.href = 'fr/index.html';
-                            } else if (selectedLanguage === 'en') {
-                                window.location.href = 'en/index.html';
-                            } else {
-                                // Sinon, afficher la première diapositive pour forcer un choix de langue
-                                showSlide(1);
-                            }
-                        });
-                    }
-                });            }
+            // Event listeners for buttons
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 1 && !isTransitioning) {
+                    showSlide(currentSlide - 1);
+                }
+            });
             
-            // Appeler la fonction pour configurer les événements
-            setupButtonEventListeners();
-            // Gestionnaire de clic pour les boutons de langue
-            if (selectFrBtn) {
-                selectFrBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    selectedLanguage = 'fr';
-                    switchLanguage('fr');
-                    updateLanguageButtons();
-                    
-                    // Activer les boutons Suivant pour toutes les langues
-                    [nextBtnFr, nextBtnEn].forEach(btn => {
-                        if (btn) {
-                            btn.disabled = false;
-                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        }
-                    });
-                });
-            }
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < totalSlides && !isTransitioning) {
+                    showSlide(currentSlide + 1);
+                } else if (currentSlide === totalSlides) {
+                    // Redirect to English version by default
+                    window.location.href = 'en/index.html';
+                }
+            });
             
-            if (selectEnBtn) {
-                selectEnBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    selectedLanguage = 'en';
-                    switchLanguage('en');
-                    updateLanguageButtons();
-                    
-                    // Activer les boutons Suivant pour toutes les langues
-                    [nextBtnFr, nextBtnEn].forEach(btn => {
-                        if (btn) {
-                            btn.disabled = false;
-                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                        }
-                    });
-                });
-            }
+            skipBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Redirect to English version
+                window.location.href = 'en/index.html';
+            });
             
             // Rendre les points cliquables
             dots.forEach((dot, index) => {
                 dot.addEventListener('click', () => {
                     const slideNumber = index + 1;
-                    
-                    // Empêcher la navigation si aucune langue n'est sélectionnée et qu'on essaie d'aller après la slide 1
-                    if (slideNumber > 1 && !selectedLanguage) {
-                        console.log('Sélectionnez une langue avant de continuer');
-                        return;
-                    }
-                    
                     if (!isTransitioning && slideNumber !== currentSlide) {
-                        console.log('Clic sur point pour diapositive', slideNumber);
+                        console.log('Clicked dot for slide', slideNumber);
                         showSlide(slideNumber);
                     }
                 });
@@ -479,22 +251,10 @@
             
             // Navigation au clavier
             document.addEventListener('keydown', (e) => {
-                // Empêcher la navigation si aucune langue n'est sélectionnée et qu'on essaie d'aller après la slide 1
-                if (e.key === 'ArrowRight' && currentSlide === 1 && !selectedLanguage) {
-                    return;
-                }
-                  if (e.key === 'ArrowRight' && currentSlide < totalSlides && !isTransitioning) {
+                if (e.key === 'ArrowRight' && currentSlide < totalSlides && !isTransitioning) {
                     showSlide(currentSlide + 1);
                 } else if (e.key === 'ArrowLeft' && currentSlide > 1 && !isTransitioning) {
                     showSlide(currentSlide - 1);
-                }
-            });
-            
-            // Désactiver initialement tous les boutons Suivant
-            [nextBtnFr, nextBtnEn].forEach(btn => {
-                if (btn) {
-                    btn.disabled = true;
-                    btn.classList.add('opacity-50', 'cursor-not-allowed');
                 }
             });
             
@@ -515,7 +275,7 @@
             // Vérifier si l'initialisation a déjà eu lieu
             const slide1 = document.getElementById('slide-1');
             if (!slide1 || !slide1.classList.contains('active')) {
-                console.log('Réinitialisation après chargement complet');
+                console.log('Re-initializing after complete load');
                 initializeOnboarding();
             }
         });
