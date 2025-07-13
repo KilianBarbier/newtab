@@ -275,7 +275,6 @@
       const position = document
         .getElementById("contextMenu")
         .getAttribute("data-position");
-      const positionNum = parseInt(position);
       const activeTab = localStorage.getItem("activeTab") || "personal";
       
       // Get shortcuts from localStorage
@@ -286,34 +285,13 @@
       // Remove the shortcut from stored data
       delete shortcuts[position];
       
-      // Count the number of shortcuts actually used
-      let lastUsedPosition = -1;
-      for (let i = 0; i < 100; i++) { // Examine a large number to be sure
-        if (shortcuts[i.toString()]) {
-          lastUsedPosition = Math.max(lastUsedPosition, i);
-        }
-      }
-      
-      // Calculate the new shortcut count
-      // Round to the next multiple of 4
-      const newCount = Math.ceil((lastUsedPosition + 1) / 4) * 4;
-      // Ensure a minimum of 4 shortcuts
-      const shortcutCount = Math.max(4, newCount);
-      
-      // Directly remove the element from the DOM
-      const shortcutElements = document.querySelectorAll(".shortcut-container");
-      if (shortcutElements[positionNum]) {
-        shortcutElements[positionNum].remove();
-      }
-      
       // Update localStorage
-      localStorage.setItem("shortcutCount", shortcutCount);
       localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
       
       closeContextMenu();
       
-      // Reload shortcuts without refreshing the page
+      // Reload shortcuts to update the display (this will show "Add a shortcut" for the empty slot)
       reloadShortcuts();
     }
 
