@@ -790,42 +790,7 @@
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
-      class="w-72 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block">
-      <div class="text-xl font-medium text-white mb-8">Quick Access</div>
-
-      <!--BOOKMARK SECTION-->
-
-      <!-- <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
-          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7.833 2c-.507 0-.98.216-1.318.576A1.92 1.92 0 0 0 6 3.89V21a1 1 0 0 0 1.625.78L12 18.28l4.375 3.5A1 1 0 0 0 18 21V3.889c0-.481-.178-.954-.515-1.313A1.808 1.808 0 0 0 16.167 2H7.833Z"/>
-          </svg>
-          
-          <h3 class="text-white font-medium text-lg">Bookmarks</h3>
-        </div> 
-        
-        <div
-          class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
-        >
-          <img
-            src="https://kbarbier.fr/wp-content/uploads/2025/03/cropped-Plan-de-travail-1@0.35x-192x192.png"
-            class="pl-2 w-9"
-            alt="Lien vers kbarbier.fr"
-          />
-          <a href="https://kbarbier.fr" class="block w-full"
-            >kbarbier.fr</a
-          >
-        </div>
-        -->
-
-      <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
-        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-          width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-          <path
-            d="M13.849 4.22c-.684-1.626-3.014-1.626-3.698 0L8.397 8.387l-4.552.361c-1.775.14-2.495 2.331-1.142 3.477l3.468 2.937-1.06 4.392c-.413 1.713 1.472 3.067 2.992 2.149L12 19.35l3.897 2.354c1.52.918 3.405-.436 2.992-2.15l-1.06-4.39 3.468-2.938c1.353-1.146.633-3.336-1.142-3.477l-4.552-.36-1.754-4.17Z" />
-        </svg>
-
-        <h3 class="text-white font-medium text-lg">Tabs</h3>
-      </div>
+      class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
 
       <div
         class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
@@ -845,36 +810,79 @@
         </svg>
         <a id="pro" class="block w-full">Professional</a>
       </div>
-      <!-- My apps section -->
-      <div class="mt-6 mb-2 pr-4 pt-4 pb-4 pl-2 flex items-center gap-2">
-        <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      <!-- Weather Widget -->
+      <div class="mt-6 mb-2 pr-4 pt-4 pb-2 pl-2 flex items-center gap-2">
+        <svg class="w-6 h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round"
-            d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
-        <h3 class="text-white font-medium text-lg">Kiki's Links</h3>
+        <h3 class="text-white font-medium text-lg">Weather</h3>
       </div>
 
-      <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
-        <img src="https://kbarbier.fr/wp-content/uploads/2025/03/cropped-Plan-de-travail-1@0.35x.png" class="pl-2 w-9"
-          alt="KBARBIER.FR logo" />
-        <a href="https://kbarbier.fr" class="block w-full">KBARBIER.FR</a>
-      </div>
-      <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
-        <img src="https://dev.kilianbarbier.fr/media/img/coolnotes_128.png" class="pl-2 w-9" alt="CoolNotes" />
-        <a href="https://dev.kilianbarbier.fr" class="block w-full">CoolNotes</a>
-      </div>
-      <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30">
-        <img src="https://dev.kilianbarbier.fr/media/img/coolnotes_128.png" class="pl-2 w-9" alt="CoolNotes" />
-        <a href="https://dev.kilianbarbier.fr/fr" class="block w-full">CoolNotes FR</a>
+      <div id="weather-widget"
+        class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+        style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+        
+        <!-- City Input -->
+        <div id="weather-input" class="mb-4">
+          <div class="flex gap-2">
+            <input type="text" 
+                   id="weather-city-input" 
+                   placeholder="Enter city name..." 
+                   class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
+                   onkeypress="if(event.key==='Enter') loadWeatherForCity()">
+            <button onclick="loadWeatherForCity()" 
+                    class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
+              Get Weather
+            </button>
+          </div>
+          <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
+        </div>
+        
+        <div id="weather-loading" class="hidden flex items-center justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <span class="ml-2">Loading weather...</span>
+        </div>
+        
+        <div id="weather-content" class="hidden">
+          <!-- Weather Header -->
+          <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
+            <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider" style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
+          </div>
+          
+          <!-- Current Weather Icon and Temperature -->
+          <div class="text-center mb-6">
+            <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]">☀️</div>
+            <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
+            <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
+            <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
+          </div>
+          
+          <!-- Weather Forecast -->
+          <div id="weather-forecast" class="space-y-3">
+            <!-- Forecast items will be populated here -->
+          </div>
+          
+          <button onclick="showCityInput()" 
+                  class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
+            Change city
+          </button>
+        </div>
+        
+        <div id="weather-error" class="hidden text-center py-4">
+          <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
+          <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
+          <button onclick="showCityInput()" class="text-sm text-blue-300 hover:text-blue-200 underline">
+            Try again
+          </button>
+        </div>
       </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col lg:ml-72 pb-20 lg:pb-0"> <!-- Hello Kilian Title -->
+    <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0"> <!-- Hello Kilian Title -->
       <!-- Search Bar -->
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
@@ -1303,7 +1311,7 @@
   <!-- Ajout d'un modal pour afficher la sidebar sur mobile -->
   <div id="sidebarModal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[60] hidden">
     <div
-      class="fixed bottom-0 inset-x-0 rounded-t-3xl bg-white/90 backdrop-blur-xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto transition-transform duration-300 transform translate-y-0">
+      class="fixed bottom-0 inset-x-0 rounded-t-3xl bg-white/90 backdrop-blur-xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto scrollbar-hide transition-transform duration-300 transform translate-y-0">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-medium text-white">Quick Access</h2>
         <button id="closeSidebar" class="p-2 text-white rounded-full bg-white/20 hover:bg-white/30">
@@ -1320,6 +1328,17 @@
 
   <!-- Ajout des styles pour le menu mobile -->
   <style>
+    /* Hide scrollbar for sidebar */
+    .scrollbar-hide {
+      /* Firefox */
+      scrollbar-width: none;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      /* Chrome, Safari and Opera */
+      display: none;
+    }
+
     @media (min-width: 1024px) {
       main {
         margin-left: 0 !important;
@@ -1387,7 +1406,243 @@
           document.body.style.overflow = "";
         }
       });
+
+      // Check if there's a saved city and load its weather, otherwise show input
+      const savedCity = localStorage.getItem('lastWeatherCity');
+      if (savedCity) {
+        document.getElementById('weather-city-input').value = savedCity;
+        loadWeather(savedCity);
+      }
     });
+
+    // Weather Widget Functions
+    function getWeatherIcon(weatherCode, isDay) {
+      const iconMap = {
+        0: { day: '<img src="sunny.png" alt="Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Clear sky
+        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Mainly clear
+        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" />' }, // Partly cloudy
+        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />' }, // Overcast
+        45: { day: '🌫️', night: '🌫️' }, // Fog
+        48: { day: '🌫️', night: '�️' }, // Depositing rime fog
+        51: { day: '🌦️', night: '🌧️' }, // Light drizzle
+        53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
+        55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
+        61: { day: '🌧️', night: '🌧️' }, // Slight rain
+        63: { day: '🌧️', night: '🌧️' }, // Moderate rain
+        65: { day: '🌧️', night: '🌧️' }, // Heavy rain
+        71: { day: '🌨️', night: '🌨️' }, // Slight snow
+        73: { day: '🌨️', night: '🌨️' }, // Moderate snow
+        75: { day: '❄️', night: '❄️' }, // Heavy snow
+        77: { day: '❄️', night: '❄️' }, // Snow grains
+        80: { day: '🌦️', night: '🌧️' }, // Slight rain showers
+        81: { day: '🌧️', night: '🌧️' }, // Moderate rain showers
+        82: { day: '⛈️', night: '⛈️' }, // Violent rain showers
+        85: { day: '🌨️', night: '🌨️' }, // Slight snow showers
+        86: { day: '❄️', night: '❄️' }, // Heavy snow showers
+        95: { day: '⛈️', night: '⛈️' }, // Thunderstorm
+        96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
+        99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
+      };
+      
+      const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
+      return isDay ? icons.day : icons.night;
+    }
+
+    // Helper function to get icon for forecast cards (smaller size)
+    function getWeatherIconSmall(weatherCode, isDay) {
+      const iconMap = {
+        0: { day: '<img src="sunny.png" alt="Sunny" class="w-8 h-8" />', night: '🌙' }, // Clear sky
+        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-8 h-8" />', night: '🌙' }, // Mainly clear
+        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-8 h-8" />' }, // Partly cloudy
+        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />' }, // Overcast
+        45: { day: '🌫️', night: '🌫️' }, // Fog
+        48: { day: '🌫️', night: '🌫️' }, // Depositing rime fog
+        51: { day: '🌦️', night: '🌧️' }, // Light drizzle
+        53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
+        55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
+        61: { day: '🌧️', night: '🌧️' }, // Slight rain
+        63: { day: '🌧️', night: '🌧️' }, // Moderate rain
+        65: { day: '🌧️', night: '🌧️' }, // Heavy rain
+        71: { day: '🌨️', night: '🌨️' }, // Slight snow
+        73: { day: '🌨️', night: '🌨️' }, // Moderate snow
+        75: { day: '❄️', night: '❄️' }, // Heavy snow
+        77: { day: '❄️', night: '❄️' }, // Snow grains
+        80: { day: '🌦️', night: '🌧️' }, // Slight rain showers
+        81: { day: '🌧️', night: '🌧️' }, // Moderate rain showers
+        82: { day: '⛈️', night: '⛈️' }, // Violent rain showers
+        85: { day: '🌨️', night: '🌨️' }, // Slight snow showers
+        86: { day: '❄️', night: '❄️' }, // Heavy snow showers
+        95: { day: '⛈️', night: '⛈️' }, // Thunderstorm
+        96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
+        99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
+      };
+      
+      const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
+      return isDay ? icons.day : icons.night;
+    }
+
+    function getWeatherDescription(weatherCode) {
+      const descriptions = {
+        0: 'Clear sky',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Fog',
+        48: 'Depositing rime fog',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Dense drizzle',
+        61: 'Slight rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        71: 'Slight snow fall',
+        73: 'Moderate snow fall',
+        75: 'Heavy snow fall',
+        77: 'Snow grains',
+        80: 'Slight rain showers',
+        81: 'Moderate rain showers',
+        82: 'Violent rain showers',
+        85: 'Slight snow showers',
+        86: 'Heavy snow showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with slight hail',
+        99: 'Thunderstorm with heavy hail'
+      };
+      
+      return descriptions[weatherCode] || 'Unknown';
+    }
+
+    async function loadWeather(cityName) {
+      const weatherInput = document.getElementById('weather-input');
+      const weatherLoading = document.getElementById('weather-loading');
+      const weatherContent = document.getElementById('weather-content');
+      const weatherError = document.getElementById('weather-error');
+
+      // Show loading state
+      weatherInput.classList.add('hidden');
+      weatherLoading.classList.remove('hidden');
+      weatherContent.classList.add('hidden');
+      weatherError.classList.add('hidden');
+
+      try {
+        // Get coordinates for the city using a geocoding API
+        const geocodeResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`
+        );
+        
+        let latitude, longitude, locationDisplayName, countryName;
+        
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
+          if (geocodeData.length > 0) {
+            latitude = parseFloat(geocodeData[0].lat);
+            longitude = parseFloat(geocodeData[0].lon);
+            const addressParts = geocodeData[0].display_name.split(',');
+            locationDisplayName = addressParts[0].trim();
+            
+            // Try to extract country from address
+            const address = geocodeData[0].address || {};
+            countryName = address.country || addressParts[addressParts.length - 1].trim();
+          } else {
+            throw new Error('City not found');
+          }
+        } else {
+          throw new Error('Unable to find city coordinates');
+        }
+
+        // Fetch weather data with forecast using Open-Meteo API
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3`
+        );
+
+        if (!weatherResponse.ok) {
+          throw new Error('Weather API request failed');
+        }
+
+        const weatherData = await weatherResponse.json();
+        const current = weatherData.current;
+        const daily = weatherData.daily;
+
+        // Update weather display
+        const isDay = current.is_day === 1;
+        const weatherIcon = getWeatherIcon(current.weather_code, isDay);
+        const weatherDescription = getWeatherDescription(current.weather_code);
+
+        // Update main weather info
+        document.getElementById('weather-city-name').textContent = locationDisplayName.toUpperCase();
+        document.getElementById('weather-icon').innerHTML = weatherIcon;
+        document.getElementById('weather-temp').textContent = `${Math.round(current.temperature_2m)}°C`;
+        document.getElementById('weather-location').textContent = `${locationDisplayName}, ${countryName}`;
+        document.getElementById('weather-description').textContent = weatherDescription;
+
+        // Update forecast
+        updateWeatherForecast(daily);
+
+        // Show content
+        weatherLoading.classList.add('hidden');
+        weatherContent.classList.remove('hidden');
+
+        // Save the last searched city
+        localStorage.setItem('lastWeatherCity', cityName);
+
+      } catch (error) {
+        console.error('Weather loading error:', error);
+        
+        // Show error state
+        weatherLoading.classList.add('hidden');
+        weatherError.classList.remove('hidden');
+      }
+    }
+
+    function updateWeatherForecast(dailyData) {
+      const forecastContainer = document.getElementById('weather-forecast');
+      forecastContainer.innerHTML = '';
+
+      // Create forecast items for the next few days (skip today, start from tomorrow)
+      for (let i = 1; i < Math.min(dailyData.time.length, 3); i++) {
+        const date = new Date(dailyData.time[i]);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const weatherCode = dailyData.weather_code[i];
+        const maxTemp = Math.round(dailyData.temperature_2m_max[i]);
+        const minTemp = Math.round(dailyData.temperature_2m_min[i]);
+        const icon = getWeatherIconSmall(weatherCode, true); // Use day icon for forecast with smaller size
+        const description = getWeatherDescription(weatherCode);
+
+        const forecastItem = document.createElement('div');
+        forecastItem.className = 'flex items-center justify-start bg-white/20 rounded-lg p-3';
+        forecastItem.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl flex items-center">${icon}</span>
+            <div class="text-left">
+              <div class="text-white font-medium">${dayName} - ${description}</div>
+              <div class="text-white/70 text-sm">Max ${maxTemp}°C Min ${minTemp}°C</div>
+            </div>
+          </div>
+        `;
+
+        forecastContainer.appendChild(forecastItem);
+      }
+    }
+
+    function showCityInput() {
+      document.getElementById('weather-input').classList.remove('hidden');
+      document.getElementById('weather-loading').classList.add('hidden');
+      document.getElementById('weather-content').classList.add('hidden');
+      document.getElementById('weather-error').classList.add('hidden');
+      document.getElementById('weather-city-input').focus();
+    }
+
+    function loadWeatherForCity() {
+      const cityInput = document.getElementById('weather-city-input');
+      const cityName = cityInput.value.trim();
+      
+      if (!cityName) {
+        alert('Please enter a city name');
+        return;
+      }
+      
+      loadWeather(cityName);
+    }
   </script>
   <script src="aurora-svelte.js"></script>
 </body>
