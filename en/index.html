@@ -458,6 +458,16 @@
         });
       });
 
+      // Close dropdown if clicked elsewhere
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".relative")) {
+          const dropdown = document.getElementById("searchEngineDropdown");
+          if (dropdown) {
+            dropdown.classList.add("hidden");
+          }
+        }
+      });
+
       // Initialiser l'onglet actif
       const activeTab = localStorage.getItem("activeTab") || "personal";
       switchTab(activeTab);
@@ -1149,106 +1159,6 @@
           </select>
         </div>
 
-        <script>
-          document
-            .getElementById("currentSearch")
-            .addEventListener("click", () => {
-              const dropdown = document.getElementById(
-                "searchEngineDropdown"
-              );
-              dropdown.classList.toggle("hidden");
-            });
-
-          document.querySelectorAll(".search-option").forEach((option) => {
-            option.addEventListener("click", (e) => {
-              const value = e.currentTarget.dataset.value;
-              const img = e.currentTarget.querySelector("img");
-
-              // Mettre à jour l'icône visible
-              document.querySelector("#currentSearch img").src = img.src;
-
-              // Mettre à jour le select caché
-              document.getElementById("searchEngine").value = value;
-
-              // Ajouter la commande au début de la recherche
-              const searchInput = document.getElementById("searchInput");
-              const currentText = searchInput.value.trim();
-
-              // Si le texte commence déjà par une commande, on la remplace
-              let newText = currentText;
-              if (currentText.startsWith("/")) {
-                // Correction ici : startswith -> startsWith
-                const parts = currentText.substring(1).split(" ");
-                const possibleCommand = parts[0].toLowerCase();
-                // Liste des commandes valides (doit correspondre à handleSearch)
-                const validCommands = [
-                  "g",
-                  "yt",
-                  "gh",
-                  "w",
-                  "r",
-                  "so",
-                  "a",
-                  "n",
-                  "sp",
-                  "tw",
-                  "ig",
-                  "maps",
-                  "i",
-                ];
-                if (validCommands.includes(possibleCommand)) {
-                  // Prendre tout sauf la commande
-                  newText = parts.slice(1).join(" ");
-                }
-              }
-
-              // Garantir qu'il y a toujours un espace après la commande si newText n'est pas vide
-              if (newText.length > 0) {
-                searchInput.value = `/${value} ${newText}`;              } else {
-                // If no text, just add the command with a space at the end to make typing easier
-                searchInput.value = `/${value} `;
-              }              // Close the dropdown
-              document
-                .getElementById("searchEngineDropdown")
-                .classList.add("hidden");
-
-              // Refocus on the search field
-              searchInput.focus();
-              // Place cursor at the end of text
-              searchInput.selectionStart = searchInput.value.length;
-              searchInput.selectionEnd = searchInput.value.length;
-            });
-          });          // Close dropdown if clicked elsewhere
-          document.addEventListener("click", (e) => {
-            if (!e.target.closest(".relative")) {
-              document
-                .getElementById("searchEngineDropdown")
-                .classList.add("hidden");
-            }
-          });
-
-          // Make sure the search button triggers search with the selected engine
-          document
-            .querySelector(".absolute svg")
-            .addEventListener("click", function (event) {
-              handleSearch(event);
-            });
-
-          // Ensure document is ready
-          document.addEventListener("DOMContentLoaded", () => {
-            // Reset search listeners to avoid duplicates
-            const searchInput = document.getElementById("searchInput");
-            const searchIcon = document.querySelector(".absolute svg");
-
-            // Remove existing listeners if any
-            searchInput.removeEventListener("keydown", handleSearch);
-            searchIcon.removeEventListener("click", handleSearch);
-
-            // Add new listeners
-            searchInput.addEventListener("keydown", handleSearch);
-            searchIcon.addEventListener("click", handleSearch);
-          });
-        </script>
         <div class="relative flex-1">
           <input type="text" placeholder="Search..." id="searchInput"
             class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
