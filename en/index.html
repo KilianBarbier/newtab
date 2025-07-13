@@ -704,7 +704,9 @@
 
       // Fallback: execute the search via handleSearch
       handleSearch({ type: "click" });
-    }function reloadShortcuts() {
+    }
+    
+    function reloadShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
@@ -787,7 +789,8 @@
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${tab}`) || "{}");
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
-      // Reload shortcuts        reloadShortcuts(); // Au lieu de reloadWithTransition()
+      // Reload shortcuts
+      reloadShortcuts();
     }    </script>
   <script src="aurora-animation.js"></script>
 </head>
