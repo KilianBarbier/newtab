@@ -271,7 +271,69 @@
     function editShortcut(position) {
       openConfigModal(position, true);
       closeContextMenu();
-    }    function deleteShortcut() {
+    }
+
+    function pinToBothTabs(position) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const currentShortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      // Vérifier que le raccourci existe dans l'onglet actuel
+      if (!currentShortcuts[position]) {
+        console.error("Shortcut not found in current tab");
+        closeContextMenu();
+        return;
+      }
+      
+      const shortcutData = currentShortcuts[position];
+      
+      // Sauvegarder dans l'onglet personnel
+      const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
+      personalShortcuts[position] = { ...shortcutData };
+      localStorage.setItem("shortcuts_personal", JSON.stringify(personalShortcuts));
+      
+      // Sauvegarder dans l'onglet professionnel
+      const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
+      professionalShortcuts[position] = { ...shortcutData };
+      localStorage.setItem("shortcuts_professional", JSON.stringify(professionalShortcuts));
+      
+      // Mettre à jour le localStorage principal avec l'onglet actuel
+      localStorage.setItem("shortcuts", JSON.stringify(currentShortcuts));
+      
+      closeContextMenu();
+      
+      // Afficher une notification de succès
+      showNotification(`Shortcut "${shortcutData.title}" pinned to both tabs!`);
+      
+      // Recharger les raccourcis pour refléter les changements
+      reloadShortcuts();
+    }
+
+    function showNotification(message) {
+      // Créer un élément de notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
+      notification.textContent = message;
+      
+      // Ajouter au DOM
+      document.body.appendChild(notification);
+      
+      // Animation d'entrée
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 10);
+      
+      // Supprimer après 3 secondes
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    function deleteShortcut() {
       const position = document
         .getElementById("contextMenu")
         .getAttribute("data-position");
@@ -1304,6 +1366,10 @@
           style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
           Edit Shortcut
         </button>
+        <button onclick="pinToBothTabs(document.getElementById('contextMenu').getAttribute('data-position'))"
+          class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
+          Pin to both tabs
+        </button>
         <button onclick="deleteShortcut()"
           class="w-full border-b-0 border-r-0 border-l-0 px-4 py-4 text-left hover:bg-red-500/20 text-red-300 transition-colors duration-200 transform hover:translate-y-0"
           style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
@@ -1392,7 +1458,7 @@
           class="flex flex-col items-center py-1 px-3 text-white/80 hover:text-white transition-colors rounded-xl">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z">
+              d="M5 12h.01M12 12h.01M19 12h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
             </path>
           </svg>
           <span class="text-xs">Quick Access</span>
@@ -1521,7 +1587,7 @@
         2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" />' }, // Partly cloudy
         3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />' }, // Overcast
         45: { day: '🌫️', night: '🌫️' }, // Fog
-        48: { day: '🌫️', night: '�️' }, // Depositing rime fog
+        48: { day: '🌫️', night: '🌫️' }, // Depositing rime fog
         51: { day: '🌦️', night: '🌧️' }, // Light drizzle
         53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
         55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
