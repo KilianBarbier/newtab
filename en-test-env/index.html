@@ -344,16 +344,41 @@
         localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
       );
       
-      // Remove the shortcut from stored data
-      delete shortcuts[position];
+      // Check if the shortcut is already empty (placeholder)
+      const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+      const iconContainer = shortcutElement?.querySelector(".shortcut-icon");
+      const isEmpty = iconContainer?.getAttribute("data-empty") === "true";
       
-      // Update localStorage
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      if (isEmpty) {
+        // If it's already empty, remove it completely from the grid
+        const currentShortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
+        const positionNum = parseInt(position);
+        
+        // Shift all shortcuts after this position down by one
+        const newShortcuts = {};
+        Object.keys(shortcuts).forEach(key => {
+          const keyNum = parseInt(key);
+          if (keyNum < positionNum) {
+            newShortcuts[key] = shortcuts[key];
+          } else if (keyNum > positionNum) {
+            newShortcuts[(keyNum - 1).toString()] = shortcuts[key];
+          }
+        });
+        
+        // Reduce shortcut count by 1
+        localStorage.setItem("shortcutCount", (currentShortcutCount - 1).toString());
+        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(newShortcuts));
+        localStorage.setItem("shortcuts", JSON.stringify(newShortcuts));
+      } else {
+        // If it has content, just clear it (make it a placeholder)
+        delete shortcuts[position];
+        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      }
       
       closeContextMenu();
       
-      // Reload shortcuts to update the display (this will show "Add a shortcut" for the empty slot)
+      // Reload shortcuts to update the display
       reloadShortcuts();
     }
 
