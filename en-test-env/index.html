@@ -1,0 +1,2478 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Tab</title>  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+  <link rel="icon" href="../media/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="../media/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="../media/favicon.ico"> 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sf: [
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "San Francisco",
+              "Helvetica Neue",
+              "sans-serif",
+            ],
+            patrick: [
+              "Patrick Hand",
+              "cursive",
+            ],
+          },
+        },
+      },
+    };
+  </script>
+  <script>
+    async function getFaviconUrl(url) {
+      try {        const domain = new URL(url).hostname;
+        // Directly use the Google Favicons API which is more reliable
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      } catch (e) {        console.error("Error retrieving favicon:", e);
+        // Return a default icon in case of error
+        return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>';
+      }
+    }
+
+    function handleShortcutClick(event, position) {
+      event.preventDefault();
+      const shortcut = document.querySelector(
+        `[data-position="${position}"]`
+      );
+      const iconContainer = shortcut.querySelector(".shortcut-icon");
+      const isEmpty = iconContainer.getAttribute("data-empty") === "true";
+
+      if (event.type === "contextmenu") {
+        showContextMenu(event, position);
+      } else if (isEmpty) {
+        openConfigModal(position);
+      } else {
+        window.location.href = shortcut.href;
+      }
+    }
+
+    function showContextMenu(event, position) {
+      event.preventDefault();
+      const contextMenu = document.getElementById("contextMenu");
+      contextMenu.style.left = `${event.pageX}px`;
+      contextMenu.style.top = `${event.pageY}px`;
+      contextMenu.setAttribute("data-position", position);
+      contextMenu.classList.remove("hidden");
+      contextMenu.style.background = "none";
+      contextMenu.style.backgroundColor = "transparent";
+
+      document.addEventListener("click", closeContextMenu);
+    }
+
+    function closeContextMenu() {
+      document.getElementById("contextMenu").classList.add("hidden");
+      document.removeEventListener("click", closeContextMenu);
+    }
+
+    function generateShortcut(i) {
+      return `
+          <div class="shortcut-container" 
+             ondragover="handleDragOver(event)" 
+             ondrop="handleDrop(event, '${i}')"
+             ondragenter="handleDragEnter(event)"
+             ondragleave="handleDragLeave(event)">            <a href="#" 
+             draggable="true"
+             ondragstart="handleDragStart(event, '${i}')"
+             onclick="handleShortcutClick(event, '${i}')" 
+             oncontextmenu="handleShortcutClick(event, '${i}')"
+             data-position="${i}"
+             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+              <div class="text-center">
+                <div class="shortcut-icon" data-empty="true">
+                </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
+              </div>
+            </a>
+          </div>`;
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+    }
+
+    function handleDragEnter(event) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.add("bg-white/40");
+    }
+
+    function handleDragLeave(event) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.remove("bg-white/40");
+    }
+
+    async function handleDrop(event, newPosition) {
+      event.preventDefault();
+      const container = event.currentTarget;
+      container.querySelector("a").classList.remove("bg-white/40");      const oldPosition = event.dataTransfer.getData('text/plain');
+
+      // If it's an external drag (URL)
+      if (oldPosition === '') {
+        // Keep the existing logic for URL drop
+        const data = event.dataTransfer.getData("text");
+        if (!data) return;
+        try {
+          const url = new URL(data);
+          let title = "";
+          try {
+            const response = await fetch(url.href);
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            title = doc.title || url.hostname;
+          } catch (e) {
+            title = url.hostname;
+          }
+
+          const shortcuts = JSON.parse(
+            localStorage.getItem("shortcuts") || "{}"
+          );
+          const faviconUrl = await getFaviconUrl(url.href);
+          shortcuts[newPosition] = { title, url: url.href, faviconUrl };
+          localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+
+          reloadShortcuts(); // Instead of reloadWithTransition()
+        } catch (e) {
+          console.error("Invalid URL dropped:", e);
+        }
+        return;
+      }      // If it's an internal drag (rearrangement)
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+
+      // Exchange shortcuts
+      const temp = shortcuts[oldPosition];
+      shortcuts[oldPosition] = shortcuts[newPosition];
+      shortcuts[newPosition] = temp;
+
+      // Save changes
+      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+
+      // Reload shortcuts
+      reloadShortcuts();
+
+      // Remove temporary style classes
+      document.querySelectorAll('.shortcut-container a').forEach(el => {
+        el.classList.remove('opacity-50');
+      });
+    }
+
+    function handleDragStart(event, position) {
+      event.dataTransfer.setData('text/plain', position);
+      event.currentTarget.classList.add('opacity-50');
+    } function generateAddRowButton() {
+      return `
+          <button
+             onclick="addMoreShortcuts()"
+             class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 w-full"
+             id="addRowButton">
+            <div class="text-center">
+              <div class="flex justify-center mb-2">
+                <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>              <div class="text-white/70 font-medium">Add more shortcuts</div>
+            </div>
+          </button>`;
+    } function addMoreShortcuts() {
+      const grid = document.getElementById("shortcutGrid");
+      const currentCount =
+        document.querySelectorAll("[data-position]").length;
+      const addRowButton = document.getElementById("addRowButton");
+
+      for (let i = currentCount; i < currentCount + 4; i++) {
+        grid.insertBefore(
+          document
+            .createRange()
+            .createContextualFragment(generateShortcut(i)),
+          addRowButton
+        );
+      }
+
+      localStorage.setItem("shortcutCount", currentCount + 4);
+      reloadShortcuts(); // Au lieu de reloadWithTransition()
+    }    async function saveShortcut() {
+      const modal = document.getElementById("configModal");
+      const position = modal.getAttribute("data-position");
+      const title = document.getElementById("shortcutTitle").value;
+      let url = document.getElementById("shortcutUrl").value.trim();
+
+      if (!url.match(/^https?:\/\//i)) {
+        url = "https://" + url;
+      }
+
+      try {
+        const faviconUrl = await getFaviconUrl(url);
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const shortcuts = JSON.parse(
+          localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
+        );
+        shortcuts[position] = { title, url, faviconUrl };
+        localStorage.setItem(
+          `shortcuts_${activeTab}`,
+          JSON.stringify(shortcuts)
+        );
+        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+
+        closeConfigModal();
+        reloadShortcuts(); // Instead of reloadWithTransition()
+      } catch (e) {
+        console.error("Error saving shortcut:", e);
+      }
+    }    function openConfigModal(position) {
+      const modal = document.getElementById("configModal");
+      const titleInput = document.getElementById("shortcutTitle");
+
+      modal.setAttribute("data-position", position);
+      titleInput.value = "";
+      document.getElementById("shortcutUrl").value = "";
+      document.getElementById("saveButton").disabled = true;
+
+      modal.classList.remove("hidden");
+
+      // Improved focus method with multiple attempts
+      // First immediate attempt
+      titleInput.focus();
+
+      // Second attempt with a short delay
+      setTimeout(() => {
+        titleInput.focus();
+      }, 50);
+
+      // Third attempt with a longer delay to ensure the modal is fully rendered
+      setTimeout(() => {
+        titleInput.focus();
+        // Move cursor to the end of text
+        if (titleInput.value) {
+          titleInput.selectionStart = titleInput.value.length;
+          titleInput.selectionEnd = titleInput.value.length;
+        }
+      }, 150);
+    }
+
+    function closeConfigModal() {
+      document.getElementById("configModal").classList.add("hidden");
+    }
+
+    function editShortcut(position) {
+      openConfigModal(position, true);
+      closeContextMenu();
+    }
+
+    function pinToBothTabs(position) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const currentShortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      // Vérifier que le raccourci existe dans l'onglet actuel
+      if (!currentShortcuts[position]) {
+        console.error("Shortcut not found in current tab");
+        closeContextMenu();
+        return;
+      }
+      
+      const shortcutData = currentShortcuts[position];
+      
+      // Sauvegarder dans l'onglet personnel
+      const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
+      personalShortcuts[position] = { ...shortcutData };
+      localStorage.setItem("shortcuts_personal", JSON.stringify(personalShortcuts));
+      
+      // Sauvegarder dans l'onglet professionnel
+      const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
+      professionalShortcuts[position] = { ...shortcutData };
+      localStorage.setItem("shortcuts_professional", JSON.stringify(professionalShortcuts));
+      
+      // Mettre à jour le localStorage principal avec l'onglet actuel
+      localStorage.setItem("shortcuts", JSON.stringify(currentShortcuts));
+      
+      closeContextMenu();
+      
+      // Afficher une notification de succès
+      showNotification(`Shortcut "${shortcutData.title}" pinned to both tabs!`);
+      
+      // Recharger les raccourcis pour refléter les changements
+      reloadShortcuts();
+    }
+
+    function showNotification(message) {
+      // Créer un élément de notification
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
+      notification.textContent = message;
+      
+      // Ajouter au DOM
+      document.body.appendChild(notification);
+      
+      // Animation d'entrée
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 10);
+      
+      // Supprimer après 3 secondes
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    function deleteShortcut() {
+      const position = document
+        .getElementById("contextMenu")
+        .getAttribute("data-position");
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      
+      // Get shortcuts from localStorage
+      const shortcuts = JSON.parse(
+        localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
+      );
+      
+      // Remove the shortcut from stored data
+      delete shortcuts[position];
+      
+      // Update localStorage
+      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      
+      closeContextMenu();
+      
+      // Reload shortcuts to update the display (this will show "Add a shortcut" for the empty slot)
+      reloadShortcuts();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      let allowHardFocus = true;
+      
+      function focusSearch() {
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput && allowHardFocus) {
+          searchInput.focus();
+        }
+      }
+
+      // Focus initial et pendant les premières secondes
+      focusSearch();
+      setTimeout(focusSearch, 100);
+      
+      // Désactiver le hard focus après 3 secondes
+      setTimeout(() => {
+        allowHardFocus = false;
+      }, 3000);
+
+      // Garder seulement les événements essentiels après la période initiale
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && allowHardFocus) {
+          focusSearch();
+        }
+      });
+
+      window.addEventListener("focus", () => {
+        if (allowHardFocus) {
+          focusSearch();
+        }
+      });
+
+      const grid = document.getElementById("shortcutGrid");
+      const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "{}");
+      const shortcutCount = parseInt(
+        localStorage.getItem("shortcutCount") || "8"
+      );
+
+      for (let i = 0; i < shortcutCount; i++) {
+        grid.innerHTML += generateShortcut(i);
+      }
+
+      grid.innerHTML += generateAddRowButton();
+
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(
+          `[data-position="${position}"]`
+        );
+        if (shortcut) {
+          shortcut.href = data.url;
+          shortcut.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = data.url;
+          };
+          shortcut.querySelector(".shortcut-title").textContent = data.title;
+          const iconContainer = shortcut.querySelector(".shortcut-icon");
+          iconContainer.removeAttribute("data-empty");
+          iconContainer.innerHTML = `
+              <img src="${data.faviconUrl}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 alt="${data.title}" 
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+        }
+      });
+
+      const searchInput = document.getElementById("searchInput");
+      const searchButton = document.querySelector(".absolute svg");
+
+      searchInput.addEventListener("keydown", handleSearch);
+      searchButton.addEventListener("click", handleSearch);
+
+      const menuButton = document.getElementById("mobileMenuButton");
+      const sidebar = document.getElementById("sidebar");
+
+      if (menuButton) {
+        menuButton.addEventListener("click", () => {
+          sidebar.classList.toggle("mobile-hidden");
+          menuButton.classList.toggle("open");
+        });
+      }
+
+      const searchIcon = document.querySelector(".absolute svg");
+      const currentSearch = document.getElementById("currentSearch");
+
+      if (searchInput && searchIcon && currentSearch) {
+        searchInput.addEventListener("keydown", handleSearch);
+        searchIcon.addEventListener("click", handleSearch);
+        currentSearch.addEventListener("click", () => {
+          const dropdown = document.getElementById("searchEngineDropdown");
+          if (dropdown) {
+            dropdown.classList.toggle("hidden");
+          }
+        });
+      }
+
+      document.querySelectorAll(".search-option").forEach((option) => {
+        option.addEventListener("click", (e) => {
+          const value = e.currentTarget.dataset.value;
+          const img = e.currentTarget.querySelector("img");
+          const searchBtn = document.querySelector("#currentSearch img");
+
+          if (searchBtn && img) {
+            searchBtn.src = img.src;
+          }
+
+          const searchEngine = document.getElementById("searchEngine");
+          if (searchEngine) {
+            searchEngine.value = value;
+          }
+
+          const searchInput = document.getElementById("searchInput");
+          if (searchInput) {
+            const currentText = searchInput.value.trim();
+            let newText = currentText;
+
+            if (currentText.startsWith("/")) {
+              const parts = currentText.substring(1).split(" ");
+              const possibleCommand = parts[0].toLowerCase();
+              const validCommands = [
+                "g",
+                "yt",
+                "gh",
+                "w",
+                "r",
+                "so",
+                "a",
+                "n",
+                "sp",
+                "tw",
+                "ig",
+                "maps",
+                "i",
+              ];
+              if (validCommands.includes(possibleCommand)) {
+                newText = parts.slice(1).join(" ");
+              }
+            }
+
+            searchInput.value =
+              newText.length > 0 ? `/${value} ${newText}` : `/${value} `;
+            searchInput.focus();
+            searchInput.selectionStart = searchInput.value.length;
+            searchInput.selectionEnd = searchInput.value.length;
+          }
+
+          const dropdown = document.getElementById("searchEngineDropdown");
+          if (dropdown) {
+            dropdown.classList.add("hidden");
+          }
+        });
+      });
+
+      // Close dropdown if clicked elsewhere
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".relative")) {
+          const dropdown = document.getElementById("searchEngineDropdown");
+          if (dropdown) {
+            dropdown.classList.add("hidden");
+          }
+        }
+      });
+
+      // Initialiser l'onglet actif
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      switchTab(activeTab);
+    });
+
+    function handleSearch(event) {
+      if (
+        (event.type === "keydown" && event.key === "Enter") ||
+        event.type === "click"
+      ) {
+        event.preventDefault();
+
+        let query = document.getElementById("searchInput").value.trim();
+        let selectedEngine = document.getElementById("searchEngine").value;
+
+        const searchEngines = {
+          g: "https://www.google.com/search?q=",
+          yt: "https://www.youtube.com/results?search_query=",
+          gh: "https://github.com/search?q=",
+          w: "https://en.wikipedia.org/wiki/Special:Search?search=",
+          r: "https://www.reddit.com/search/?q=",
+          so: "https://stackoverflow.com/search?q=",
+          a: "https://www.amazon.fr/s?k=",
+          n: "https://www.netflix.com/search?q=",
+          sp: "https://open.spotify.com/search/results",
+          tw: "https://twitter.com/search?q=",
+          ig: "https://www.instagram.com/explore/tags/",
+          maps: "https://www.google.com/maps/search/",
+          i: "https://www.google.com/images?q=",
+          ddg: "https://duckduckgo.com/?q=",
+          px: "https://www.perplexity.ai/search?q=",
+        };      // Check if we should suggest an autocorrection
+      if (shouldSuggestAutocorrection(query)) {
+        // Display the autocorrection popup
+        showAutocorrectionModal(query);
+        return; // Stop execution here
+      }
+
+        if (query.startsWith("/")) {
+          const parts = query.substring(1).split(" ");
+          if (parts.length > 1) {
+            const possibleCommand = parts[0].toLowerCase();
+            if (searchEngines[possibleCommand]) {
+              selectedEngine = possibleCommand;
+              query = parts.slice(1).join(" ");
+            }
+          }
+        }
+
+        const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
+        if (query) {
+          window.location.href = searchUrl + encodeURIComponent(query);
+        }
+      }
+    }    // Function to check if we should suggest an autocorrection
+    function shouldSuggestAutocorrection(query) {
+      // Only suggest autocorrection IF the query starts with ":"
+      if (!query.startsWith(":")) {
+        return false;
+      }
+      // List of valid commands
+      const validSearchCommands = {
+        "g": "Google",
+        "yt": "YouTube",
+        "gh": "GitHub",
+        "w": "Wikipedia",
+        "r": "Reddit",
+        "so": "Stack Overflow",
+        "a": "Amazon",
+        "n": "Netflix",
+        "sp": "Spotify",
+        "tw": "Twitter",
+        "ig": "Instagram",
+        "maps": "Google Maps",
+        "i": "Google Images",
+        "ddg": "DuckDuckGo",
+        "px": "Perplexity AI"
+      };
+      // Extract the part after ":" (until the first space or end of string)
+      const commandPart = query.substring(1).split(" ")[0].toLowerCase();
+      // Check if this part matches a valid command
+      return Object.keys(validSearchCommands).includes(commandPart);
+    }    // Function to display the autocorrection modal
+    function showAutocorrectionModal(originalQuery) {
+      const correctedQuery = convertToSearchCommand(originalQuery);
+      document.getElementById("originalQuery").textContent = originalQuery;
+      document.getElementById("correctedQuery").textContent = correctedQuery;
+      document.getElementById("autocorrectionModal").classList.remove("hidden");
+      // Store queries for later use
+      document.getElementById("autocorrectionModal").setAttribute("data-original-query", originalQuery);
+      document.getElementById("autocorrectionModal").setAttribute("data-corrected-query", correctedQuery);
+      // Add listener for Shift+Y and Shift+N
+      function autocorrectKeyListener(e) {
+        if (e.shiftKey && (e.key === 'Y' || e.key === 'y')) {
+          executeCorrectedSearch();
+          document.removeEventListener('keydown', autocorrectKeyListener);
+        } else if (e.shiftKey && (e.key === 'N' || e.key === 'n')) {
+          executeOriginalSearch();
+          document.removeEventListener('keydown', autocorrectKeyListener);
+        }
+      }
+      document.addEventListener('keydown', autocorrectKeyListener);
+    }    // Function to convert a query to appropriate search
+    function convertToSearchCommand(query) {
+      // Complete list of valid search commands
+      const validSearchCommands = {
+        "g": "Google",
+        "yt": "YouTube",
+        "gh": "GitHub",
+        "w": "Wikipedia",
+        "r": "Reddit",
+        "so": "Stack Overflow",
+        "a": "Amazon",
+        "n": "Netflix",
+        "sp": "Spotify",
+        "tw": "Twitter",
+        "ig": "Instagram",
+        "maps": "Google Maps",
+        "i": "Google Images",
+        "ddg": "DuckDuckGo",
+        "px": "Perplexity AI"
+      };
+
+      // Get the currently selected engine
+      const currentEngine = document.getElementById("searchEngine").value;
+      const currentEngineName = validSearchCommands[currentEngine] || "Google";
+
+      // Remove the ":" at the beginning if present
+      if (query.startsWith(":")) {
+        query = query.substring(1);
+      }
+
+      // Convert to lowercase
+      const lowercaseQuery = query.toLowerCase().trim();
+
+      // Detect if the first word is a search command
+      let detectedCommand = null;
+      let searchTerms = lowercaseQuery;
+
+      // Check the first word (or letter)
+      const firstSpace = lowercaseQuery.indexOf(" ");
+      if (firstSpace > 0) {
+        const possibleCommand = lowercaseQuery.substring(0, firstSpace).toLowerCase();
+
+        // Strictly check if the command is in our list of valid commands
+        if (Object.keys(validSearchCommands).includes(possibleCommand)) {
+          detectedCommand = possibleCommand;
+          searchTerms = lowercaseQuery.substring(firstSpace + 1);
+        }
+        // Don't try to interpret any text as a command
+      } else if (Object.keys(validSearchCommands).includes(lowercaseQuery)) {
+        // If the entire query is exactly a valid command
+        detectedCommand = lowercaseQuery;
+        searchTerms = "";
+      }
+
+      // If a valid command was detected, use it
+      if (detectedCommand) {
+        document.getElementById("autocorrectionModal").querySelector("p.mt-2").textContent =
+          `The search will be performed on ${validSearchCommands[detectedCommand]}`;
+        return `/${detectedCommand} ${searchTerms}`.trim();
+      }
+
+      // By default, use the currently selected search engine with the entire query
+      document.getElementById("autocorrectionModal").querySelector("p.mt-2").textContent =
+        `The search will be performed on ${currentEngineName}`;
+      return `/${currentEngine} ${lowercaseQuery}`;
+    }    // Function to execute the original search
+    function executeOriginalSearch() {
+      const originalQuery = document.getElementById("autocorrectionModal").getAttribute("data-original-query");
+      document.getElementById("autocorrectionModal").classList.add("hidden");
+
+      // Get the currently selected search engine
+      let selectedEngine = document.getElementById("searchEngine").value;
+
+      // Directly extract search URLs to avoid going through the autocorrection process again
+      const searchEngines = {
+        g: "https://www.google.com/search?q=",
+        yt: "https://www.youtube.com/results?search_query=",
+        gh: "https://github.com/search?q=",
+        w: "https://en.wikipedia.org/wiki/Special:Search?search=",
+        r: "https://www.reddit.com/search/?q=",
+        so: "https://stackoverflow.com/search?q=",
+        a: "https://www.amazon.fr/s?k=",
+        n: "https://www.netflix.com/search?q=",
+        sp: "https://open.spotify.com/search/results",
+        tw: "https://twitter.com/search?q=",
+        ig: "https://www.instagram.com/explore/tags/",
+        maps: "https://www.google.com/maps/search/",
+        i: "https://www.google.com/images?q=",
+        ddg: "https://duckduckgo.com/?q=",
+        px: "https://www.perplexity.ai/search?q=",
+      };
+
+      // Check if the query starts with a specific command
+      if (originalQuery.startsWith("/")) {
+        const parts = originalQuery.substring(1).split(" ");
+        if (parts.length > 0 && searchEngines[parts[0].toLowerCase()]) {
+          selectedEngine = parts[0].toLowerCase();
+          query = parts.slice(1).join(" ");
+          window.location.href = searchEngines[selectedEngine] + encodeURIComponent(query);
+          return;
+        }
+      }
+
+      // If no specific command, use the original query directly
+      window.location.href = searchEngines[selectedEngine] + encodeURIComponent(originalQuery);
+    }    // Function to execute the corrected search
+    function executeCorrectedSearch() {
+      const correctedQuery = document.getElementById("autocorrectionModal").getAttribute("data-corrected-query");
+      document.getElementById("searchInput").value = correctedQuery;
+      document.getElementById("autocorrectionModal").classList.add("hidden");
+
+      // Extract the search command and search terms
+      if (correctedQuery.startsWith('/')) {
+        const parts = correctedQuery.substring(1).split(' ');
+        const command = parts[0].toLowerCase();
+        const searchTerms = parts.slice(1).join(' ');
+
+        const searchEngines = {
+          g: "https://www.google.com/search?q=",
+          yt: "https://www.youtube.com/results?search_query=",
+          gh: "https://github.com/search?q=",
+          w: "https://en.wikipedia.org/wiki/Special:Search?search=",
+          r: "https://www.reddit.com/search/?q=",
+          so: "https://stackoverflow.com/search?q=",
+          a: "https://www.amazon.fr/s?k=",
+          n: "https://www.netflix.com/search?q=",
+          sp: "https://open.spotify.com/search/results",
+          tw: "https://twitter.com/search?q=",
+          ig: "https://www.instagram.com/explore/tags/",
+          maps: "https://www.google.com/maps/search/",
+          i: "https://www.google.com/images?q=",
+          ddg: "https://duckduckgo.com/?q=",
+          px: "https://www.perplexity.ai/search?q=",
+        };
+
+        // If the command is valid, execute the search directly
+        if (searchEngines[command]) {
+          window.location.href = searchEngines[command] + encodeURIComponent(searchTerms);
+          return;
+        }
+      }
+
+      // Fallback: execute the search via handleSearch
+      handleSearch({ type: "click" });
+    }
+    
+    function reloadShortcuts() {
+      const grid = document.getElementById("shortcutGrid");
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+
+      // Supprimer tous les raccourcis existants mais garder le bouton d'ajout
+      const addRowButton = document.getElementById("addRowButton");
+      grid.innerHTML = '';
+
+      // Déterminer le nombre réel de raccourcis à afficher
+      const shortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
+      
+      // Recréer les raccourcis
+      for (let i = 0; i < shortcutCount; i++) {
+        grid.innerHTML += generateShortcut(i);
+      }
+
+      // Mettre à jour l'apparence des raccourcis avec les données stockées
+      for (const position in shortcuts) {
+        const shortcutData = shortcuts[position];
+        const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+        
+        if (shortcutElement && shortcutData) {
+          // Mettre à jour l'apparence du raccourci
+          const iconElement = shortcutElement.querySelector('.shortcut-icon');
+          const titleElement = shortcutElement.querySelector('.shortcut-title');
+          
+          if (shortcutData.iconURL) {
+            iconElement.innerHTML = `<img src="${shortcutData.iconURL}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded">`;
+            iconElement.setAttribute('data-empty', 'false');
+          }
+          
+          if (shortcutData.title) {
+            titleElement.textContent = shortcutData.title;
+          }
+          
+          if (shortcutData.url) {
+            shortcutElement.href = shortcutData.url;
+          }
+        }
+      }
+
+      // Remettre le bouton d'ajout
+      grid.appendChild(addRowButton);
+
+      // Mettre à jour les raccourcis avec leurs données
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(`[data-position="${position}"]`);
+        if (shortcut) {
+          shortcut.href = data.url;
+          shortcut.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = data.url;
+          };
+          shortcut.querySelector(".shortcut-title").textContent = data.title;
+          const iconContainer = shortcut.querySelector(".shortcut-icon");
+          iconContainer.removeAttribute("data-empty");
+          iconContainer.innerHTML = `
+              <img src="${data.faviconUrl}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 alt="${data.title}" 
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+        }
+      });
+    }
+
+    function switchTab(tab) {
+      // Don't do anything if we're already on the selected tab
+      if (localStorage.getItem("activeTab") === tab) {
+        return;
+      }
+
+      // Update visual interface
+      document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
+      document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
+
+      // Save active tab
+      localStorage.setItem("activeTab", tab);
+
+      // Load corresponding shortcuts
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${tab}`) || "{}");
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+
+      // Reload shortcuts
+      reloadShortcuts();
+    }    </script>
+  <script src="aurora-animation.js"></script>
+</head>
+
+<body class="min-h-screen font-sf">
+  <!-- Suppression du bouton hamburger pour le remplacer par une barre de navigation mobile en bas -->
+
+  <div class="flex min-h-screen p-6">
+    <aside id="sidebar"
+      class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
+
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        onclick="switchTab('personal')" id="personalTab">
+        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+        <a id="perso" class="block w-full">Personal</a>
+      </div>
+      <div
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        onclick="switchTab('professional')" id="professionalTab">
+        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+        </svg>
+        <a id="pro" class="block w-full">Professional</a>
+      </div>
+      <!-- Widgets Slider -->
+      <div class="mt-6">
+        <!-- Slider Header with Navigation -->
+        <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
+          <div class="flex items-center gap-2">
+            <div id="current-widget-icon" class="w-6 h-6 text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
+          </div>
+          
+          <!-- Navigation Controls -->
+          <div class="flex items-center gap-2">
+            <button onclick="previousWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button onclick="nextWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slider Container -->
+        <div class="relative overflow-hidden rounded-xl">
+          <div id="widgets-slider" class="flex transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
+            
+            <!-- Weather Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="weather-widget"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- City Input -->
+                <div id="weather-input" class="mb-4">
+                  <div class="flex gap-2">
+                    <input type="text" 
+                           id="weather-city-input" 
+                           placeholder="Enter city name..." 
+                           class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
+                           onkeypress="if(event.key==='Enter') loadWeatherForCity()">
+                    <button onclick="loadWeatherForCity()" 
+                            class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
+                      Get Weather
+                    </button>
+                  </div>
+                  <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
+                </div>
+                
+                <div id="weather-loading" class="hidden flex items-center justify-center py-8">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                  <span class="ml-2">Loading weather...</span>
+                </div>
+                
+                <div id="weather-content" class="hidden">
+                  <!-- Weather Header -->
+                  <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
+                    <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider" style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
+                  </div>
+                  
+                  <!-- Current Weather Icon and Temperature -->
+                  <div class="text-center mb-6">
+                    <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]">☀️</div>
+                    <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
+                    <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
+                    <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
+                  </div>
+                  
+                  <!-- Weather Forecast -->
+                  <div id="weather-forecast" class="space-y-3">
+                    <!-- Forecast items will be populated here -->
+                  </div>
+                  
+                  <button onclick="showCityInput()" 
+                          class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
+                    Change city
+                  </button>
+                </div>
+                
+                <div id="weather-error" class="hidden text-center py-4">
+                  <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
+                  <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
+                  <button onclick="showCityInput()" class="text-sm text-blue-300 hover:text-blue-200 underline">
+                    Try again
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="notes-widget"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- Add Note Button -->
+                <div class="mb-4">
+                  <button onclick="showAddNoteForm()" 
+                          class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    New note
+                  </button>
+                </div>
+
+                <!-- Add Note Form -->
+                <div id="add-note-form" class="hidden mb-4">
+                  <div class="space-y-3">
+                    <textarea id="note-text" 
+                              placeholder="Write your note..." 
+                              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
+                              rows="3"></textarea>
+                    <div class="flex gap-2">
+                      <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('pink')" class="flex-1 h-8 bg-pink-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('blue')" class="flex-1 h-8 bg-blue-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                    </div>
+                    <div class="flex gap-2">
+                      <button onclick="hideAddNoteForm()" class="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">
+                        Cancel
+                      </button>
+                      <button onclick="addNote('yellow')" class="flex-1 px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-xs transition-colors">
+                        Add Note
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes Container -->
+                <div id="notes-container" class="space-y-3">
+                  <!-- Notes will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="notes-empty" class="text-center py-8 text-white/60">
+                  <div class="text-4xl mb-2">📝</div>
+                  <div class="text-sm">No notes yet</div>
+                  <div class="text-xs mt-1">Click "New note" to get started</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pomodoro Widget Slide -->
+            <div class="w-full flex-shrink-0">
+              <div id="pomodoro-widget"
+                class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
+                style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+                
+                <!-- Close button (like in the design) -->
+                <div class="absolute top-4 right-4">
+                  <button onclick="resetPomodoro()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Header with task name -->
+                <div class="text-center mb-6">
+                  <div id="pomodoro-task" class="text-lg font-medium text-white/90 mb-4 px-8">Project research</div>
+                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work<br><span class="text-2xl font-bold">Kilian !</span></div>
+                </div>
+
+                <!-- Large Timer Display -->
+                <div class="text-center mb-8">
+                  <div id="pomodoro-timer" class="font-bold text-white tracking-tight font-mono mb-2" style="font-size: 5rem; line-height: 0.9;">25:00</div>
+                </div>
+
+                <!-- Progress Ring with Emoji -->
+                <div class="flex justify-center mb-8">
+                  <div class="relative w-32 h-32">
+                    <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                      <!-- Background circle -->
+                      <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.15)" stroke-width="12" fill="none"/>
+                      <!-- Progress circle -->
+                      <circle id="pomodoro-progress" cx="50" cy="50" r="42" stroke="#22D3EE" stroke-width="12" fill="none"
+                              stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+                              class="transition-all duration-1000 ease-linear"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span id="pomodoro-emoji" class="text-4xl">🧠</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Simple Controls -->
+                <div class="flex gap-3 mb-6">
+                  <button id="pomodoro-start" onclick="startPomodoro()" 
+                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg">
+                    Start Focus
+                  </button>
+                  <button id="pomodoro-pause" onclick="pausePomodoro()" 
+                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg hidden">
+                    Pause
+                  </button>
+                </div>
+
+                <!-- Mode and Session Info -->
+                <div class="text-center">
+                  <div id="pomodoro-mode" class="text-sm text-white/70 mb-1">FOCUS SESSION</div>
+                  <div id="pomodoro-session" class="text-sm text-white/70">Session 1 of 4</div>
+                </div>
+
+                <!-- Settings Toggle -->
+                <div class="mt-4 mb-0 text-center">
+                  <button onclick="togglePomodoroSettings()" class="text-sm text-white/60 hover:text-white/80 transition-colors">
+                    ⚙️ Settings
+                  </button>
+                </div>
+
+                <!-- Collapsible Settings -->
+                <div id="pomodoro-settings" class="hidden mt-4 pt-4 border-t border-white/20 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-white/80">Focus time</span>
+                    <div class="flex items-center gap-2">
+                      <button onclick="adjustTime('focus', -5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <span id="focus-time" class="text-xs font-medium min-w-[3rem] text-center">25 min</span>
+                      <button onclick="adjustTime('focus', 5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-white/80">Break time</span>
+                    <div class="flex items-center gap-2">
+                      <button onclick="adjustTime('break', -1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <span id="break-time" class="text-xs font-medium min-w-[3rem] text-center">5 min</span>
+                      <button onclick="adjustTime('break', 1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Stats in settings -->
+                  <div class="pt-3 border-t border-white/10">
+                    <div class="flex justify-between text-xs text-white/60">
+                      <span>Today: <span id="today-sessions">0</span></span>
+                      <span>Total: <span id="total-sessions">0</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget Indicators -->
+        <div class="flex justify-center gap-2 mt-0">
+          <button onclick="goToWidget(0)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/60" id="indicator-0"></button>
+          <button onclick="goToWidget(1)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-1"></button>
+          <button onclick="goToWidget(2)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-2"></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0"> <!-- Hello Kilian Title -->
+      <!-- Search Bar -->
+      <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
+        <div class="relative"> <button id="currentSearch"
+            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer hover:bg-white/30 transition-all duration-300 flex items-center justify-center">
+            <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
+            <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
+              alt="Google" />
+          </button>
+          <div id="searchEngineDropdown" style="
+                background: #437cd9;
+                border: 1px solid #6897e2;
+                margin-top: 17px;
+                width: 325px;
+              " class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
+            <button class="search-option rounded-lg" data-value="g">
+              <img src="https://favicone.com/www.google.com?s=128" alt="Google" />
+            </button>
+            <button class="search-option rounded-lg" data-value="yt">
+              <img src="https://dev.kilianbarbier.fr/media/img/youtube_logo.svg" alt="YouTube" />
+            </button>
+            <button class="search-option p-2 rounded-lg flex items-center justify-center" data-value="gh">
+              <img src="https://favicone.com/github.com?s=128" class="w-6 h-6" alt="GitHub" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="w">
+              <img src="https://favicone.com/wikipedia.org?s=128" class="w-6 h-6" alt="Wikipedia" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="r">
+              <img src="https://favicone.com/www.reddit.com?s=128" class="w-6 h-6" alt="Reddit" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="so">
+              <img src="https://favicone.com/stackoverflow.com?s=128" class="w-6 h-6" alt="Stack" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="a">
+              <img src="https://favicone.com/www.amazon.com?s=128" class="w-6 h-6" alt="Amazon" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="n">
+              <img src="https://favicone.com/www.netflix.com?s=128" class="w-6 h-6" alt="Netflix" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="sp">
+              <img src="https://favicone.com/open.spotify.com?s=128" class="w-6 h-6" alt="Spotify" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="tw">
+              <img src="https://favicone.com/twitter.com?s=128" class="w-6 h-6" alt="Twitter" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="ig">
+              <img src="https://favicone.com/www.instagram.com?s=128" class="w-6 h-6" alt="Instagram" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="maps">
+              <img src="https://favicone.com/maps.google.com?s=128" class="w-6 h-6" alt="Maps" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="i">
+              <img src="https://dev.kilianbarbier.fr/media/img/google_img_logo.svg" class="w-6 h-6" alt="Images" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="ddg">
+              <img src="https://favicone.com/duckduckgo.com?s=128" class="w-6 h-6" alt="DuckDuckGo" />
+            </button>
+            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="px">
+              <img src="https://favicone.com/www.perplexity.ai?s=128" class="w-6 h-6" alt="Perplexity" />
+            </button>
+          </div>
+          <select id="searchEngine" class="hidden">            <option value="g">Google</option>
+            <option value="yt">YouTube</option>
+            <option value="gh">GitHub</option>
+            <!-- ... keep the values for search functionality ... -->
+          </select>
+        </div>
+
+        <div class="relative flex-1">
+          <input type="text" placeholder="Search..." id="searchInput"
+            class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
+          <svg class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-white" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="{2}"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <button onclick="showSearchHelp()"
+          class="text-white hover:text-white/80 text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center hover:bg-white/30 transition-all duration-300">
+          ?
+        </button>
+      </div>
+
+      <!-- Grid Shortcuts -->
+      <div id="shortcutGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full">
+      </div>
+
+      <!-- Configuration Modal simplifié -->
+      <div id="configModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center">
+        <div class="modal-content bg-white/95 rounded-2xl p-6 w-96 shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-900">Add a shortcut</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Title</label>
+              <input type="text" id="shortcutTitle" oninput="validateForm()" placeholder="Facebook"
+                class="mt-1 w-full rounded-lg px-3 py-2 text-gray-900 bg-gray-50 placeholder-gray-400" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">URL</label>
+              <input type="url" id="shortcutUrl" oninput="validateForm()" placeholder="facebook.com"
+                class="mt-1 w-full rounded-lg px-3 py-2 text-gray-900 bg-gray-50 placeholder-gray-400" />
+              <p id="urlError" class="mt-1 text-sm text-red-500 hidden">
+                Please enter a valid URL (e.g. google.com)
+              </p>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+              <button onclick="closeConfigModal()"
+                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                Cancel
+              </button>
+              <button id="saveButton" onclick="saveShortcut()" disabled
+                class="px-4 py-2 rounded-lg bg-blue-400/80 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-500/80">
+                <span class="flex items-center gap-2 font-medium">
+                  <svg class="animate-spin h-4 w-4 text-white hidden" id="saveSpinner"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>                  <span id="saveText">Add</span>
+                </span></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>        // List of common domain extensions
+        const validTLDs = [
+          "com",
+          "net",
+          "org",
+          "edu",
+          "gov",
+          "mil",
+          "io",
+          "co",
+          "ai",
+          "app",
+          "dev",
+          "me",
+          "tv",
+          "info",
+          "biz",
+          "name",
+          "mobi",
+          "pro",
+          "travel",
+          // Common national domains
+          "fr",
+          "uk",
+          "de",
+          "it",
+          "es",
+          "nl",
+          "ru",
+          "cn",
+          "jp",
+          "kr",
+          "br",
+          "au",
+          "ca",
+          "in",
+          "eu",
+        ];
+
+        function isValidUrl(string) {
+          try {
+            const url = string.trim();
+            if (!url) return false;            // Add https:// if needed
+            const urlToTest = url.match(/^https?:\/\//i)
+              ? url
+              : `https://${url}`;
+            const urlObj = new URL(urlToTest);
+
+            // Check hostname
+            const parts = urlObj.hostname.split(".");
+            if (parts.length < 2) return false;
+
+            // Check that the extension follows standard format
+            // An extension is typically 2-12 characters and contains only letters
+            const tld = parts[parts.length - 1].toLowerCase();
+            return /^[a-z]{2,12}$/.test(tld);
+          } catch (err) {
+            return false;
+          }
+        }        // Improved validation function
+        function validateForm() {
+          const title = document.getElementById("shortcutTitle").value.trim();
+          const url = document.getElementById("shortcutUrl").value.trim();
+          const saveButton = document.getElementById("saveButton");
+          const urlError = document.getElementById("urlError");
+
+          const isTitleValid = title.length > 0;
+          const isUrlValid = isValidUrl(url);
+
+          // Show/hide error message
+          if (url && !isUrlValid) {
+            urlError.classList.remove("hidden");
+          } else {
+            urlError.classList.add("hidden");
+          }
+
+          saveButton.disabled = !isTitleValid || !isUrlValid;
+        }        // Modification of openConfigModal to reset button state
+        function openConfigModal(position) {
+          const modal = document.getElementById("configModal");
+          modal.setAttribute("data-position", position);
+
+          document.getElementById("shortcutTitle").value = "";
+          document.getElementById("shortcutUrl").value = "";
+          document.getElementById("saveButton").disabled = true;
+
+          modal.classList.remove("hidden");
+          document.getElementById("shortcutTitle").focus();
+        }
+      </script>
+      <div id="contextMenu"
+        class="hidden fixed rounded-lg shadow-2xl min-w-[150px] z-50 bg-black/40 backdrop-blur-xl border border-white/10">
+        <button onclick="editShortcut(document.getElementById('contextMenu').getAttribute('data-position'))"
+          class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-white/10 text-gray-200 transition-colors duration-200 transform hover:translate-y-0"
+          style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
+          Edit Shortcut
+        </button>
+        <button onclick="pinToBothTabs(document.getElementById('contextMenu').getAttribute('data-position'))"
+          class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
+          Pin to both tabs
+        </button>
+        <button onclick="deleteShortcut()"
+          class="w-full border-b-0 border-r-0 border-l-0 px-4 py-4 text-left hover:bg-red-500/20 text-red-300 transition-colors duration-200 transform hover:translate-y-0"
+          style="border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          Delete Shortcut
+        </button>
+      </div>
+
+      <!-- Add search help modal -->
+      <div id="searchHelpModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-white">Search Commands</h2>
+          <div class="grid grid-cols-2 gap-4 text-white">
+            <div>
+              <p><strong>&#47;g</strong> - Google</p>
+              <p><strong>&#47;yt</strong> - YouTube</p>
+              <p><strong>&#47;gh</strong> - GitHub</p>
+              <p><strong>&#47;w</strong> - Wikipedia</p>
+              <p><strong>&#47;r</strong> - Reddit</p>
+              <p><strong>&#47;so</strong> - Stack Overflow</p>
+              <p><strong>&#47;i</strong> - Google Images</p>
+              <p><strong>&#47;ddg</strong> - DuckDuckGo</p>
+              <p><strong>&#47;px</strong> - Perplexity AI</p>
+            </div>
+            <div>
+              <p><strong>&#47;a</strong> - Amazon</p>
+              <p><strong>&#47;n</strong> - Netflix</p>
+              <p><strong>&#47;sp</strong> - Spotify</p>
+              <p><strong>&#47;tw</strong> - Twitter</p>
+              <p><strong>&#47;ig</strong> - Instagram Tags</p>
+              <p><strong>&#47;maps</strong> - Google Maps</p>
+            </div>
+          </div>
+          <div class="mt-6 text-white/80">            <p>Example: <code>/yt cute cats</code>, directly searches for "cute cats" on Youtube.</p>
+            <p>
+              Tip: Use a slash (/) before a command, or just type your search to use Google
+            </p>
+          </div>
+          <button onclick="closeSearchHelp()" class="mt-6 px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white">
+            Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Popup d'autocorrection -->
+      <div id="autocorrectionModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">          <h2 class="text-2xl font-bold mb-4 text-white">Correction Suggestion</h2>
+          <div class="text-white mb-6">
+            <p>You entered: <span id="originalQuery" class="font-semibold"></span></p>
+            <p class="mt-3">Did you mean: <span id="correctedQuery" class="font-semibold"></span> ?</p>
+            <p class="mt-2 text-white/70 text-sm">The search will be performed on Amazon</p>
+          </div>
+          <div class="flex justify-end gap-3">
+            <button onclick="executeOriginalSearch()"
+              class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white">
+              No
+            </button>
+            <button onclick="executeCorrectedSearch()"
+              class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
+              Yes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        function showSearchHelp() {
+          document
+            .getElementById("searchHelpModal")
+            .classList.remove("hidden");
+        }
+
+        function closeSearchHelp() {
+          document.getElementById("searchHelpModal").classList.add("hidden");
+        }
+      </script>
+    </main>
+  </div>
+
+  <!-- Navigation bar mobile en bas de l'écran -->
+  <nav id="mobileNavBar" class="fixed bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl p-2 z-50 lg:hidden">
+    <div class="flex justify-center items-center">
+      <div class="flex items-center gap-5">
+        <button id="showSidebar"
+          class="flex flex-col items-center py-1 px-3 text-white/80 hover:text-white transition-colors rounded-xl">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 12h.01M12 12h.01M19 12h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+            </path>
+          </svg>
+          <span class="text-xs">Quick Access</span>
+        </button>
+        <button onclick="showSearchHelp()"
+          class="mr-2 flex flex-col items-center py-1 px-3 text-white/80 hover:text-white transition-colors rounded-xl">
+          <span class="text-xl font-medium w-6 h-6 flex items-center justify-center">?</span>
+          <span class="text-xs">Help Center</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Ajout d'un modal pour afficher la sidebar sur mobile -->
+  <div id="sidebarModal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[60] hidden">
+    <div
+      class="fixed bottom-0 inset-x-0 rounded-t-3xl bg-white/90 backdrop-blur-xl p-6 shadow-2xl max-h-[80vh] overflow-y-auto scrollbar-hide transition-transform duration-300 transform translate-y-0">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-medium text-white">Quick Access</h2>
+        <button id="closeSidebar" class="p-2 text-white rounded-full bg-white/20 hover:bg-white/30">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="sidebarContent" class="space-y-4">
+        <!-- Le contenu de la sidebar sera cloné ici via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Ajout des styles pour le menu mobile -->
+  <style>
+    /* Hide scrollbar for sidebar */
+    .scrollbar-hide {
+      /* Firefox */
+      scrollbar-width: none;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      /* Chrome, Safari and Opera */
+      display: none;
+    }
+
+    @media (min-width: 1024px) {
+      main {
+        margin-left: 0 !important;
+      }
+    }
+
+    /* Add these new styles for the tooltip */
+    .shortcut-container {
+      position: relative;
+    }
+
+    .shortcut-container::before {      content: "Right-click to edit or delete";
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      backdrop-filter: blur(4px);
+    }
+
+    .shortcut-container:hover::before {
+      opacity: 1;
+    }
+  </style>
+
+  <!-- Script pour cloner le contenu de la sidebar dans le modal mobile -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {      // Clone sidebar content for mobile modal
+      const sidebarChildren = document.querySelectorAll(
+        "#sidebar > *:not(:first-child)"
+      );
+      const sidebarContent = document.getElementById("sidebarContent");
+
+      sidebarChildren.forEach((child) => {
+        sidebarContent.appendChild(child.cloneNode(true));
+      });
+
+      // Modal display management
+      const showSidebarBtn = document.getElementById("showSidebar");
+      const closeSidebarBtn = document.getElementById("closeSidebar");
+      const sidebarModal = document.getElementById("sidebarModal");
+
+      showSidebarBtn.addEventListener("click", function () {
+        sidebarModal.classList.remove("hidden");
+        document.body.style.overflow = "hidden"; // Prevent body scrolling
+      });
+
+      closeSidebarBtn.addEventListener("click", function () {
+        sidebarModal.classList.add("hidden");
+        document.body.style.overflow = ""; // Re-enable scrolling
+      });
+
+      // Close modal if clicked outside content
+      sidebarModal.addEventListener("click", function (e) {
+        if (e.target === sidebarModal) {
+          sidebarModal.classList.add("hidden");
+          document.body.style.overflow = "";
+        }
+      });
+
+      // Check if there's a saved city and load its weather, otherwise show input
+      const savedCity = localStorage.getItem('lastWeatherCity');
+      if (savedCity) {
+        document.getElementById('weather-city-input').value = savedCity;
+        loadWeather(savedCity);
+      }
+    });
+
+    // Weather Widget Functions
+    function getWeatherIcon(weatherCode, isDay) {
+      const iconMap = {
+        0: { day: '<img src="sunny.png" alt="Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Clear sky
+        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Mainly clear
+        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" />' }, // Partly cloudy
+        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />' }, // Overcast
+        45: { day: '🌫️', night: '🌫️' }, // Fog
+        48: { day: '🌫️', night: '🌫️' }, // Depositing rime fog
+        51: { day: '🌦️', night: '🌧️' }, // Light drizzle
+        53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
+        55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
+        61: { day: '🌧️', night: '🌧️' }, // Slight rain
+        63: { day: '🌧️', night: '🌧️' }, // Moderate rain
+        65: { day: '🌧️', night: '🌧️' }, // Heavy rain
+        71: { day: '🌨️', night: '🌨️' }, // Slight snow
+        73: { day: '🌨️', night: '🌨️' }, // Moderate snow
+        75: { day: '❄️', night: '❄️' }, // Heavy snow
+        77: { day: '❄️', night: '❄️' }, // Snow grains
+        80: { day: '🌦️', night: '🌧️' }, // Slight rain showers
+        81: { day: '🌧️', night: '🌧️' }, // Moderate rain showers
+        82: { day: '⛈️', night: '⛈️' }, // Violent rain showers
+        85: { day: '🌨️', night: '🌨️' }, // Slight snow showers
+        86: { day: '❄️', night: '❄️' }, // Heavy snow showers
+        95: { day: '⛈️', night: '⛈️' }, // Thunderstorm
+        96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
+        99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
+      };
+      
+      const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
+      return isDay ? icons.day : icons.night;
+    }
+
+    // Helper function to get icon for forecast cards (smaller size)
+    function getWeatherIconSmall(weatherCode, isDay) {
+      const iconMap = {
+        0: { day: '<img src="sunny.png" alt="Sunny" class="w-8 h-8" />', night: '🌙' }, // Clear sky
+        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-8 h-8" />', night: '🌙' }, // Mainly clear
+        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-8 h-8" />' }, // Partly cloudy
+        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />' }, // Overcast
+        45: { day: '🌫️', night: '🌫️' }, // Fog
+        48: { day: '🌫️', night: '🌫️' }, // Depositing rime fog
+        51: { day: '🌦️', night: '🌧️' }, // Light drizzle
+        53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
+        55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
+        61: { day: '🌧️', night: '🌧️' }, // Slight rain
+        63: { day: '🌧️', night: '🌧️' }, // Moderate rain
+        65: { day: '🌧️', night: '🌧️' }, // Heavy rain
+        71: { day: '🌨️', night: '🌨️' }, // Slight snow
+        73: { day: '🌨️', night: '🌨️' }, // Moderate snow
+        75: { day: '❄️', night: '❄️' }, // Heavy snow
+        77: { day: '❄️', night: '❄️' }, // Snow grains
+        80: { day: '🌦️', night: '🌧️' }, // Slight rain showers
+        81: { day: '🌧️', night: '🌧️' }, // Moderate rain showers
+        82: { day: '⛈️', night: '⛈️' }, // Violent rain showers
+        85: { day: '🌨️', night: '🌨️' }, // Slight snow showers
+        86: { day: '❄️', night: '❄️' }, // Heavy snow showers
+        95: { day: '⛈️', night: '⛈️' }, // Thunderstorm
+        96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
+        99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
+      };
+      
+      const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
+      return isDay ? icons.day : icons.night;
+    }
+
+    function getWeatherDescription(weatherCode) {
+      const descriptions = {
+        0: 'Clear sky',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Fog',
+        48: 'Depositing rime fog',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Dense drizzle',
+        61: 'Slight rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        71: 'Slight snow fall',
+        73: 'Moderate snow fall',
+        75: 'Heavy snow fall',
+        77: 'Snow grains',
+        80: 'Slight rain showers',
+        81: 'Moderate rain showers',
+        82: 'Violent rain showers',
+        85: 'Slight snow showers',
+        86: 'Heavy snow showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with slight hail',
+        99: 'Thunderstorm with heavy hail'
+      };
+      
+      return descriptions[weatherCode] || 'Unknown';
+    }
+
+    async function loadWeather(cityName) {
+      const weatherInput = document.getElementById('weather-input');
+      const weatherLoading = document.getElementById('weather-loading');
+      const weatherContent = document.getElementById('weather-content');
+      const weatherError = document.getElementById('weather-error');
+
+      // Show loading state
+      weatherInput.classList.add('hidden');
+      weatherLoading.classList.remove('hidden');
+      weatherContent.classList.add('hidden');
+      weatherError.classList.add('hidden');
+
+      try {
+        // Get coordinates for the city using a geocoding API
+        const geocodeResponse = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`
+        );
+        
+        let latitude, longitude, locationDisplayName, countryName;
+        
+        if (geocodeResponse.ok) {
+          const geocodeData = await geocodeResponse.json();
+          if (geocodeData.length > 0) {
+            latitude = parseFloat(geocodeData[0].lat);
+            longitude = parseFloat(geocodeData[0].lon);
+            const addressParts = geocodeData[0].display_name.split(',');
+            locationDisplayName = addressParts[0].trim();
+            
+            // Try to extract country from address
+            const address = geocodeData[0].address || {};
+            countryName = address.country || addressParts[addressParts.length - 1].trim();
+          } else {
+            throw new Error('City not found');
+          }
+        } else {
+          throw new Error('Unable to find city coordinates');
+        }
+
+        // Fetch weather data with forecast using Open-Meteo API
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3`
+        );
+
+        if (!weatherResponse.ok) {
+          throw new Error('Weather API request failed');
+        }
+
+        const weatherData = await weatherResponse.json();
+        const current = weatherData.current;
+        const daily = weatherData.daily;
+
+        // Update weather display
+        const isDay = current.is_day === 1;
+        const weatherIcon = getWeatherIcon(current.weather_code, isDay);
+        const weatherDescription = getWeatherDescription(current.weather_code);
+
+        // Update main weather info
+        document.getElementById('weather-city-name').textContent = locationDisplayName.toUpperCase();
+        document.getElementById('weather-icon').innerHTML = weatherIcon;
+        document.getElementById('weather-temp').textContent = `${Math.round(current.temperature_2m)}°C`;
+        document.getElementById('weather-location').textContent = `${locationDisplayName}, ${countryName}`;
+        document.getElementById('weather-description').textContent = weatherDescription;
+
+        // Update forecast
+        updateWeatherForecast(daily);
+
+        // Show content
+        weatherLoading.classList.add('hidden');
+        weatherContent.classList.remove('hidden');
+
+        // Save the last searched city
+        localStorage.setItem('lastWeatherCity', cityName);
+
+      } catch (error) {
+        console.error('Weather loading error:', error);
+        
+        // Show error state
+        weatherLoading.classList.add('hidden');
+        weatherError.classList.remove('hidden');
+      }
+    }
+
+    function updateWeatherForecast(dailyData) {
+      const forecastContainer = document.getElementById('weather-forecast');
+      forecastContainer.innerHTML = '';
+
+      // Create forecast items for the next few days (skip today, start from tomorrow)
+      for (let i = 1; i < Math.min(dailyData.time.length, 3); i++) {
+        const date = new Date(dailyData.time[i]);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const weatherCode = dailyData.weather_code[i];
+        const maxTemp = Math.round(dailyData.temperature_2m_max[i]);
+        const minTemp = Math.round(dailyData.temperature_2m_min[i]);
+        const icon = getWeatherIconSmall(weatherCode, true); // Use day icon for forecast with smaller size
+        const description = getWeatherDescription(weatherCode);
+
+        const forecastItem = document.createElement('div');
+        forecastItem.className = 'flex items-center justify-start bg-white/20 rounded-lg p-3';
+        forecastItem.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl flex items-center">${icon}</span>
+            <div class="text-left">
+              <div class="text-white font-medium">${dayName} - ${description}</div>
+              <div class="text-white/70 text-sm">Max ${maxTemp}°C Min ${minTemp}°C</div>
+            </div>
+          </div>
+        `;
+
+        forecastContainer.appendChild(forecastItem);
+      }
+    }
+
+    function showCityInput() {
+      document.getElementById('weather-input').classList.remove('hidden');
+      document.getElementById('weather-loading').classList.add('hidden');
+      document.getElementById('weather-content').classList.add('hidden');
+      document.getElementById('weather-error').classList.add('hidden');
+      document.getElementById('weather-city-input').focus();
+    }
+
+    function loadWeatherForCity() {
+      const cityInput = document.getElementById('weather-city-input');
+      const cityName = cityInput.value.trim();
+      
+      if (!cityName) {
+        alert('Please enter a city name');
+        return;
+      }
+      
+      loadWeather(cityName);
+    }
+
+    // Notes Widget Functions
+    function showAddNoteForm() {
+      document.getElementById('add-note-form').classList.remove('hidden');
+      document.getElementById('note-text').focus();
+    }
+
+    function hideAddNoteForm() {
+      document.getElementById('add-note-form').classList.add('hidden');
+      document.getElementById('note-text').value = '';
+    }
+
+    function addNote(color) {
+      const noteText = document.getElementById('note-text').value.trim();
+      if (!noteText) {
+        alert('Please enter some text for your note');
+        return;
+      }
+
+      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
+      const newNote = {
+        id: Date.now(),
+        text: noteText,
+        color: color,
+        createdAt: new Date().toISOString()
+      };
+
+      notes.push(newNote);
+      localStorage.setItem('userNotes', JSON.stringify(notes));
+
+      hideAddNoteForm();
+      loadNotes();
+    }
+
+    function deleteNote(noteId) {
+      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
+      const filteredNotes = notes.filter(note => note.id !== noteId);
+      localStorage.setItem('userNotes', JSON.stringify(filteredNotes));
+      loadNotes();
+    }
+
+    function editNote(noteId) {
+      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
+      const note = notes.find(n => n.id === noteId);
+      if (!note) return;
+
+      const newText = prompt('Edit your note:', note.text);
+      if (newText === null) return; // User cancelled
+      
+      if (newText.trim() === '') {
+        if (confirm('Delete this note?')) {
+          deleteNote(noteId);
+        }
+        return;
+      }
+
+      note.text = newText.trim();
+      localStorage.setItem('userNotes', JSON.stringify(notes));
+      loadNotes();
+    }
+
+    function getColorClasses(color) {
+      const colorMap = {
+        yellow: 'bg-yellow-200 text-yellow-900 border-yellow-300',
+        green: 'bg-green-200 text-green-900 border-green-300',
+        pink: 'bg-pink-200 text-pink-900 border-pink-300',
+        blue: 'bg-blue-200 text-blue-900 border-blue-300'
+      };
+      return colorMap[color] || colorMap.yellow;
+    }
+
+    function getRandomRotation() {
+      // Random rotation between -3 and 3 degrees
+      const rotation = (Math.random() - 0.5) * 6;
+      return `transform: rotate(${rotation}deg);`;
+    }
+
+    function getRandomBorderRadius() {
+      // Create slightly irregular border radius for organic look
+      const tl = Math.random() * 5 + 10; // 10-15px
+      const tr = Math.random() * 5 + 10; // 10-15px
+      const br = Math.random() * 5 + 10; // 10-15px
+      const bl = Math.random() * 5 + 10; // 10-15px
+      return `border-radius: ${tl}px ${tr}px ${bl}px;`;
+    }
+
+    function getDynamicFontSize(text) {
+      const textLength = text.length;
+      
+      // Define font size ranges based on text length - MUCH larger sizes for short text
+      if (textLength <= 2) {
+        return 'text-9xl'; // Massive font for 1-2 characters (128px)
+      } else if (textLength <= 4) {
+        return 'text-8xl'; // Huge font for 3-4 characters (96px)
+      } else if (textLength <= 6) {
+        return 'text-7xl'; // Very huge font for 5-6 characters (72px)
+      } else if (textLength <= 8) {
+        return 'text-6xl'; // Extra large font for 7-8 characters (60px)
+      } else if (textLength <= 12) {
+        return 'text-5xl'; // Large font for short words (48px)
+      } else if (textLength <= 18) {
+        return 'text-4xl'; // Medium-large font (36px)
+      } else if (textLength <= 25) {
+        return 'text-3xl'; // Large font (30px)
+      } else if (textLength <= 35) {
+        return 'text-2xl'; // Medium font (24px)
+      } else if (textLength <= 50) {
+        return 'text-xl'; // Medium-small font (20px)
+      } else if (textLength <= 70) {
+        return 'text-lg'; // Small font (18px)
+      } else if (textLength <= 100) {
+        return 'text-base'; // Standard font (16px)
+      } else if (textLength <= 150) {
+        return 'text-sm'; // Small font (14px)
+      } else {
+        return 'text-xs'; // Extra small font for very long text (12px)
+      }
+    }
+
+    function getDynamicLineHeight(text) {
+      const textLength = text.length;
+      
+      // Adjust line height based on text length for better readability
+      if (textLength <= 2) {
+        return 'leading-none'; // Very tight line height for massive text
+      } else if (textLength <= 4) {
+        return 'leading-tight'; // Tight line height for huge text
+      } else if (textLength <= 6) {
+        return 'leading-tight'; // Tight line height for very large text
+      } else if (textLength <= 8) {
+        return 'leading-snug'; // Snug line height for extra large text
+      } else if (textLength <= 12) {
+        return 'leading-snug'; // Snug line height for large text
+      } else if (textLength <= 18) {
+        return 'leading-normal'; // Normal line height for medium-large text
+      } else if (textLength <= 25) {
+        return 'leading-normal'; // Normal line height
+      } else if (textLength <= 35) {
+        return 'leading-normal'; // Normal line height
+      } else {
+        return 'leading-relaxed'; // More relaxed line height for longer text
+      }
+    }
+
+    function getDynamicPadding(text) {
+      const textLength = text.length;
+      
+      // Adjust padding based on text length to optimize space usage
+      if (textLength <= 2) {
+        return 'p-8'; // Maximum padding for massive text (1-2 chars)
+      } else if (textLength <= 4) {
+        return 'p-7'; // Large padding for huge text (3-4 chars)
+      } else if (textLength <= 6) {
+        return 'p-6'; // Extra padding for very large text (5-6 chars)
+      } else if (textLength <= 8) {
+        return 'p-6'; // Extra padding for large text (7-8 chars)
+      } else if (textLength <= 12) {
+        return 'p-5'; // More padding for medium-large text
+      } else if (textLength <= 18) {
+        return 'p-4'; // Good padding for medium text
+      } else if (textLength <= 35) {
+        return 'p-4'; // Standard padding for medium-long text
+      } else if (textLength <= 70) {
+        return 'p-3'; // Standard padding
+      } else {
+        return 'p-2'; // Less padding for long text to save space
+      }
+    }
+
+    function getRandomNoteStyle() {
+      return `${getRandomRotation()} ${getRandomBorderRadius()}`;
+    }
+
+    function loadNotes() {
+      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
+      const container = document.getElementById('notes-container');
+      const emptyState = document.getElementById('notes-empty');
+
+      if (notes.length === 0) {
+        container.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+
+      // Sort notes by creation date (newest first)
+      notes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      container.innerHTML = notes.map(note => `
+        <div class="relative ${getColorClasses(note.color)} ${getDynamicPadding(note.text)} border-2 shadow-sm font-patrick transition-transform hover:scale-105 hover:z-10" 
+             style="${getRandomNoteStyle()}">
+          <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
+          <div class="flex justify-end gap-1 mt-2">
+            <button onclick="editNote(${note.id})" 
+                    class="p-1 rounded hover:bg-black/10 transition-colors"
+                    title="Edit note">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </button>
+            <button onclick="deleteNote(${note.id})" 
+                    class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
+                    title="Delete note">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Load notes on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load notes after other initialization
+      setTimeout(() => {
+        loadNotes();
+        loadPomodoroStats();
+      }, 100);
+    });
+
+    // ==================== POMODORO FUNCTIONALITY ====================
+
+    let pomodoroState = {
+      isRunning: false,
+      isPaused: false,
+      currentTime: 25 * 60, // 25 minutes in seconds
+      totalTime: 25 * 60,
+      mode: 'focus', // 'focus', 'break', 'longBreak'
+      session: 1,
+      totalSessions: 4,
+      timer: null,
+      settings: {
+        focusTime: 25,
+        breakTime: 5,
+        longBreakTime: 15
+      }
+    };
+
+    function startPomodoro() {
+      if (!pomodoroState.isRunning) {
+        pomodoroState.isRunning = true;
+        pomodoroState.isPaused = false;
+        
+        document.getElementById('pomodoro-start').classList.add('hidden');
+        document.getElementById('pomodoro-pause').classList.remove('hidden');
+        
+        pomodoroState.timer = setInterval(updateTimer, 1000);
+        
+        // Play start sound (optional)
+        playPomodoroSound('start');
+      }
+    }
+
+    function pausePomodoro() {
+      if (pomodoroState.isRunning) {
+        pomodoroState.isRunning = false;
+        pomodoroState.isPaused = true;
+        
+        clearInterval(pomodoroState.timer);
+        
+        document.getElementById('pomodoro-start').classList.remove('hidden');
+        document.getElementById('pomodoro-pause').classList.add('hidden');
+      }
+    }
+
+    function resetPomodoro() {
+      clearInterval(pomodoroState.timer);
+      pomodoroState.isRunning = false;
+      pomodoroState.isPaused = false;
+      
+      // Reset to current mode's default time
+      if (pomodoroState.mode === 'focus') {
+        pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
+        pomodoroState.totalTime = pomodoroState.settings.focusTime * 60;
+      } else if (pomodoroState.mode === 'break') {
+        pomodoroState.currentTime = pomodoroState.settings.breakTime * 60;
+        pomodoroState.totalTime = pomodoroState.settings.breakTime * 60;
+      } else {
+        pomodoroState.currentTime = pomodoroState.settings.longBreakTime * 60;
+        pomodoroState.totalTime = pomodoroState.settings.longBreakTime * 60;
+      }
+      
+      document.getElementById('pomodoro-start').classList.remove('hidden');
+      document.getElementById('pomodoro-pause').classList.add('hidden');
+      
+      updateDisplay();
+    }
+
+    function updateTimer() {
+      pomodoroState.currentTime--;
+      
+      if (pomodoroState.currentTime <= 0) {
+        completeSession();
+      }
+      
+      updateDisplay();
+    }
+
+    function completeSession() {
+      clearInterval(pomodoroState.timer);
+      pomodoroState.isRunning = false;
+      
+      // Play completion sound
+      playPomodoroSound('complete');
+      
+      // Show notification
+      if (Notification.permission === 'granted') {
+        new Notification(`${pomodoroState.mode === 'focus' ? 'Focus' : 'Break'} session completed!`, {
+          body: pomodoroState.mode === 'focus' ? 'Time for a break!' : 'Time to focus!',
+          icon: 'media/favicon.ico'
+        });
+      }
+      
+      // Update stats
+      if (pomodoroState.mode === 'focus') {
+        updateStats();
+      }
+      
+      // Switch to next mode
+      switchToNextMode();
+      
+      document.getElementById('pomodoro-start').classList.remove('hidden');
+      document.getElementById('pomodoro-pause').classList.add('hidden');
+    }
+
+    function switchToNextMode() {
+      if (pomodoroState.mode === 'focus') {
+        if (pomodoroState.session % 4 === 0) {
+          // Long break after 4 sessions
+          pomodoroState.mode = 'longBreak';
+          pomodoroState.currentTime = pomodoroState.settings.longBreakTime * 60;
+          pomodoroState.totalTime = pomodoroState.settings.longBreakTime * 60;
+        } else {
+          // Short break
+          pomodoroState.mode = 'break';
+          pomodoroState.currentTime = pomodoroState.settings.breakTime * 60;
+          pomodoroState.totalTime = pomodoroState.settings.breakTime * 60;
+        }
+      } else {
+        // Back to focus
+        pomodoroState.mode = 'focus';
+        pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
+        pomodoroState.totalTime = pomodoroState.settings.focusTime * 60;
+        pomodoroState.session++;
+        
+        if (pomodoroState.session > pomodoroState.totalSessions) {
+          pomodoroState.session = 1;
+        }
+      }
+      
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      // Update timer display
+      const minutes = Math.floor(pomodoroState.currentTime / 60);
+      const seconds = pomodoroState.currentTime % 60;
+      document.getElementById('pomodoro-timer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      
+      // Update mode display and message
+      let modeText, messageText, emoji;
+      if (pomodoroState.mode === 'focus') {
+        modeText = 'FOCUS SESSION';
+        messageText = 'Focus on your work<br><span class="text-2xl font-bold">Kilian !</span>';
+        emoji = '🧠';
+      } else if (pomodoroState.mode === 'break') {
+        modeText = 'SHORT BREAK';
+        messageText = 'Take a short break<br><span class="text-2xl font-bold">Relax !</span>';
+        emoji = '☕';
+      } else {
+        modeText = 'LONG BREAK';
+        messageText = 'Well deserved break<br><span class="text-2xl font-bold">Great job !</span>';
+        emoji = '🎉';
+      }
+      
+      document.getElementById('pomodoro-mode').textContent = modeText;
+      document.getElementById('pomodoro-message').innerHTML = messageText;
+      document.getElementById('pomodoro-emoji').textContent = emoji;
+      
+      // Update session display
+      document.getElementById('pomodoro-session').textContent = 
+        `Session ${pomodoroState.session} of ${pomodoroState.totalSessions}`;
+      
+      // Update progress ring
+      const progress = 1 - (pomodoroState.currentTime / pomodoroState.totalTime);
+      const circumference = 2 * Math.PI * 42; // radius = 42
+      const offset = circumference * (1 - progress);
+      document.getElementById('pomodoro-progress').style.strokeDashoffset = offset;
+      
+      // Update progress circle color based on mode
+      const progressCircle = document.getElementById('pomodoro-progress');
+      if (pomodoroState.mode === 'focus') {
+        progressCircle.style.stroke = '#22D3EE'; // Cyan for focus
+      } else {
+        progressCircle.style.stroke = '#10B981'; // Green for breaks
+      }
+      
+      // Update widget background based on mode - keeping the same gradient but maybe slightly different
+      const widget = document.getElementById('pomodoro-widget');
+      if (pomodoroState.mode === 'focus') {
+        widget.style.background = 'linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%)';
+      } else {
+        widget.style.background = 'linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%)';
+      }
+    }
+
+    function adjustTime(type, amount) {
+      if (pomodoroState.isRunning) return; // Can't adjust while running
+      
+      if (type === 'focus') {
+        pomodoroState.settings.focusTime = Math.max(5, Math.min(60, pomodoroState.settings.focusTime + amount));
+        document.getElementById('focus-time').textContent = pomodoroState.settings.focusTime + ' min';
+        
+        if (pomodoroState.mode === 'focus') {
+          pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
+          pomodoroState.totalTime = pomodoroState.settings.focusTime * 60;
+        }
+      } else if (type === 'break') {
+        pomodoroState.settings.breakTime = Math.max(1, Math.min(30, pomodoroState.settings.breakTime + amount));
+        document.getElementById('break-time').textContent = pomodoroState.settings.breakTime + ' min';
+        
+        if (pomodoroState.mode === 'break') {
+          pomodoroState.currentTime = pomodoroState.settings.breakTime * 60;
+          pomodoroState.totalTime = pomodoroState.settings.breakTime * 60;
+        }
+      }
+      
+      updateDisplay();
+      savePomodoroSettings();
+    }
+
+    function togglePomodoroSettings() {
+      const settings = document.getElementById('pomodoro-settings');
+      settings.classList.toggle('hidden');
+    }
+
+    function updateStats() {
+      const today = new Date().toDateString();
+      let stats = JSON.parse(localStorage.getItem('pomodoroStats') || '{}');
+      
+      if (!stats[today]) {
+        stats[today] = 0;
+      }
+      stats[today]++;
+      
+      // Calculate total sessions
+      const totalSessions = Object.values(stats).reduce((sum, sessions) => sum + sessions, 0);
+      
+      localStorage.setItem('pomodoroStats', JSON.stringify(stats));
+      
+      document.getElementById('today-sessions').textContent = stats[today];
+      document.getElementById('total-sessions').textContent = totalSessions;
+    }
+
+    function loadPomodoroStats() {
+      const today = new Date().toDateString();
+      const stats = JSON.parse(localStorage.getItem('pomodoroStats') || '{}');
+      const todaySessions = stats[today] || 0;
+      const totalSessions = Object.values(stats).reduce((sum, sessions) => sum + sessions, 0);
+      
+      document.getElementById('today-sessions').textContent = todaySessions;
+      document.getElementById('total-sessions').textContent = totalSessions;
+      
+      // Load saved settings
+      const savedSettings = JSON.parse(localStorage.getItem('pomodoroSettings') || '{}');
+      if (savedSettings.focusTime) {
+        pomodoroState.settings.focusTime = savedSettings.focusTime;
+        document.getElementById('focus-time').textContent = savedSettings.focusTime + ' min';
+      }
+      if (savedSettings.breakTime) {
+        pomodoroState.settings.breakTime = savedSettings.breakTime;
+        document.getElementById('break-time').textContent = savedSettings.breakTime + ' min';
+      }
+      
+      // Initialize display
+      resetPomodoro();
+    }
+
+    function savePomodoroSettings() {
+      localStorage.setItem('pomodoroSettings', JSON.stringify(pomodoroState.settings));
+    }
+
+    function playPomodoroSound(type) {
+      // Create a simple beep sound using Web Audio API
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        if (type === 'complete') {
+          // Three ascending beeps for completion
+          [440, 554, 659].forEach((freq, i) => {
+            setTimeout(() => {
+              const osc = audioContext.createOscillator();
+              const gain = audioContext.createGain();
+              osc.connect(gain);
+              gain.connect(audioContext.destination);
+              osc.frequency.value = freq;
+              gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+              osc.start(audioContext.currentTime);
+              osc.stop(audioContext.currentTime + 0.3);
+            }, i * 200);
+          });
+        } else {
+          // Single beep for start
+          oscillator.frequency.value = 440;
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.2);
+        }
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
+
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // ==================== WIDGETS SLIDER FUNCTIONALITY ====================
+
+    let currentWidgetIndex = 0;
+    const widgets = [
+      {
+        name: 'Weather',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path stroke-linecap="round" stroke-linejoin="round"
+                   d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+               </svg>`
+      },
+      {
+        name: 'Notes',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <path stroke-linecap="round" stroke-linejoin="round"
+                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+               </svg>`
+      },
+      {
+        name: 'Pomodoro',
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                 <circle cx="12" cy="12" r="10"/>
+                 <polyline points="12,6 12,12 16,14"/>
+               </svg>`
+      }
+    ];
+
+    function updateWidgetDisplay() {
+      const slider = document.getElementById('widgets-slider');
+      const titleElement = document.getElementById('current-widget-title');
+      const iconElement = document.getElementById('current-widget-icon');
+      
+      // Update slider position
+      const translateX = -currentWidgetIndex * 100;
+      slider.style.transform = `translateX(${translateX}%)`;
+      
+      // Update header
+      titleElement.textContent = widgets[currentWidgetIndex].name;
+      iconElement.innerHTML = widgets[currentWidgetIndex].icon;
+      
+      // Update indicators
+      widgets.forEach((_, index) => {
+        const indicator = document.getElementById(`indicator-${index}`);
+        if (indicator) {
+          if (index === currentWidgetIndex) {
+            indicator.classList.remove('bg-white/30');
+            indicator.classList.add('bg-white/60');
+          } else {
+            indicator.classList.remove('bg-white/60');
+            indicator.classList.add('bg-white/30');
+          }
+        }
+      });
+    }
+
+    function goToWidget(index) {
+      if (index >= 0 && index < widgets.length) {
+        currentWidgetIndex = index;
+        updateWidgetDisplay();
+      }
+    }
+
+    function nextWidget() {
+      currentWidgetIndex = (currentWidgetIndex + 1) % widgets.length;
+      updateWidgetDisplay();
+    }
+
+    function previousWidget() {
+      currentWidgetIndex = (currentWidgetIndex - 1 + widgets.length) % widgets.length;
+      updateWidgetDisplay();
+    }
+
+    // Touch/swipe support for mobile
+    let startX = 0;
+    let isDragging = false;
+
+    function handleTouchStart(e) {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }
+
+    function handleTouchEnd(e) {
+      if (!isDragging) return;
+      
+      const endX = e.changedTouches[0].clientX;
+      const diffX = startX - endX;
+      
+      // Minimum swipe distance to trigger navigation
+      if (Math.abs(diffX) > 50) {
+        if (diffX > 0) {
+          nextWidget(); // Swipe left = next
+        } else {
+          previousWidget(); // Swipe right = previous
+        }
+      }
+      
+      isDragging = false;
+    }
+
+    // Keyboard navigation
+    function handleKeyNavigation(e) {
+      if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+        return; // Don't interfere with input fields
+      }
+      
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        previousWidget();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextWidget();
+      }
+    }
+
+    // Initialize slider
+    document.addEventListener('DOMContentLoaded', () => {
+      updateWidgetDisplay();
+      
+      // Add touch support
+      const slider = document.getElementById('widgets-slider');
+      slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+      slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+      
+      // Add keyboard support
+      document.addEventListener('keydown', handleKeyNavigation);
+    });
+
+  </script>
+  <script src="aurora-svelte.js"></script>
+</body>
+
+</html>
