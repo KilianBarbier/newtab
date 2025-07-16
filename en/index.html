@@ -296,25 +296,36 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      let allowHardFocus = true;
+      
       function focusSearch() {
         const searchInput = document.getElementById("searchInput");
-        if (searchInput) {
+        if (searchInput && allowHardFocus) {
           searchInput.focus();
         }
       }
 
+      // Focus initial et pendant les premières secondes
       focusSearch();
       setTimeout(focusSearch, 100);
+      
+      // Désactiver le hard focus après 3 secondes
+      setTimeout(() => {
+        allowHardFocus = false;
+      }, 3000);
 
+      // Garder seulement les événements essentiels après la période initiale
       document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
+        if (document.visibilityState === "visible" && allowHardFocus) {
           focusSearch();
         }
       });
 
-      window.addEventListener("focus", focusSearch);
-      document.addEventListener("mouseenter", focusSearch);
-      document.addEventListener("keydown", focusSearch, { once: true });
+      window.addEventListener("focus", () => {
+        if (allowHardFocus) {
+          focusSearch();
+        }
+      });
 
       const grid = document.getElementById("shortcutGrid");
       const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "{}");
