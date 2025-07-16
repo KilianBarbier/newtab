@@ -1483,7 +1483,6 @@
         </div>
       </div>
 
-      <!-- Context Menu pour les raccourcis -->
       <div id="contextMenu"
         class="hidden fixed rounded-lg shadow-2xl min-w-[150px] z-50 bg-black/40 backdrop-blur-xl border border-white/10">
         <button onclick="editShortcut(document.getElementById('contextMenu').getAttribute('data-position'))"
@@ -1502,7 +1501,6 @@
         </button>
       </div>
 
-      <!-- Modal d'import des raccourcis -->
       <div id="importModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
         <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
           <h2 class="text-2xl font-bold mb-4 text-gray-900">Import Shortcuts</h2>
@@ -1550,7 +1548,7 @@
       <div class="fixed top-4 right-4 z-50">
         <!-- Settings Button -->
         <button onclick="toggleSettingsMenu()" 
-                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center"
+                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
                 title="Settings">
           <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
