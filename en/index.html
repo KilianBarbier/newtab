@@ -344,16 +344,41 @@
         localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
       );
       
-      // Remove the shortcut from stored data
-      delete shortcuts[position];
+      // Check if the shortcut is already empty (placeholder)
+      const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+      const iconContainer = shortcutElement?.querySelector(".shortcut-icon");
+      const isEmpty = iconContainer?.getAttribute("data-empty") === "true";
       
-      // Update localStorage
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      if (isEmpty) {
+        // If it's already empty, remove it completely from the grid
+        const currentShortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
+        const positionNum = parseInt(position);
+        
+        // Shift all shortcuts after this position down by one
+        const newShortcuts = {};
+        Object.keys(shortcuts).forEach(key => {
+          const keyNum = parseInt(key);
+          if (keyNum < positionNum) {
+            newShortcuts[key] = shortcuts[key];
+          } else if (keyNum > positionNum) {
+            newShortcuts[(keyNum - 1).toString()] = shortcuts[key];
+          }
+        });
+        
+        // Reduce shortcut count by 1
+        localStorage.setItem("shortcutCount", (currentShortcutCount - 1).toString());
+        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(newShortcuts));
+        localStorage.setItem("shortcuts", JSON.stringify(newShortcuts));
+      } else {
+        // If it has content, just clear it (make it a placeholder)
+        delete shortcuts[position];
+        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      }
       
       closeContextMenu();
       
-      // Reload shortcuts to update the display (this will show "Add a shortcut" for the empty slot)
+      // Reload shortcuts to update the display
       reloadShortcuts();
     }
 
@@ -852,7 +877,220 @@
 
       // Reload shortcuts
       reloadShortcuts();
-    }    </script>
+    }
+
+    // Export/Import Functions
+    function exportShortcuts() {
+      try {
+        // Récupérer toutes les données de raccourcis
+        const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
+        const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
+        const shortcutCount = localStorage.getItem("shortcutCount") || "8";
+        
+        // Créer l'objet d'export
+        const exportData = {
+          version: "1.0",
+          exportDate: new Date().toISOString(),
+          shortcutCount: parseInt(shortcutCount),
+          personal: personalShortcuts,
+          professional: professionalShortcuts
+        };
+        
+        // Créer le fichier JSON
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        // Créer le lien de téléchargement
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `newtab-shortcuts-${new Date().toISOString().split('T')[0]}.json`;
+        
+        // Déclencher le téléchargement
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Notification de succès
+        showNotification('Shortcuts exported successfully!');
+        
+      } catch (error) {
+        console.error('Export error:', error);
+        showNotification('Export failed. Please try again.');
+      }
+    }
+
+    function showImportModal() {
+      document.getElementById('importModal').classList.remove('hidden');
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.add('hidden');
+    }
+
+    function triggerFileImport() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importData = JSON.parse(e.target.result);
+          
+          // Validation basique
+          if (!importData.personal && !importData.professional) {
+            throw new Error('Invalid file format');
+          }
+          
+          // Demander confirmation à l'utilisateur
+          if (confirm('This will replace your current shortcuts. Are you sure?')) {
+            importShortcuts(importData);
+          }
+          
+        } catch (error) {
+          console.error('Import error:', error);
+          showNotification('Import failed. Please check your file format.');
+        }
+      };
+      
+      reader.readAsText(file);
+      // Reset input pour permettre de réimporter le même fichier
+      event.target.value = '';
+    }
+
+    function importShortcuts(data) {
+      try {
+        // Importer les raccourcis personnels
+        if (data.personal) {
+          localStorage.setItem("shortcuts_personal", JSON.stringify(data.personal));
+        }
+        
+        // Importer les raccourcis professionnels
+        if (data.professional) {
+          localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional));
+        }
+        
+        // Mettre à jour le count si disponible
+        if (data.shortcutCount) {
+          localStorage.setItem("shortcutCount", data.shortcutCount.toString());
+        }
+        
+        // Mettre à jour l'onglet actuel
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const currentShortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        localStorage.setItem("shortcuts", JSON.stringify(currentShortcuts));
+        
+        // Fermer le modal
+        closeImportModal();
+        
+        // Recharger l'affichage
+        reloadShortcuts();
+        
+        // Notification de succès
+        showNotification('Shortcuts imported successfully!');
+        
+      } catch (error) {
+        console.error('Import processing error:', error);
+        showNotification('Import failed during processing.');
+      }
+    }
+
+    // Validation function for the configuration modal
+    function validateForm() {
+      const title = document.getElementById("shortcutTitle");
+      const url = document.getElementById("shortcutUrl");
+      const saveButton = document.getElementById("saveButton");
+      
+      if (!title || !url || !saveButton) return;
+      
+      const titleValue = title.value.trim();
+      const urlValue = url.value.trim();
+      
+      const isTitleValid = titleValue.length > 0;
+      const isUrlValid = urlValue.length > 0;
+      
+      saveButton.disabled = !isTitleValid || !isUrlValid;
+    }
+
+    // ==================== SETTINGS MENU FUNCTIONALITY ====================
+
+    function toggleSettingsMenu() {
+      const menu = document.getElementById('settingsMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    function showAboutModal() {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50';
+      modal.innerHTML = `
+        <div class="bg-white/95 rounded-2xl p-6 w-[400px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-900">About New Tab</h2>
+          <div class="text-gray-700 space-y-3">
+            <p><strong>Version:</strong> 2.0</p>
+            <p><strong>Developer:</strong> Kilian Barbier</p>
+            <p><strong>Features:</strong></p>
+            <ul class="list-disc list-inside ml-4 space-y-1">
+              <li>Personal & Professional shortcuts</li>
+              <li>Weather widget</li>
+              <li>Notes widget</li>
+              <li>Pomodoro timer</li>
+              <li>Export/Import functionality</li>
+            </ul>
+          </div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button onclick="this.closest('.fixed').remove()" 
+                    class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
+              Close
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // Close on click outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    function clearAllData() {
+      if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, and settings. This action cannot be undone.')) {
+        // Clear all localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.includes('shortcuts') || key.includes('notes') || key.includes('pomodoro') || key.includes('weather'))) {
+            keysToRemove.push(key);
+          }
+        }
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Refresh the page to show clean state
+        showNotification('All data cleared successfully!', 'success');
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      }
+    }
+
+    // Close settings menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const settingsMenu = document.getElementById('settingsMenu');
+      const settingsButton = e.target.closest('[onclick*="toggleSettingsMenu"]');
+      
+      if (settingsMenu && !settingsMenu.contains(e.target) && !settingsButton) {
+        settingsMenu.classList.add('hidden');
+      }
+    });
+
+    // ...existing code...
+  </script>
   <script src="aurora-animation.js"></script>
 </head>
 
@@ -881,6 +1119,7 @@
         </svg>
         <a id="pro" class="block w-full">Professional</a>
       </div>
+
       <!-- Widgets Slider -->
       <div class="mt-6">
         <!-- Slider Header with Navigation -->
@@ -1269,96 +1508,6 @@
         </div>
       </div>
 
-      <script>        // List of common domain extensions
-        const validTLDs = [
-          "com",
-          "net",
-          "org",
-          "edu",
-          "gov",
-          "mil",
-          "io",
-          "co",
-          "ai",
-          "app",
-          "dev",
-          "me",
-          "tv",
-          "info",
-          "biz",
-          "name",
-          "mobi",
-          "pro",
-          "travel",
-          // Common national domains
-          "fr",
-          "uk",
-          "de",
-          "it",
-          "es",
-          "nl",
-          "ru",
-          "cn",
-          "jp",
-          "kr",
-          "br",
-          "au",
-          "ca",
-          "in",
-          "eu",
-        ];
-
-        function isValidUrl(string) {
-          try {
-            const url = string.trim();
-            if (!url) return false;            // Add https:// if needed
-            const urlToTest = url.match(/^https?:\/\//i)
-              ? url
-              : `https://${url}`;
-            const urlObj = new URL(urlToTest);
-
-            // Check hostname
-            const parts = urlObj.hostname.split(".");
-            if (parts.length < 2) return false;
-
-            // Check that the extension follows standard format
-            // An extension is typically 2-12 characters and contains only letters
-            const tld = parts[parts.length - 1].toLowerCase();
-            return /^[a-z]{2,12}$/.test(tld);
-          } catch (err) {
-            return false;
-          }
-        }        // Improved validation function
-        function validateForm() {
-          const title = document.getElementById("shortcutTitle").value.trim();
-          const url = document.getElementById("shortcutUrl").value.trim();
-          const saveButton = document.getElementById("saveButton");
-          const urlError = document.getElementById("urlError");
-
-          const isTitleValid = title.length > 0;
-          const isUrlValid = isValidUrl(url);
-
-          // Show/hide error message
-          if (url && !isUrlValid) {
-            urlError.classList.remove("hidden");
-          } else {
-            urlError.classList.add("hidden");
-          }
-
-          saveButton.disabled = !isTitleValid || !isUrlValid;
-        }        // Modification of openConfigModal to reset button state
-        function openConfigModal(position) {
-          const modal = document.getElementById("configModal");
-          modal.setAttribute("data-position", position);
-
-          document.getElementById("shortcutTitle").value = "";
-          document.getElementById("shortcutUrl").value = "";
-          document.getElementById("saveButton").disabled = true;
-
-          modal.classList.remove("hidden");
-          document.getElementById("shortcutTitle").focus();
-        }
-      </script>
       <div id="contextMenu"
         class="hidden fixed rounded-lg shadow-2xl min-w-[150px] z-50 bg-black/40 backdrop-blur-xl border border-white/10">
         <button onclick="editShortcut(document.getElementById('contextMenu').getAttribute('data-position'))"
@@ -1377,40 +1526,23 @@
         </button>
       </div>
 
-      <!-- Add search help modal -->
-      <div id="searchHelpModal"
-        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+      <div id="importModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
         <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
-          <h2 class="text-2xl font-bold mb-4 text-white">Search Commands</h2>
-          <div class="grid grid-cols-2 gap-4 text-white">
-            <div>
-              <p><strong>&#47;g</strong> - Google</p>
-              <p><strong>&#47;yt</strong> - YouTube</p>
-              <p><strong>&#47;gh</strong> - GitHub</p>
-              <p><strong>&#47;w</strong> - Wikipedia</p>
-              <p><strong>&#47;r</strong> - Reddit</p>
-              <p><strong>&#47;so</strong> - Stack Overflow</p>
-              <p><strong>&#47;i</strong> - Google Images</p>
-              <p><strong>&#47;ddg</strong> - DuckDuckGo</p>
-              <p><strong>&#47;px</strong> - Perplexity AI</p>
-            </div>
-            <div>
-              <p><strong>&#47;a</strong> - Amazon</p>
-              <p><strong>&#47;n</strong> - Netflix</p>
-              <p><strong>&#47;sp</strong> - Spotify</p>
-              <p><strong>&#47;tw</strong> - Twitter</p>
-              <p><strong>&#47;ig</strong> - Instagram Tags</p>
-              <p><strong>&#47;maps</strong> - Google Maps</p>
+          <h2 class="text-2xl font-bold mb-4 text-gray-900">Import Shortcuts</h2>
+          <div class="text-gray-700 mb-6">
+            <p class="mb-3">Select a .json file containing your shortcuts to import them.</p>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+              <strong>⚠️ Important:</strong> This will replace your current shortcuts. Make sure to export your current shortcuts first if you want to keep them.
             </div>
           </div>
-          <div class="mt-6 text-white/80">            <p>Example: <code>/yt cute cats</code>, directly searches for "cute cats" on Youtube.</p>
-            <p>
-              Tip: Use a slash (/) before a command, or just type your search to use Google
-            </p>
+          <div class="flex justify-end gap-3">
+            <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">
+              Cancel
+            </button>
+            <button onclick="triggerFileImport()" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
+              Choose File
+            </button>
           </div>
-          <button onclick="closeSearchHelp()" class="mt-6 px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white">
-            Close
-          </button>
         </div>
       </div>
 
@@ -1436,17 +1568,65 @@
         </div>
       </div>
 
-      <script>
-        function showSearchHelp() {
-          document
-            .getElementById("searchHelpModal")
-            .classList.remove("hidden");
-        }
+      <!-- Floating Export/Import Buttons -->
+      <!-- Settings Menu -->
+      <div class="fixed top-4 right-4 z-50">
+        <!-- Settings Button -->
+        <button onclick="toggleSettingsMenu()" 
+                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
+                title="Settings">
+          <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+        </button>
+        
+        <!-- Settings Dropdown Menu -->
+        <div id="settingsMenu" class="hidden absolute top-14 right-0 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 min-w-[200px] overflow-hidden">
+          <div class="py-2">
+            <button onclick="exportShortcuts(); toggleSettingsMenu();" 
+                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Export Shortcuts
+            </button>
+            
+            <button onclick="showImportModal(); toggleSettingsMenu();" 
+                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+              </svg>
+              Import Shortcuts
+            </button>
+            
+            <div class="border-t border-gray-200 my-2"></div>
+            
+            <button onclick="showAboutModal(); toggleSettingsMenu();" 
+                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              About
+            </button>
+            
+            <button onclick="clearAllData(); toggleSettingsMenu();" 
+                    class="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 transition-colors flex items-center gap-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              Clear All Data
+            </button>
+          </div>
+        </div>
+      </div>
 
-        function closeSearchHelp() {
-          document.getElementById("searchHelpModal").classList.add("hidden");
-        }
-      </script>
+      <!-- Input file caché pour l'import -->
+      <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
+      <div class="wrapper">
+        <canvas id="aurora"></canvas>
+      </div>
     </main>
   </div>
 
@@ -1676,6 +1856,39 @@
       return descriptions[weatherCode] || 'Unknown';
     }
 
+    function updateWeatherForecast(daily) {
+      const forecastContainer = document.getElementById('weather-forecast');
+      if (!forecastContainer) return;
+      
+      // Clear existing forecast
+      forecastContainer.innerHTML = '';
+      
+      // Create forecast items for the next few days (skip today, start from tomorrow)
+      for (let i = 1; i < Math.min(daily.time.length, 3); i++) {
+        const date = new Date(daily.time[i]);
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const weatherCode = daily.weather_code[i];
+        const maxTemp = Math.round(daily.temperature_2m_max[i]);
+        const minTemp = Math.round(daily.temperature_2m_min[i]);
+        const icon = getWeatherIconSmall(weatherCode, true); // Use day icon for forecast with smaller size
+        const description = getWeatherDescription(weatherCode);
+
+        const forecastItem = document.createElement('div');
+        forecastItem.className = 'flex items-center justify-start bg-white/20 rounded-lg p-3';
+        forecastItem.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl flex items-center">${icon}</span>
+            <div class="text-left">
+              <div class="text-white font-medium">${dayName} - ${description}</div>
+              <div class="text-white/70 text-sm">Max ${maxTemp}°C Min ${minTemp}°C</div>
+            </div>
+          </div>
+        `;
+
+        forecastContainer.appendChild(forecastItem);
+      }
+    }
+
     async function loadWeather(cityName) {
       const weatherInput = document.getElementById('weather-input');
       const weatherLoading = document.getElementById('weather-loading');
@@ -1746,45 +1959,10 @@
         weatherLoading.classList.add('hidden');
         weatherContent.classList.remove('hidden');
 
-        // Save the last searched city
-        localStorage.setItem('lastWeatherCity', cityName);
-
       } catch (error) {
-        console.error('Weather loading error:', error);
-        
-        // Show error state
+        console.error('Error loading weather:', error);
         weatherLoading.classList.add('hidden');
         weatherError.classList.remove('hidden');
-      }
-    }
-
-    function updateWeatherForecast(dailyData) {
-      const forecastContainer = document.getElementById('weather-forecast');
-      forecastContainer.innerHTML = '';
-
-      // Create forecast items for the next few days (skip today, start from tomorrow)
-      for (let i = 1; i < Math.min(dailyData.time.length, 3); i++) {
-        const date = new Date(dailyData.time[i]);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-        const weatherCode = dailyData.weather_code[i];
-        const maxTemp = Math.round(dailyData.temperature_2m_max[i]);
-        const minTemp = Math.round(dailyData.temperature_2m_min[i]);
-        const icon = getWeatherIconSmall(weatherCode, true); // Use day icon for forecast with smaller size
-        const description = getWeatherDescription(weatherCode);
-
-        const forecastItem = document.createElement('div');
-        forecastItem.className = 'flex items-center justify-start bg-white/20 rounded-lg p-3';
-        forecastItem.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="text-2xl flex items-center">${icon}</span>
-            <div class="text-left">
-              <div class="text-white font-medium">${dayName} - ${description}</div>
-              <div class="text-white/70 text-sm">Max ${maxTemp}°C Min ${minTemp}°C</div>
-            </div>
-          </div>
-        `;
-
-        forecastContainer.appendChild(forecastItem);
       }
     }
 
