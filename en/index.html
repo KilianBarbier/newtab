@@ -1568,6 +1568,43 @@
         </div>
       </div>
 
+      <!-- Add search help modal -->
+      <div id="searchHelpModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-white">Search Commands</h2>
+          <div class="grid grid-cols-2 gap-4 text-white">
+            <div>
+              <p><strong>/g</strong> - Google</p>
+              <p><strong>/yt</strong> - YouTube</p>
+              <p><strong>/gh</strong> - GitHub</p>
+              <p><strong>/w</strong> - Wikipedia</p>
+              <p><strong>/r</strong> - Reddit</p>
+              <p><strong>/so</strong> - Stack Overflow</p>
+              <p><strong>/a</strong> - Amazon</p>
+              <p><strong>/n</strong> - Netflix</p>
+            </div>
+            <div>
+              <p><strong>/sp</strong> - Spotify</p>
+              <p><strong>/tw</strong> - Twitter</p>
+              <p><strong>/ig</strong> - Instagram</p>
+              <p><strong>/maps</strong> - Google Maps</p>
+              <p><strong>/i</strong> - Google Images</p>
+              <p><strong>/ddg</strong> - DuckDuckGo</p>
+              <p><strong>/px</strong> - Perplexity</p>
+            </div>
+          </div>
+          <div class="text-white/80 text-sm mt-4">
+            <p>
+              Tip: Use a slash (/) before a command, or just type your search to search with Google
+            </p>
+          </div>
+          <button onclick="closeSearchHelp()" class="mt-6 px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white">
+            Close
+          </button>
+        </div>
+      </div>
+
       <!-- Floating Export/Import Buttons -->
       <!-- Settings Menu -->
       <div class="fixed top-4 right-4 z-50">
@@ -2648,6 +2685,15 @@
       // Add keyboard support
       document.addEventListener('keydown', handleKeyNavigation);
     });
+
+    // Search help modal functions
+    function showSearchHelp() {
+      document.getElementById("searchHelpModal").classList.remove("hidden");
+    }
+
+    function closeSearchHelp() {
+      document.getElementById("searchHelpModal").classList.add("hidden");
+    }
 
   </script>
   <script src="aurora-svelte.js"></script>
