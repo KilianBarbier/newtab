@@ -78,13 +78,14 @@
       document.removeEventListener("click", closeContextMenu);
     }
 
-    function generateShortcut(i) {
+    function generateShortcut(i, groupId = null) {
       return `
           <div class="shortcut-container" 
              ondragover="handleDragOver(event)" 
              ondrop="handleDrop(event, '${i}')"
              ondragenter="handleDragEnter(event)"
-             ondragleave="handleDragLeave(event)">            <a href="#" 
+             ondragleave="handleDragLeave(event)"
+             data-group-id="${groupId || ''}">            <a href="#" 
              draggable="true"
              ondragstart="handleDragStart(event, '${i}')"
              onclick="handleShortcutClick(event, '${i}')" 
@@ -97,6 +98,39 @@
               </div>
             </a>
           </div>`;
+    }
+
+    function generateGroupHeader(groupId, groupName) {
+      return `
+        <div class="group-header col-span-full mb-4 mt-8 first:mt-0" data-group-id="${groupId}">
+          <div class="flex items-center justify-between bg-white/20 backdrop-blur-xl rounded-2xl p-4 shadow-lg">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-white group-name" onclick="editGroupName('${groupId}')">${groupName}</h3>
+              <span class="text-sm text-white/60 group-count">(0 shortcuts)</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="addShortcutToGroup('${groupId}')" 
+                      class="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
+                      title="Add shortcut to this group">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </button>
+              <button onclick="deleteGroup('${groupId}')" 
+                      class="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-300 transition-colors"
+                      title="Delete group">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>`;
     }
 
     function handleDragOver(event) {
@@ -176,18 +210,32 @@
       event.currentTarget.classList.add('opacity-50');
     } function generateAddRowButton() {
       return `
-          <button
-             onclick="addMoreShortcuts()"
-             class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 w-full"
-             id="addRowButton">
-            <div class="text-center">
-              <div class="flex justify-center mb-2">
-                <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </div>              <div class="text-white/70 font-medium">Add more shortcuts</div>
-            </div>
-          </button>`;
+          <div class="col-span-full flex gap-4 justify-center mt-8">
+            <button
+               onclick="addMoreShortcuts()"
+               class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30"
+               id="addRowButton">
+              <div class="text-center">
+                <div class="flex justify-center mb-2">
+                  <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </div>                <div class="text-white/70 font-medium">Add more shortcuts</div>
+              </div>
+            </button>
+            <button
+               onclick="createNewGroup()"
+               class="group p-6 backdrop-blur-xl bg-blue-500/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-blue-500/40 transition-all duration-300 border-2 border-dashed border-blue-300/30"
+               id="addGroupButton">
+              <div class="text-center">
+                <div class="flex justify-center mb-2">
+                  <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                </div>                <div class="text-white/70 font-medium">Create new group</div>
+              </div>
+            </button>
+          </div>`;
     } function addMoreShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const currentCount =
@@ -208,6 +256,7 @@
     }    async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
+      const groupId = modal.getAttribute("data-group-id");
       const title = document.getElementById("shortcutTitle").value;
       let url = document.getElementById("shortcutUrl").value.trim();
 
@@ -221,7 +270,13 @@
         const shortcuts = JSON.parse(
           localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
         );
-        shortcuts[position] = { title, url, faviconUrl };
+        
+        const shortcutData = { title, url, faviconUrl };
+        if (groupId && groupId !== 'null') {
+          shortcutData.groupId = groupId;
+        }
+        
+        shortcuts[position] = shortcutData;
         localStorage.setItem(
           `shortcuts_${activeTab}`,
           JSON.stringify(shortcuts)
@@ -229,34 +284,40 @@
         localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
         closeConfigModal();
-        reloadShortcuts(); // Instead of reloadWithTransition()
+        reloadShortcuts();
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
-    }    function openConfigModal(position) {
+    }    function openConfigModal(position, isEdit = false, groupId = null) {
       const modal = document.getElementById("configModal");
       const titleInput = document.getElementById("shortcutTitle");
 
       modal.setAttribute("data-position", position);
-      titleInput.value = "";
-      document.getElementById("shortcutUrl").value = "";
+      modal.setAttribute("data-group-id", groupId || 'null');
+      
+      if (isEdit) {
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        const shortcutData = shortcuts[position];
+        
+        if (shortcutData) {
+          titleInput.value = shortcutData.title || "";
+          document.getElementById("shortcutUrl").value = shortcutData.url || "";
+        }
+      } else {
+        titleInput.value = "";
+        document.getElementById("shortcutUrl").value = "";
+      }
+      
       document.getElementById("saveButton").disabled = true;
 
       modal.classList.remove("hidden");
 
       // Improved focus method with multiple attempts
-      // First immediate attempt
       titleInput.focus();
-
-      // Second attempt with a short delay
+      setTimeout(() => titleInput.focus(), 50);
       setTimeout(() => {
         titleInput.focus();
-      }, 50);
-
-      // Third attempt with a longer delay to ensure the modal is fully rendered
-      setTimeout(() => {
-        titleInput.focus();
-        // Move cursor to the end of text
         if (titleInput.value) {
           titleInput.selectionStart = titleInput.value.length;
           titleInput.selectionEnd = titleInput.value.length;
@@ -796,66 +857,222 @@
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
 
-      // Supprimer tous les raccourcis existants mais garder le bouton d'ajout
-      const addRowButton = document.getElementById("addRowButton");
+      // Clear the grid
       grid.innerHTML = '';
 
-      // Déterminer le nombre réel de raccourcis à afficher
+      // If no groups exist, create a default "Ungrouped" section
+      if (Object.keys(groups).length === 0) {
+        renderUngroupedShortcuts(grid, shortcuts);
+      } else {
+        // Render each group
+        Object.entries(groups).forEach(([groupId, groupData]) => {
+          renderGroup(grid, groupId, groupData, shortcuts);
+        });
+
+        // Render ungrouped shortcuts at the end
+        const ungroupedShortcuts = Object.entries(shortcuts).filter(([position, data]) => !data.groupId);
+        if (ungroupedShortcuts.length > 0) {
+          renderUngroupedSection(grid, ungroupedShortcuts);
+        }
+      }
+
+      // Add the control buttons at the end
+      grid.innerHTML += generateAddRowButton();
+    }
+
+    function renderGroup(grid, groupId, groupData, shortcuts) {
+      // Add group header
+      grid.innerHTML += generateGroupHeader(groupId, groupData.name);
+
+      // Add shortcuts for this group
+      const groupShortcuts = Object.entries(shortcuts).filter(([position, data]) => data.groupId === groupId);
+      
+      groupShortcuts.forEach(([position, data]) => {
+        grid.innerHTML += generateShortcut(position, groupId);
+      });
+
+      // Update shortcuts display
+      setTimeout(() => {
+        groupShortcuts.forEach(([position, data]) => {
+          updateShortcutDisplay(position, data);
+        });
+        updateGroupCount(groupId);
+      }, 0);
+    }
+
+    function renderUngroupedShortcuts(grid, shortcuts) {
       const shortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
       
-      // Recréer les raccourcis
       for (let i = 0; i < shortcutCount; i++) {
         grid.innerHTML += generateShortcut(i);
       }
 
-      // Mettre à jour l'apparence des raccourcis avec les données stockées
-      for (const position in shortcuts) {
-        const shortcutData = shortcuts[position];
-        const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
-        
-        if (shortcutElement && shortcutData) {
-          // Mettre à jour l'apparence du raccourci
-          const iconElement = shortcutElement.querySelector('.shortcut-icon');
-          const titleElement = shortcutElement.querySelector('.shortcut-title');
-          
-          if (shortcutData.iconURL) {
-            iconElement.innerHTML = `<img src="${shortcutData.iconURL}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded">`;
-            iconElement.setAttribute('data-empty', 'false');
-          }
-          
-          if (shortcutData.title) {
-            titleElement.textContent = shortcutData.title;
-          }
-          
-          if (shortcutData.url) {
-            shortcutElement.href = shortcutData.url;
-          }
-        }
+      // Update shortcuts display
+      setTimeout(() => {
+        Object.entries(shortcuts).forEach(([position, data]) => {
+          updateShortcutDisplay(position, data);
+        });
+      }, 0);
+    }
+
+    function renderUngroupedSection(grid, ungroupedShortcuts) {
+      // Add "Other Shortcuts" header for ungrouped items
+      grid.innerHTML += generateGroupHeader('ungrouped', 'Other Shortcuts');
+
+      ungroupedShortcuts.forEach(([position, data]) => {
+        grid.innerHTML += generateShortcut(position, 'ungrouped');
+      });
+
+      // Update shortcuts display
+      setTimeout(() => {
+        ungroupedShortcuts.forEach(([position, data]) => {
+          updateShortcutDisplay(position, data);
+        });
+        updateGroupCount('ungrouped');
+      }, 0);
+    }
+
+    function updateShortcutDisplay(position, data) {
+      const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+      if (!shortcutElement || !data) return;
+
+      shortcutElement.href = data.url;
+      shortcutElement.onclick = (e) => {
+        e.preventDefault();
+        window.location.href = data.url;
+      };
+      shortcutElement.querySelector(".shortcut-title").textContent = data.title;
+      const iconContainer = shortcutElement.querySelector(".shortcut-icon");
+      iconContainer.removeAttribute("data-empty");
+      iconContainer.innerHTML = `
+          <img src="${data.faviconUrl}" 
+             class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+             alt="${data.title}" 
+             onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+    }
+
+    function updateGroupCount(groupId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      let count;
+      if (groupId === 'ungrouped') {
+        count = Object.values(shortcuts).filter(data => !data.groupId).length;
+      } else {
+        count = Object.values(shortcuts).filter(data => data.groupId === groupId).length;
       }
 
-      // Remettre le bouton d'ajout
-      grid.appendChild(addRowButton);
+      const groupCountElement = document.querySelector(`[data-group-id="${groupId}"] .group-count`);
+      if (groupCountElement) {
+        groupCountElement.textContent = `(${count} shortcuts)`;
+      }
+    }
 
-      // Mettre à jour les raccourcis avec leurs données
-      Object.entries(shortcuts).forEach(([position, data]) => {
-        const shortcut = document.querySelector(`[data-position="${position}"]`);
-        if (shortcut) {
-          shortcut.href = data.url;
-          shortcut.onclick = (e) => {
-            e.preventDefault();
-            window.location.href = data.url;
-          };
-          shortcut.querySelector(".shortcut-title").textContent = data.title;
-          const iconContainer = shortcut.querySelector(".shortcut-icon");
-          iconContainer.removeAttribute("data-empty");
-          iconContainer.innerHTML = `
-              <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
-                 alt="${data.title}" 
-                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+    // Group management functions
+    function createNewGroup() {
+      const groupName = prompt("Enter group name:");
+      if (!groupName || !groupName.trim()) return;
+
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
+      
+      const groupId = `group_${Date.now()}`;
+      groups[groupId] = {
+        name: groupName.trim(),
+        created: new Date().toISOString()
+      };
+
+      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
+      reloadShortcuts();
+      showNotification(`Group "${groupName}" created successfully!`);
+    }
+
+    function editGroupName(groupId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
+      
+      const currentName = groups[groupId]?.name || '';
+      const newName = prompt("Enter new group name:", currentName);
+      
+      if (!newName || !newName.trim() || newName.trim() === currentName) return;
+
+      groups[groupId].name = newName.trim();
+      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
+      
+      // Update display immediately
+      const groupNameElement = document.querySelector(`[data-group-id="${groupId}"] .group-name`);
+      if (groupNameElement) {
+        groupNameElement.textContent = newName.trim();
+      }
+      
+      showNotification("Group name updated successfully!");
+    }
+
+    function deleteGroup(groupId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      const groupName = groups[groupId]?.name || 'this group';
+      const groupShortcutsCount = Object.values(shortcuts).filter(data => data.groupId === groupId).length;
+      
+      let confirmMessage = `Are you sure you want to delete the group "${groupName}"?`;
+      if (groupShortcutsCount > 0) {
+        confirmMessage += `\n\nThis will move ${groupShortcutsCount} shortcuts to "Other Shortcuts".`;
+      }
+      
+      if (!confirm(confirmMessage)) return;
+
+      // Move shortcuts from this group to ungrouped
+      Object.keys(shortcuts).forEach(position => {
+        if (shortcuts[position].groupId === groupId) {
+          delete shortcuts[position].groupId;
         }
       });
+
+      // Delete the group
+      delete groups[groupId];
+      
+      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
+      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      
+      reloadShortcuts();
+      showNotification(`Group "${groupName}" deleted successfully!`);
+    }
+
+    function addShortcutToGroup(groupId) {
+      // Find the next available position
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      let nextPosition = 0;
+      while (shortcuts[nextPosition.toString()]) {
+        nextPosition++;
+      }
+
+      // Open config modal for this position and group
+      openConfigModal(nextPosition.toString(), false, groupId);
+    }
+
+    function moveShortcutToGroup(position, targetGroupId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      
+      if (!shortcuts[position]) return;
+
+      if (targetGroupId === 'ungrouped') {
+        delete shortcuts[position].groupId;
+      } else {
+        shortcuts[position].groupId = targetGroupId;
+      }
+
+      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      
+      reloadShortcuts();
     }
 
     function switchTab(tab) {
@@ -1013,6 +1230,60 @@
       const isUrlValid = urlValue.length > 0;
       
       saveButton.disabled = !isTitleValid || !isUrlValid;
+    }
+
+    function showMoveToGroupModal(position) {
+      const modal = document.getElementById('moveToGroupModal');
+      const groupList = document.getElementById('groupList');
+      
+      modal.setAttribute('data-position', position);
+      
+      // Populate groups
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
+      
+      groupList.innerHTML = '';
+      Object.entries(groups).forEach(([groupId, groupData]) => {
+        groupList.innerHTML += `
+          <button onclick="moveShortcutToSelectedGroup('${groupId}')" 
+                  class="w-full p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-blue-300 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+              </div>
+              <span class="font-medium text-gray-700">${groupData.name}</span>
+            </div>
+          </button>`;
+      });
+      
+      modal.classList.remove('hidden');
+      closeContextMenu();
+    }
+
+    function closeMoveToGroupModal() {
+      document.getElementById('moveToGroupModal').classList.add('hidden');
+    }
+
+    function moveShortcutToSelectedGroup(targetGroupId) {
+      const modal = document.getElementById('moveToGroupModal');
+      const position = modal.getAttribute('data-position');
+      
+      moveShortcutToGroup(position, targetGroupId);
+      closeMoveToGroupModal();
+      
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
+      
+      let targetName;
+      if (targetGroupId === 'ungrouped') {
+        targetName = 'Other Shortcuts';
+      } else {
+        targetName = groups[targetGroupId]?.name || 'Unknown Group';
+      }
+      
+      showNotification(`Shortcut moved to "${targetName}"!`);
     }
 
     // ==================== SETTINGS MENU FUNCTIONALITY ====================
@@ -1515,6 +1786,10 @@
           style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
           Edit Shortcut
         </button>
+        <button onclick="showMoveToGroupModal(document.getElementById('contextMenu').getAttribute('data-position'))"
+          class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
+          Move to Group
+        </button>
         <button onclick="pinToBothTabs(document.getElementById('contextMenu').getAttribute('data-position'))"
           class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
           Pin to both tabs
@@ -1541,6 +1816,34 @@
             </button>
             <button onclick="triggerFileImport()" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
               Choose File
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="moveToGroupModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[400px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-900">Move to Group</h2>
+          <div class="space-y-3 max-h-60 overflow-y-auto">
+            <button onclick="moveShortcutToSelectedGroup('ungrouped')" 
+                    class="w-full p-3 text-left bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                </div>
+                <span class="font-medium text-gray-700">Other Shortcuts</span>
+              </div>
+            </button>
+            <div id="groupList">
+              <!-- Groups will be populated here -->
+            </div>
+          </div>
+          <div class="flex justify-end gap-3 mt-6">
+            <button onclick="closeMoveToGroupModal()" 
+                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">
+              Cancel
             </button>
           </div>
         </div>
