@@ -233,14 +233,42 @@
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
-    }    function openConfigModal(position) {
+    }    function openConfigModal(position, isEdit = false) {
       const modal = document.getElementById("configModal");
       const titleInput = document.getElementById("shortcutTitle");
+      const urlInput = document.getElementById("shortcutUrl");
+      const modalTitle = modal.querySelector("h2");
 
       modal.setAttribute("data-position", position);
-      titleInput.value = "";
-      document.getElementById("shortcutUrl").value = "";
-      document.getElementById("saveButton").disabled = true;
+      
+      if (isEdit) {
+        // Update modal title for editing
+        modalTitle.textContent = "Edit shortcut";
+        
+        // Get current shortcut data for editing
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        const shortcutData = shortcuts[position];
+        
+        if (shortcutData) {
+          titleInput.value = shortcutData.title || "";
+          urlInput.value = shortcutData.url || "";
+          // Enable save button if both fields have values
+          document.getElementById("saveButton").disabled = !shortcutData.title || !shortcutData.url;
+        } else {
+          titleInput.value = "";
+          urlInput.value = "";
+          document.getElementById("saveButton").disabled = true;
+        }
+      } else {
+        // Update modal title for adding new shortcut
+        modalTitle.textContent = "Add a shortcut";
+        
+        // Clear fields for new shortcut
+        titleInput.value = "";
+        urlInput.value = "";
+        document.getElementById("saveButton").disabled = true;
+      }
 
       modal.classList.remove("hidden");
 
