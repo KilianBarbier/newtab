@@ -1,40 +1,48 @@
-# 📁 Guide des Groupes de Raccourcis Visuels
+# � Guide des Boîtes de Groupes de Raccourcis
 
 ## Vue d'ensemble
 
-Les **Groupes de Raccourcis** sont une nouvelle fonctionnalité qui vous permet d'organiser vos raccourcis dans des **conteneurs visuels distincts**, similaires à des dossiers ou des boîtes, pour une navigation intuitive et une organisation claire.
+Les **Boîtes de Groupes** sont une nouvelle fonctionnalité inspirée d'Android et iOS qui vous permet d'organiser vos raccourcis dans des **boîtes compactes**, similaires aux dossiers d'applications sur mobile, pour une navigation intuitive et une organisation claire.
 
 ## 🎨 Concept Visuel
 
-### 🗂️ Conteneurs de Groupes
-Chaque groupe apparaît comme un **conteneur visuel indépendant** avec :
-- **En-tête coloré** avec icône de dossier et nom du groupe
-- **Zone de contenu** avec grille de raccourcis intégrée
-- **Contrôles intégrés** pour ajouter/supprimer
-- **État vide** avec invitation à ajouter des raccourcis
+### � Boîtes de Groupes Compactes
+Chaque groupe apparaît comme une **boîte compacte** avec :
+- **Aperçu 2x2** des icônes des premiers raccourcis (max 4 visibles)
+- **Badge de comptage** si plus de 4 raccourcis (+X)
+- **Nom du groupe** en dessous
+- **Compteur total** de raccourcis
+- **Clic pour ouvrir** la vue détaillée du groupe
 
-### 📐 Disposition Verticale
-- Les groupes sont **empilés verticalement** pour une lecture naturelle
-- Chaque groupe occupe **toute la largeur** disponible
-- **Espacement généreux** entre les groupes pour la clarté
-- **Responsive design** adaptatif selon la taille d'écran
+### 📐 Disposition en Grille
+- Les boîtes sont **organisées en grille responsive** (2-5 colonnes selon l'écran)
+- **Taille compacte** similaire aux dossiers d'applications mobiles
+- **Espacement généreux** entre les boîtes pour la clarté
+- **Raccourcis individuels** mélangés avec les boîtes pour les non-groupés
 
 ## 🚀 Fonctionnalités Principales
 
 ### ✨ Créer un Groupe
-1. Cliquez sur le bouton **"Créer un nouveau groupe"** en bas de la page
+1. Cliquez sur le bouton **"Create new group"** en bas de la page
 2. Saisissez un nom descriptif pour votre groupe (ex: "Outils de Travail", "Réseaux Sociaux", "Divertissement")
-3. Le groupe apparaît instantanément comme un **nouveau conteneur visuel**
+3. Le groupe apparaît instantanément comme une **boîte compacte** dans la grille
 
 ### 📝 Ajouter des Raccourcis à un Groupe
 1. **Méthode 1** : Clic droit sur un raccourci existant → "Move to Group" → Sélectionner le groupe
-2. **Méthode 2** : Cliquer sur le bouton ➕ dans l'en-tête du groupe pour ajouter directement
-3. **Méthode 3** : Cliquer sur "Ajouter le premier raccourci" dans un groupe vide
+2. **Méthode 2** : Cliquer sur la boîte du groupe pour l'ouvrir → Bouton "Ajouter" dans la modale
+3. **Méthode 3** : Dans un groupe vide, cliquer sur "Ajouter le premier raccourci"
+
+### 🔍 Naviguer dans un Groupe
+1. **Clic sur la boîte** : Ouvre la vue détaillée du groupe en plein écran
+2. **Aperçu 2x2** : Voir les 4 premiers raccourcis directement sur la boîte
+3. **Badge +X** : Indique combien d'autres raccourcis sont cachés
+4. **Modale complète** : Grille de tous les raccourcis avec contrôles
 
 ### 🎯 Gérer les Groupes
-- **Renommer** : Cliquer sur le nom du groupe dans l'en-tête
-- **Supprimer** : Cliquer sur l'icône 🗑️ (les raccourcis sont déplacés vers "Autres raccourcis")
-- **Voir le compte** : Le nombre de raccourcis est affiché sous le nom du groupe
+- **Ouvrir** : Cliquer sur la boîte pour accéder à la vue détaillée
+- **Ajouter** : Depuis la modale du groupe ou menu contextuel
+- **Retirer** : Bouton X rouge au survol dans la modale du groupe
+- **Navigation** : Fermer la modale pour revenir à la vue principale
 
 ## 🎨 Interface Utilisateur Visuelle
 
