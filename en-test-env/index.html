@@ -85,30 +85,32 @@
       const hasMore = shortcutCount > maxVisible;
       
       return `
-        <div class="group-box backdrop-blur-xl bg-white/90 rounded-3xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 block group cursor-pointer"
+        <div class="group-box bg-white/90 backdrop-blur-xl rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-0 outline-none hover:scale-105"
              data-group-id="${groupId}"
              onclick="openGroupModal('${groupId}')">
           <!-- Group Icon Grid (2x2) -->
-          <div class="group-icons-preview relative mb-3">
+          <div class="group-icons-preview relative mb-4">
             <div class="grid grid-cols-2 gap-2 w-16 h-16 mx-auto">
               ${visibleShortcuts.map((shortcut, index) => `
-                <div class="w-6 h-6 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center">
+                <div class="w-7 h-7 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center border-0">
                   ${shortcut[1].faviconUrl ? 
-                    `<img src="${shortcut[1].faviconUrl}" class="w-4 h-4 object-contain" alt="${shortcut[1].title}">` :
-                    `<div class="w-4 h-4 bg-gray-300 rounded"></div>`
+                    `<img src="${shortcut[1].faviconUrl}" class="w-5 h-5 object-contain" alt="${shortcut[1].title}">` :
+                    `<div class="w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded flex items-center justify-center">
+                      <span class="text-white text-xs font-bold">${shortcut[1].title.charAt(0).toUpperCase()}</span>
+                    </div>`
                   }
                 </div>
               `).join('')}
               ${Array(maxVisible - visibleShortcuts.length).fill(0).map(() => `
-                <div class="w-6 h-6 rounded-lg bg-gray-200 opacity-50 flex items-center justify-center">
-                  <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <div class="w-7 h-7 rounded-lg bg-gray-200 opacity-60 flex items-center justify-center border-0">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                   </svg>
                 </div>
               `).join('')}
             </div>
             ${hasMore ? `
-              <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
                 <span class="text-white text-xs font-bold">+${shortcutCount - maxVisible}</span>
               </div>
             ` : ''}
@@ -116,8 +118,8 @@
           
           <!-- Group Name -->
           <div class="text-center">
-            <h3 class="text-gray-700 font-medium text-sm truncate group-name">${groupName}</h3>
-            <span class="text-xs text-gray-500">${shortcutCount} raccourcis</span>
+            <h3 class="text-gray-700 font-medium text-sm truncate group-name mb-1">${groupName}</h3>
+            <span class="text-xs text-gray-500">${shortcutCount} raccourci${shortcutCount > 1 ? 's' : ''}</span>
           </div>
         </div>`;
     }
@@ -129,21 +131,53 @@
              ondrop="handleDrop(event, '${i}')"
              ondragenter="handleDragEnter(event)"
              ondragleave="handleDragLeave(event)"
-             data-group-id="${groupId || ''}">            <a href="#" 
+             data-group-id="${groupId || ''}">
+            <a href="#" 
              draggable="true"
              ondragstart="handleDragStart(event, '${i}')"
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+             class="block p-6 bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 outline-none">
               <div class="text-center">
                 <div class="shortcut-icon" data-empty="true">
-                  <div class="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-xl flex items-center justify-center mx-auto mb-2">
-                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  <div class="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                     </svg>
                   </div>
-                </div>                <div class="text-gray-700 font-medium shortcut-title text-sm">Ajouter</div>
+                </div>
+                <div class="text-gray-700 font-medium shortcut-title text-sm">Ajouter</div>
+              </div>
+            </a>
+          </div>`;
+    }
+
+    function generateIndividualShortcut(position, data) {
+      return `
+          <div class="shortcut-container" 
+             ondragover="handleDragOver(event)" 
+             ondrop="handleDrop(event, '${position}')"
+             ondragenter="handleDragEnter(event)"
+             ondragleave="handleDragLeave(event)"
+             data-group-id="">
+            <a href="${data.url}" 
+             draggable="true"
+             ondragstart="handleDragStart(event, '${position}')"
+             onclick="window.open('${data.url}', '_blank'); return false;" 
+             oncontextmenu="showContextMenu(event, '${position}'); return false;"
+             data-position="${position}"
+             class="block p-6 bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 outline-none">
+              <div class="text-center">
+                <div class="shortcut-icon">
+                  ${data.faviconUrl ? 
+                    `<img src="${data.faviconUrl}" class="w-12 h-12 rounded-xl mx-auto object-contain shadow-sm mb-3" alt="${data.title}">` :
+                    `<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                      <span class="text-white font-bold text-lg">${data.title.charAt(0).toUpperCase()}</span>
+                    </div>`
+                  }
+                </div>
+                <div class="text-gray-700 font-medium shortcut-title text-sm truncate">${data.title}</div>
               </div>
             </a>
           </div>`;
@@ -259,29 +293,31 @@
       event.currentTarget.classList.add('opacity-50');
     } function generateAddRowButton() {
       return `
-          <div class="flex gap-4 justify-center mt-12">
+          <div class="flex gap-6 justify-center mt-12">
             <button
                onclick="addMoreShortcuts()"
-               class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 min-w-[200px]"
+               class="p-6 bg-white/30 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 min-w-[200px] outline-none"
                id="addRowButton">
               <div class="text-center">
-                <div class="flex justify-center mb-2">
-                  <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <div class="flex justify-center mb-3">
+                  <svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                   </svg>
-                </div>                <div class="text-white/70 font-medium">Ajouter des raccourcis</div>
+                </div>
+                <div class="text-white/80 font-medium">Ajouter des raccourcis</div>
               </div>
             </button>
             <button
                onclick="createNewGroup()"
-               class="group p-6 backdrop-blur-xl bg-blue-500/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-blue-500/40 transition-all duration-300 border-2 border-dashed border-blue-300/30 min-w-[200px]"
+               class="p-6 bg-blue-500/30 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl hover:bg-blue-500/40 transition-all duration-300 border-2 border-dashed border-blue-300/30 min-w-[200px] outline-none"
                id="addGroupButton">
               <div class="text-center">
-                <div class="flex justify-center mb-2">
-                  <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex justify-center mb-3">
+                  <svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                   </svg>
-                </div>                <div class="text-white/70 font-medium">Créer un nouveau groupe</div>
+                </div>
+                <div class="text-white/80 font-medium">Créer un nouveau groupe</div>
               </div>
             </button>
           </div>`;
@@ -899,13 +935,13 @@
         // Add ungrouped shortcuts as individual items
         const ungroupedShortcuts = Object.entries(shortcuts).filter(([position, data]) => !data.groupId);
         ungroupedShortcuts.forEach(([position, data]) => {
-          grid.innerHTML += updateShortcutDisplay(position, data);
+          grid.innerHTML += generateIndividualShortcut(position, data);
         });
 
         // Add empty slots for new shortcuts
-        const totalSlots = Math.max(12, Object.keys(shortcuts).length + 4);
-        const usedSlots = Object.keys(shortcuts).length + Object.keys(groups).length;
-        for (let i = usedSlots; i < totalSlots; i++) {
+        const usedItems = Object.keys(groups).length + ungroupedShortcuts.length;
+        const totalSlots = Math.max(8, usedItems + 3);
+        for (let i = usedItems; i < totalSlots; i++) {
           grid.innerHTML += generateShortcut(i);
         }
       }
@@ -952,12 +988,13 @@
       if (iconContainer) {
         iconContainer.removeAttribute("data-empty");
         iconContainer.innerHTML = `
-            <div class="w-12 h-12 rounded-xl overflow-hidden shadow-lg mx-auto mb-2 bg-white flex items-center justify-center">
-              <img src="${data.faviconUrl}" 
-                   class="w-8 h-8 object-contain" 
-                   alt="${data.title}" 
-                   onerror="this.style.display='none'; this.parentNode.innerHTML='<svg class=\'w-8 h-8 text-gray-600\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1\'></path></svg>';">
-            </div>`;
+            ${data.faviconUrl ? 
+              `<img src="${data.faviconUrl}" class="w-12 h-12 rounded-xl mx-auto object-contain shadow-sm mb-3" alt="${data.title}" 
+                   onerror="this.outerHTML='<div class=&quot;w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm&quot;><span class=&quot;text-white font-bold text-lg&quot;>${data.title.charAt(0).toUpperCase()}</span></div>';">` :
+              `<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <span class="text-white font-bold text-lg">${data.title.charAt(0).toUpperCase()}</span>
+              </div>`
+            }`;
       }
 
       // Update group count if in a group
