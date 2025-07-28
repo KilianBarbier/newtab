@@ -2692,24 +2692,14 @@
       const pinData = getWidgetPinData();
       const orderedWidgets = [...widgets];
       
-      console.log('Current pin data in getPinnedWidgetOrder:', pinData);
-      
       // Sort widgets by pin priority: primary first, then secondary, then unpinned
       orderedWidgets.sort((a, b) => {
         const aPinStatus = pinData[a.id] || 'none';
         const bPinStatus = pinData[b.id] || 'none';
         
-        console.log(`Comparing ${a.name} (${aPinStatus}) vs ${b.name} (${bPinStatus})`);
-        
         const priority = { 'primary': 0, 'secondary': 1, 'none': 2 };
-        const result = priority[aPinStatus] - priority[bPinStatus];
-        
-        console.log(`Priority result: ${result}`);
-        
-        return result;
+        return priority[aPinStatus] - priority[bPinStatus];
       });
-      
-      console.log('Final ordered widgets:', orderedWidgets.map(w => w.name));
       
       return orderedWidgets;
     }
@@ -2723,29 +2713,20 @@
       const currentWidget = getCurrentWidget();
       const pinData = getWidgetPinData();
       
-      console.log('Pinning widget:', currentWidget.name, 'as', pinType);
-      console.log('Before pin data:', pinData);
-      
       // Update pin status
       pinData[currentWidget.id] = pinType;
       saveWidgetPinData(pinData);
-      
-      console.log('After pin data:', pinData);
       
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
       
       // Update widget order and display
       const orderedWidgets = getPinnedWidgetOrder();
-      console.log('Ordered widgets:', orderedWidgets.map(w => w.name + ' (' + w.id + ')'));
-      
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
       
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
-      console.log('New widget index:', currentWidgetIndex);
       
       // Update display
       updateWidgetDisplay();
@@ -2821,6 +2802,9 @@
       const titleElement = document.getElementById('current-widget-title');
       const iconElement = document.getElementById('current-widget-icon');
       
+      // Reorder DOM elements to match the widgets array order
+      reorderWidgetSlides();
+      
       // Update slider position
       const translateX = -currentWidgetIndex * 100;
       slider.style.transform = `translateX(${translateX}%)`;
@@ -2840,6 +2824,33 @@
             indicator.classList.remove('bg-white/60');
             indicator.classList.add('bg-white/30');
           }
+        }
+      });
+    }
+
+    function reorderWidgetSlides() {
+      const slider = document.getElementById('widgets-slider');
+      const slides = Array.from(slider.children);
+      
+      // Map widget IDs to their DOM elements
+      const slideMap = {
+        'weather': slides.find(slide => slide.querySelector('#weather-widget')),
+        'notes': slides.find(slide => slide.querySelector('#notes-widget')),
+        'pomodoro': slides.find(slide => slide.querySelector('#pomodoro-widget'))
+      };
+      
+      // Remove all slides from the slider
+      slides.forEach(slide => {
+        if (slide.parentNode) {
+          slide.parentNode.removeChild(slide);
+        }
+      });
+      
+      // Re-add slides in the order defined by the widgets array
+      widgets.forEach(widget => {
+        const slide = slideMap[widget.id];
+        if (slide) {
+          slider.appendChild(slide);
         }
       });
     }
