@@ -907,7 +907,17 @@
       reloadShortcuts();
       
       // Update widget order based on pins for the new tab
-      updateWidgetOrder();
+      const orderedWidgets = getPinnedWidgetOrder();
+      const currentWidget = getCurrentWidget();
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
+      // Update display
+      updateWidgetDisplay();
+      updateWidgetIndicators();
     }
 
     // Export/Import Functions
@@ -1037,7 +1047,13 @@
         
         // Recharger l'affichage et réorganiser les widgets
         reloadShortcuts();
-        updateWidgetOrder();
+        
+        // Update widget order based on imported pins
+        const orderedWidgets = getPinnedWidgetOrder();
+        widgets.splice(0, widgets.length, ...orderedWidgets);
+        currentWidgetIndex = 0;
+        updateWidgetDisplay();
+        updateWidgetIndicators();
         
         // Notification de succès
         showNotification('Shortcuts and widget preferences imported successfully!');
@@ -1182,7 +1198,6 @@
               </svg>
             </div>
             <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
-            <div id="current-widget-pin-status" class="flex items-center gap-1"></div>
           </div>
           
           <!-- Navigation Controls -->
@@ -2705,9 +2720,17 @@
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
       
+      // Update widget order and display
+      const orderedWidgets = getPinnedWidgetOrder();
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
       // Update display
       updateWidgetDisplay();
-      updateWidgetOrder();
+      updateWidgetIndicators();
       
       // Show notification
       const pinTypeText = pinType === 'primary' ? 'Primary' : 'Secondary';
@@ -2725,9 +2748,17 @@
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
       
+      // Update widget order and display
+      const orderedWidgets = getPinnedWidgetOrder();
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
       // Update display
       updateWidgetDisplay();
-      updateWidgetOrder();
+      updateWidgetIndicators();
       
       // Show notification
       showNotification(`${currentWidget.name} widget unpinned!`);
@@ -2742,40 +2773,11 @@
       
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
-      currentWidgetIndex = newIndex;
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
       
-      // Rebuild the slider with new order
-      rebuildWidgetSlider();
-    }
-
-    function rebuildWidgetSlider() {
-      const slider = document.getElementById('widgets-slider');
-      
-      // Save current widget contents
-      const weatherContent = document.querySelector('#weather-widget').outerHTML;
-      const notesContent = document.querySelector('#notes-widget').outerHTML;
-      const pomodoroContent = document.querySelector('#pomodoro-widget').outerHTML;
-      
-      const widgetContents = {
-        'weather': weatherContent,
-        'notes': notesContent,
-        'pomodoro': pomodoroContent
-      };
-      
-      // Clear slider
-      slider.innerHTML = '';
-      
-      // Rebuild in new order
-      widgets.forEach(widget => {
-        const widgetDiv = document.createElement('div');
-        widgetDiv.className = 'w-full flex-shrink-0';
-        widgetDiv.innerHTML = widgetContents[widget.id];
-        slider.appendChild(widgetDiv);
-      });
-      
-      // Update indicators
-      updateWidgetIndicators();
+      // Update display without rebuilding
       updateWidgetDisplay();
+      updateWidgetIndicators();
     }
 
     function updateWidgetIndicators() {
@@ -2791,21 +2793,6 @@
       });
     }
 
-    function updatePinStatusDisplay() {
-      const pinStatusElement = document.getElementById('current-widget-pin-status');
-      const currentWidget = getCurrentWidget();
-      const pinData = getWidgetPinData();
-      const pinStatus = pinData[currentWidget.id];
-      
-      if (pinStatus === 'primary') {
-        pinStatusElement.innerHTML = '<span class="text-yellow-300 text-xs">📌 Primary</span>';
-      } else if (pinStatus === 'secondary') {
-        pinStatusElement.innerHTML = '<span class="text-blue-300 text-xs">📎 Secondary</span>';
-      } else {
-        pinStatusElement.innerHTML = '';
-      }
-    }
-
     function updateWidgetDisplay() {
       const slider = document.getElementById('widgets-slider');
       const titleElement = document.getElementById('current-widget-title');
@@ -2818,9 +2805,6 @@
       // Update header
       titleElement.textContent = widgets[currentWidgetIndex].name;
       iconElement.innerHTML = widgets[currentWidgetIndex].icon;
-      
-      // Update pin status display
-      updatePinStatusDisplay();
       
       // Update indicators
       widgets.forEach((_, index) => {
@@ -2898,8 +2882,13 @@
 
     // Initialize slider
     document.addEventListener('DOMContentLoaded', () => {
-      // Initialize widget order based on pins
-      updateWidgetOrder();
+      // First load widget order based on pins, then update display
+      const orderedWidgets = getPinnedWidgetOrder();
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      
+      // Set initial widget index to 0 (first widget in the ordered list)
+      currentWidgetIndex = 0;
+      
       updateWidgetDisplay();
       
       // Add touch support
