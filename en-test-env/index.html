@@ -2692,14 +2692,24 @@
       const pinData = getWidgetPinData();
       const orderedWidgets = [...widgets];
       
+      console.log('Current pin data in getPinnedWidgetOrder:', pinData);
+      
       // Sort widgets by pin priority: primary first, then secondary, then unpinned
       orderedWidgets.sort((a, b) => {
         const aPinStatus = pinData[a.id] || 'none';
         const bPinStatus = pinData[b.id] || 'none';
         
+        console.log(`Comparing ${a.name} (${aPinStatus}) vs ${b.name} (${bPinStatus})`);
+        
         const priority = { 'primary': 0, 'secondary': 1, 'none': 2 };
-        return priority[aPinStatus] - priority[bPinStatus];
+        const result = priority[aPinStatus] - priority[bPinStatus];
+        
+        console.log(`Priority result: ${result}`);
+        
+        return result;
       });
+      
+      console.log('Final ordered widgets:', orderedWidgets.map(w => w.name));
       
       return orderedWidgets;
     }
@@ -2713,20 +2723,29 @@
       const currentWidget = getCurrentWidget();
       const pinData = getWidgetPinData();
       
+      console.log('Pinning widget:', currentWidget.name, 'as', pinType);
+      console.log('Before pin data:', pinData);
+      
       // Update pin status
       pinData[currentWidget.id] = pinType;
       saveWidgetPinData(pinData);
+      
+      console.log('After pin data:', pinData);
       
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
       
       // Update widget order and display
       const orderedWidgets = getPinnedWidgetOrder();
+      console.log('Ordered widgets:', orderedWidgets.map(w => w.name + ' (' + w.id + ')'));
+      
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
       
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
+      console.log('New widget index:', currentWidgetIndex);
       
       // Update display
       updateWidgetDisplay();
@@ -2765,42 +2784,7 @@
     }
 
     function initializeWidgetFunctions() {
-      // Initialize weather widget
-      initializeWeatherWidget();
-      
-      // Initialize notes widget
-      initializeNotesWidget();
-      
-      // Initialize pomodoro widget
-      initializePomodoroWidget();
-    }
-
-    function initializeWeatherWidget() {
-      // Load saved weather data if any
-      const savedCity = localStorage.getItem('weatherCity');
-      if (savedCity) {
-        const cityInput = document.getElementById('city-input');
-        if (cityInput) {
-          cityInput.value = savedCity;
-          updateWeather();
-        }
-      }
-    }
-
-    function initializeNotesWidget() {
-      // Load existing notes
-      loadNotes();
-    }
-
-    function initializePomodoroWidget() {
-      // Load saved pomodoro state if any
-      const savedSessions = localStorage.getItem('pomodoroSessions');
-      if (savedSessions) {
-        const countElement = document.getElementById('pomodoro-count');
-        if (countElement) {
-          countElement.textContent = savedSessions;
-        }
-      }
+      // This function is no longer needed since we don't rebuild widgets
     }
 
     function updateWidgetOrder() {
@@ -2837,9 +2821,6 @@
       const titleElement = document.getElementById('current-widget-title');
       const iconElement = document.getElementById('current-widget-icon');
       
-      // Rebuild the slider with widgets in the correct order
-      rebuildWidgetSlider();
-      
       // Update slider position
       const translateX = -currentWidgetIndex * 100;
       slider.style.transform = `translateX(${translateX}%)`;
@@ -2861,132 +2842,6 @@
           }
         }
       });
-    }
-
-    function rebuildWidgetSlider() {
-      const slider = document.getElementById('widgets-slider');
-      
-      // Widget templates based on their IDs
-      const widgetTemplates = {
-        'weather': `
-          <div class="w-full flex-shrink-0">
-            <div id="weather-widget"
-              class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
-              style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-              
-              <!-- City Input -->
-              <div id="weather-input" class="mb-4">
-                <input type="text" id="city-input" placeholder="Enter your city..."
-                  class="w-full px-4 py-3 rounded-lg bg-white/20 backdrop-blur-xl border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
-                  onkeypress="if(event.key==='Enter') updateWeather()">
-                <button onclick="updateWeather()" 
-                  class="mt-2 w-full px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors">
-                  Get Weather
-                </button>
-              </div>
-              
-              <div id="weather-loading" class="hidden flex items-center justify-center py-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-              </div>
-              
-              <div id="weather-content" class="hidden">
-                <div class="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 id="weather-city" class="text-xl font-semibold">Paris</h3>
-                    <p id="weather-condition" class="text-white/80">Sunny</p>
-                  </div>
-                  <div class="text-right">
-                    <div id="weather-temp" class="text-3xl font-bold">22°C</div>
-                    <div id="weather-feels-like" class="text-sm text-white/70">Feels like 25°C</div>
-                  </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-white/70">Humidity:</span>
-                    <span id="weather-humidity">65%</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-white/70">Wind:</span>
-                    <span id="weather-wind">12 km/h</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div id="weather-error" class="hidden text-center py-4">
-                <p class="text-white/80">Unable to fetch weather data. Please try again.</p>
-              </div>
-            </div>
-          </div>`,
-        
-        'notes': `
-          <div class="w-full flex-shrink-0">
-            <div id="notes-widget"
-              class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
-              style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-              
-              <!-- Add Note Button -->
-              <div class="mb-4">
-                <button onclick="addNote()" 
-                  class="w-full px-4 py-3 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors flex items-center justify-center gap-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                  </svg>
-                  Add Note
-                </button>
-              </div>
-
-              <div id="notes-container" class="space-y-3 max-h-48 overflow-y-auto scrollbar-hide">
-                <!-- Notes will be dynamically added here -->
-              </div>
-            </div>
-          </div>`,
-        
-        'pomodoro': `
-          <div class="w-full flex-shrink-0">
-            <div id="pomodoro-widget"
-              class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
-              style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-              
-              <div class="text-center">
-                <div id="pomodoro-timer" class="text-4xl font-bold mb-4">25:00</div>
-                <div id="pomodoro-session" class="text-lg mb-4">Work Session</div>
-                
-                <div class="flex gap-2 justify-center">
-                  <button onclick="startPomodoro()" id="pomodoro-start"
-                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors">
-                    Start
-                  </button>
-                  <button onclick="pausePomodoro()" id="pomodoro-pause"
-                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors">
-                    Pause
-                  </button>
-                  <button onclick="resetPomodoro()" id="pomodoro-reset"
-                    class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors">
-                    Reset
-                  </button>
-                </div>
-                
-                <div class="mt-4">
-                  <div class="text-sm text-white/70 mb-2">Sessions completed: <span id="pomodoro-count">0</span></div>
-                  <div class="w-full bg-white/20 rounded-full h-2">
-                    <div id="pomodoro-progress" class="bg-white h-2 rounded-full" style="width: 0%"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>`
-      };
-      
-      // Clear and rebuild slider with widgets in correct order
-      slider.innerHTML = '';
-      widgets.forEach(widget => {
-        if (widgetTemplates[widget.id]) {
-          slider.innerHTML += widgetTemplates[widget.id];
-        }
-      });
-      
-      // Reinitialize widget functions after rebuilding
-      initializeWidgetFunctions();
     }
 
     function goToWidget(index) {
