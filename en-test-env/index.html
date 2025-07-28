@@ -2678,12 +2678,15 @@
     // Widget pinning functionality
     function getWidgetPinData() {
       const activeTab = localStorage.getItem("activeTab") || "personal";
-      return JSON.parse(localStorage.getItem(`widgetPins_${activeTab}`) || '{}');
+      const data = JSON.parse(localStorage.getItem(`widgetPins_${activeTab}`) || '{}');
+      console.log('📖 Getting pin data for tab:', activeTab, 'Data:', data);
+      return data;
     }
 
     function saveWidgetPinData(pinData) {
       const activeTab = localStorage.getItem("activeTab") || "personal";
       localStorage.setItem(`widgetPins_${activeTab}`, JSON.stringify(pinData));
+      console.log('💾 Saved pin data for tab:', activeTab, 'Data:', pinData);
     }
 
     function getCurrentWidget() {
@@ -2712,23 +2715,29 @@
     }
 
     function pinWidget(pinType) {
+      console.log('🔄 pinWidget called with:', pinType);
       const currentWidget = getCurrentWidget();
+      console.log('📍 Current widget:', currentWidget);
       const pinData = getWidgetPinData();
+      console.log('💾 Current pin data:', pinData);
       
       // Update pin status
       pinData[currentWidget.id] = pinType;
       saveWidgetPinData(pinData);
+      console.log('✅ Saved pin data:', pinData);
       
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
       
       // Update widget order and display
       const orderedWidgets = getPinnedWidgetOrder();
+      console.log('🔀 New widget order:', orderedWidgets.map(w => w.id));
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
       
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      console.log('🎯 New current index:', currentWidgetIndex);
       
       // Update display
       updateWidgetDisplay();
