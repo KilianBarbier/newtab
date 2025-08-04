@@ -1323,20 +1323,6 @@
                               placeholder="Write your note..." 
                               class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
                               rows="3"></textarea>
-                    
-                    <!-- Reminder Option -->
-                    <div class="flex items-center gap-2 text-sm">
-                      <input type="checkbox" id="add-reminder-checkbox" class="rounded">
-                      <label for="add-reminder-checkbox" class="text-white/80">Set reminder</label>
-                      <select id="reminder-interval-select" class="ml-2 px-2 py-1 bg-white/20 rounded text-white text-xs border border-white/20 disabled:opacity-50" disabled>
-                        <option value="5">5 min</option>
-                        <option value="15" selected>15 min</option>
-                        <option value="30">30 min</option>
-                        <option value="60">1 hour</option>
-                        <option value="120">2 hours</option>
-                      </select>
-                    </div>
-                    
                     <div class="flex gap-2">
                       <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
                       <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
@@ -2125,17 +2111,11 @@
     function showAddNoteForm() {
       document.getElementById('add-note-form').classList.remove('hidden');
       document.getElementById('note-text').focus();
-      
-      // Reset form
-      document.getElementById('add-reminder-checkbox').checked = false;
-      document.getElementById('reminder-interval-select').disabled = true;
     }
 
     function hideAddNoteForm() {
       document.getElementById('add-note-form').classList.add('hidden');
       document.getElementById('note-text').value = '';
-      document.getElementById('add-reminder-checkbox').checked = false;
-      document.getElementById('reminder-interval-select').disabled = true;
     }
 
     function addNote(color) {
@@ -2145,28 +2125,16 @@
         return;
       }
 
-      const reminderCheckbox = document.getElementById('add-reminder-checkbox');
-      const reminderInterval = document.getElementById('reminder-interval-select');
-      
       const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
       const newNote = {
         id: Date.now(),
         text: noteText,
         color: color,
-        createdAt: new Date().toISOString(),
-        reminder: reminderCheckbox.checked ? {
-          interval: parseInt(reminderInterval.value),
-          createdAt: new Date().toISOString()
-        } : null
+        createdAt: new Date().toISOString()
       };
 
       notes.push(newNote);
       localStorage.setItem('userNotes', JSON.stringify(notes));
-
-      // Si un rappel est configuré, le démarrer
-      if (newNote.reminder) {
-        startReminder(newNote.id, newNote.reminder.interval);
-      }
 
       hideAddNoteForm();
       loadNotes();
@@ -2328,66 +2296,30 @@
       // Sort notes by creation date (newest first)
       notes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      container.innerHTML = notes.map(note => {
-        const hasReminder = note.reminder && note.reminder.interval;
-        const reminderText = hasReminder ? 
-          (note.reminder.interval < 60 ? 
-            `${note.reminder.interval}min` : 
-            note.reminder.interval === 60 ? '1h' : 
-            `${Math.floor(note.reminder.interval / 60)}h${note.reminder.interval % 60 > 0 ? note.reminder.interval % 60 + 'min' : ''}`) 
-          : '';
-        
-        return `
-          <div class="relative ${getColorClasses(note.color)} ${getDynamicPadding(note.text)} border-2 shadow-sm font-patrick transition-transform hover:scale-105 hover:z-10" 
-               style="${getRandomNoteStyle()}"
-               oncontextmenu="showNoteContextMenu(event, ${note.id})">
-            ${hasReminder ? `
-              <div class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                ${reminderText}
-              </div>
-            ` : ''}
-            <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
-            <div class="flex justify-end gap-1 mt-2">
-              ${hasReminder ? `
-                <button onclick="event.stopPropagation(); removeReminder(${note.id})" 
-                        class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
-                        title="Remove reminder">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
-                  </svg>
-                </button>
-              ` : `
-                <button onclick="event.stopPropagation(); openReminderModal(${note.id})" 
-                        class="p-1 rounded hover:bg-green-500/20 transition-colors text-green-600"
-                        title="Add reminder">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </button>
-              `}
-              <button onclick="event.stopPropagation(); editNote(${note.id})" 
-                      class="p-1 rounded hover:bg-black/10 transition-colors"
-                      title="Edit note">
-                <svg class="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-              </button>
-              <button onclick="event.stopPropagation(); deleteNote(${note.id})" 
-                      class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
-                      title="Delete note">
-                <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
-            </div>
+      container.innerHTML = notes.map(note => `
+        <div class="relative ${getColorClasses(note.color)} ${getDynamicPadding(note.text)} border-2 shadow-sm font-patrick transition-transform hover:scale-105 hover:z-10" 
+             style="${getRandomNoteStyle()}">
+          <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
+          <div class="flex justify-end gap-1 mt-2">
+            <button onclick="editNote(${note.id})" 
+                    class="p-1 rounded hover:bg-black/10 transition-colors"
+                    title="Edit note">
+              <svg class="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </button>
+            <button onclick="deleteNote(${note.id})" 
+                    class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
+                    title="Delete note">
+              <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
     }
 
     function escapeHtml(text) {
@@ -2396,409 +2328,12 @@
       return div.innerHTML;
     }
 
-    // ==================== REMINDER FUNCTIONALITY ====================
-    
-    // Variable globale pour stocker les intervalles actifs
-    let activeReminders = new Map();
-
-    // Son de notification - utilise Web Audio API
-    function playReminderSound() {
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Configuration du son - tonalité douce mais audible
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } catch (error) {
-        console.log('Could not play reminder sound:', error);
-      }
-    }
-
-    // Afficher une notification de rappel
-    function showReminderNotification(noteText) {
-      // Son d'abord
-      playReminderSound();
-      
-      // Notification visuelle améliorée
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-orange-500/95 backdrop-blur-xl text-white px-6 py-4 rounded-lg shadow-xl z-[9999] transition-all duration-300 transform translate-x-0 max-w-sm border-l-4 border-orange-300';
-      
-      notification.innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="flex-shrink-0">
-            <svg class="w-6 h-6 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zm-8-1h8v-2H7v2zm0-4h8v-2H7v2zm0-4h8V6H7v2z"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h4 class="font-bold text-orange-100 mb-1">📝 Note Reminder</h4>
-            <p class="text-orange-50 text-sm">${escapeHtml(noteText.length > 100 ? noteText.substring(0, 100) + '...' : noteText)}</p>
-          </div>
-          <button onclick="this.closest('.fixed').remove()" class="flex-shrink-0 text-orange-200 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // Animation d'entrée
-      setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-      }, 10);
-      
-      // Auto-suppression après 8 secondes
-      setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 300);
-      }, 8000);
-    }
-
-    // Démarrer un rappel
-    function startReminder(noteId, intervalMinutes) {
-      // Arrêter le rappel existant s'il y en a un
-      stopReminder(noteId);
-      
-      const intervalMs = intervalMinutes * 60 * 1000;
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      
-      if (!note) return;
-      
-      // Créer l'intervalle
-      const intervalId = setInterval(() => {
-        showReminderNotification(note.text);
-      }, intervalMs);
-      
-      // Stocker l'intervalle
-      activeReminders.set(noteId, intervalId);
-      
-      // Notification de confirmation
-      showNotification(`Reminder set for "${note.text.substring(0, 30)}..." every ${intervalMinutes} minutes`);
-    }
-
-    // Arrêter un rappel
-    function stopReminder(noteId) {
-      if (activeReminders.has(noteId)) {
-        clearInterval(activeReminders.get(noteId));
-        activeReminders.delete(noteId);
-      }
-    }
-
-    // Ouvrir le modal de configuration de rappel
-    function openReminderModal(noteId) {
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50';
-      modal.id = 'reminderModal';
-      
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      modal.innerHTML = `
-        <div class="bg-white/95 rounded-2xl p-6 w-[450px] shadow-2xl backdrop-blur-xl">
-          <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-            <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Set Reminder
-          </h2>
-          
-          <div class="mb-4 p-3 bg-gray-100 rounded-lg">
-            <p class="text-sm text-gray-600">Note:</p>
-            <p class="font-medium text-gray-800">${escapeHtml(note.text.length > 80 ? note.text.substring(0, 80) + '...' : note.text)}</p>
-          </div>
-          
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Reminder Frequency:</label>
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <button onclick="selectReminderInterval(5)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every 5 min
-              </button>
-              <button onclick="selectReminderInterval(15)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every 15 min
-              </button>
-              <button onclick="selectReminderInterval(30)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every 30 min
-              </button>
-              <button onclick="selectReminderInterval(60)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every hour
-              </button>
-              <button onclick="selectReminderInterval(120)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every 2 hours
-              </button>
-              <button onclick="selectReminderInterval(240)" class="reminder-option px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors">
-                Every 4 hours
-              </button>
-            </div>
-            
-            <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-600">Custom:</label>
-              <input type="number" id="customInterval" min="1" max="1440" placeholder="Minutes" 
-                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30">
-              <button onclick="selectReminderInterval(parseInt(document.getElementById('customInterval').value))" 
-                      class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors">
-                Set
-              </button>
-            </div>
-          </div>
-          
-          <div id="selectedInterval" class="hidden mb-4 p-3 bg-green-100 rounded-lg">
-            <p class="text-green-800 font-medium">Selected: <span id="intervalText"></span></p>
-          </div>
-          
-          <div class="flex justify-end gap-3">
-            <button onclick="closeReminderModal()" 
-                    class="px-4 py-2 bg-gray-500/80 hover:bg-gray-600/80 rounded-lg text-white transition-colors">
-              Cancel
-            </button>
-            <button id="confirmReminderBtn" onclick="confirmReminder(${noteId})" disabled
-                    class="px-4 py-2 bg-orange-500/80 hover:bg-orange-600/80 rounded-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              Start Reminder
-            </button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      // Variable pour stocker l'intervalle sélectionné
-      window.selectedReminderInterval = null;
-      
-      // Fermer en cliquant à l'extérieur
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeReminderModal();
-        }
-      });
-    }
-
-    // Sélectionner un intervalle de rappel
-    function selectReminderInterval(minutes) {
-      if (!minutes || minutes < 1 || minutes > 1440) {
-        alert('Please enter a valid interval between 1 and 1440 minutes (24 hours)');
-        return;
-      }
-      
-      window.selectedReminderInterval = minutes;
-      
-      // Mettre à jour l'interface
-      document.querySelectorAll('.reminder-option').forEach(btn => {
-        btn.classList.remove('bg-orange-200', 'text-orange-800');
-        btn.classList.add('bg-blue-100', 'text-blue-800');
-      });
-      
-      // Marquer l'option sélectionnée si c'est un bouton prédéfini
-      const targetBtn = [...document.querySelectorAll('.reminder-option')].find(btn => 
-        btn.textContent.includes(minutes === 60 ? 'hour' : minutes === 120 ? '2 hours' : minutes === 240 ? '4 hours' : `${minutes} min`)
-      );
-      
-      if (targetBtn) {
-        targetBtn.classList.remove('bg-blue-100', 'text-blue-800');
-        targetBtn.classList.add('bg-orange-200', 'text-orange-800');
-      }
-      
-      // Afficher l'intervalle sélectionné
-      const selectedDiv = document.getElementById('selectedInterval');
-      const intervalText = document.getElementById('intervalText');
-      
-      let displayText;
-      if (minutes < 60) {
-        displayText = `Every ${minutes} minute${minutes > 1 ? 's' : ''}`;
-      } else if (minutes === 60) {
-        displayText = 'Every hour';
-      } else if (minutes < 1440) {
-        const hours = Math.floor(minutes / 60);
-        const remainingMinutes = minutes % 60;
-        displayText = `Every ${hours} hour${hours > 1 ? 's' : ''}`;
-        if (remainingMinutes > 0) {
-          displayText += ` ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}`;
-        }
-      } else {
-        displayText = 'Every 24 hours';
-      }
-      
-      intervalText.textContent = displayText;
-      selectedDiv.classList.remove('hidden');
-      
-      // Activer le bouton de confirmation
-      document.getElementById('confirmReminderBtn').disabled = false;
-    }
-
-    // Confirmer la création du rappel
-    function confirmReminder(noteId) {
-      if (!window.selectedReminderInterval) return;
-      
-      // Mettre à jour la note avec l'information de rappel
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const noteIndex = notes.findIndex(n => n.id === noteId);
-      
-      if (noteIndex !== -1) {
-        notes[noteIndex].reminder = {
-          interval: window.selectedReminderInterval,
-          createdAt: new Date().toISOString()
-        };
-        localStorage.setItem('userNotes', JSON.stringify(notes));
-      }
-      
-      // Démarrer le rappel
-      startReminder(noteId, window.selectedReminderInterval);
-      
-      closeReminderModal();
-      loadNotes(); // Recharger les notes pour afficher l'indicateur de rappel
-    }
-
-    // Fermer le modal de rappel
-    function closeReminderModal() {
-      const modal = document.getElementById('reminderModal');
-      if (modal) {
-        modal.remove();
-      }
-      window.selectedReminderInterval = null;
-    }
-
-    // Supprimer un rappel
-    function removeReminder(noteId) {
-      // Arrêter l'intervalle
-      stopReminder(noteId);
-      
-      // Mettre à jour la note
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const noteIndex = notes.findIndex(n => n.id === noteId);
-      
-      if (noteIndex !== -1) {
-        notes[noteIndex].reminder = null;
-        localStorage.setItem('userNotes', JSON.stringify(notes));
-      }
-      
-      showNotification('Reminder removed successfully');
-      loadNotes(); // Recharger les notes
-    }
-
-    // Gestion du clic droit sur les notes
-    function showNoteContextMenu(event, noteId) {
-      event.preventDefault();
-      
-      // Supprimer le menu existant s'il y en a un
-      const existingMenu = document.getElementById('noteContextMenu');
-      if (existingMenu) {
-        existingMenu.remove();
-      }
-      
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      const hasReminder = note.reminder && note.reminder.interval;
-      
-      const menu = document.createElement('div');
-      menu.className = 'fixed rounded-lg shadow-2xl min-w-[160px] z-50 bg-black/80 backdrop-blur-xl border border-white/10';
-      menu.id = 'noteContextMenu';
-      menu.style.left = `${event.pageX}px`;
-      menu.style.top = `${event.pageY}px`;
-      
-      menu.innerHTML = `
-        ${hasReminder ? `
-          <button onclick="removeReminder(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
-            </svg>
-            Cancel Reminder
-          </button>
-          <button onclick="openReminderModal(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Change Reminder
-          </button>
-        ` : `
-          <button onclick="openReminderModal(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Add Reminder
-          </button>
-        `}
-        <button onclick="editNote(${noteId}); closeNoteContextMenu();" 
-                class="w-full px-4 py-2 text-left text-white hover:bg-white/10 text-sm flex items-center gap-2">
-          <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-          Edit Note
-        </button>
-        <button onclick="deleteNote(${noteId}); closeNoteContextMenu();" 
-                class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm flex items-center gap-2">
-          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          Delete Note
-        </button>
-      `;
-      
-      document.body.appendChild(menu);
-      
-      // Fermer le menu en cliquant ailleurs
-      document.addEventListener('click', closeNoteContextMenu);
-    }
-
-    // Fermer le menu contextuel
-    function closeNoteContextMenu() {
-      const menu = document.getElementById('noteContextMenu');
-      if (menu) {
-        menu.remove();
-      }
-      document.removeEventListener('click', closeNoteContextMenu);
-    }
-
-    // Restaurer les rappels actifs au chargement de la page
-    function restoreActiveReminders() {
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      
-      notes.forEach(note => {
-        if (note.reminder && note.reminder.interval) {
-          startReminder(note.id, note.reminder.interval);
-        }
-      });
-    }
-
     // Load notes on page load
     document.addEventListener('DOMContentLoaded', function() {
       // Load notes after other initialization
       setTimeout(() => {
         loadNotes();
         loadPomodoroStats();
-        restoreActiveReminders(); // Restaurer les rappels actifs
-        
-        // Gérer l'activation/désactivation de la select box pour les rappels
-        const reminderCheckbox = document.getElementById('add-reminder-checkbox');
-        const reminderSelect = document.getElementById('reminder-interval-select');
-        
-        if (reminderCheckbox && reminderSelect) {
-          reminderCheckbox.addEventListener('change', function() {
-            reminderSelect.disabled = !this.checked;
-          });
-        }
       }, 100);
     });
 
