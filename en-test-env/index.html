@@ -336,10 +336,18 @@
       reloadShortcuts();
     }
 
-    function showNotification(message) {
+    function showNotification(message, type = 'success') {
       // Créer un élément de notification
       const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
+      
+      let bgColor = 'bg-green-500/90';
+      if (type === 'warning') {
+        bgColor = 'bg-orange-500/90';
+      } else if (type === 'error') {
+        bgColor = 'bg-red-500/90';
+      }
+      
+      notification.className = `fixed top-4 right-4 ${bgColor} backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0`;
       notification.textContent = message;
       
       // Ajouter au DOM
@@ -350,7 +358,8 @@
         notification.style.transform = 'translateX(0)';
       }, 10);
       
-      // Supprimer après 3 secondes
+      // Supprimer après 3 secondes (ou 5 pour les warnings/erreurs)
+      const timeout = type === 'success' ? 3000 : 5000;
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
@@ -358,7 +367,7 @@
             notification.parentNode.removeChild(notification);
           }
         }, 300);
-      }, 3000);
+      }, timeout);
     }
 
     function deleteShortcut() {
@@ -2367,6 +2376,13 @@
             <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
             <div class="flex justify-end gap-1 mt-2">
               ${hasReminder ? `
+                <button onclick="event.stopPropagation(); openReminderModal(${note.id})" 
+                        class="p-1 rounded hover:bg-orange-500/20 transition-colors text-orange-600"
+                        title="Edit reminder">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7m-5 3L9 10l-4 4v4h4z"/>
+                  </svg>
+                </button>
                 <button onclick="event.stopPropagation(); removeReminder(${note.id})" 
                         class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
                         title="Remove reminder">
@@ -2513,7 +2529,7 @@
       }, 8000);
     }
 
-    // Démarrer un rappel (version améliorée)
+    // Démarrer un rappel (version simplifiée et plus fiable)
     function startReminder(noteId, reminderConfig) {
       // Arrêter le rappel existant s'il y en a un
       stopReminder(noteId);
@@ -2523,39 +2539,57 @@
       
       if (!note) return;
       
-      if (reminderConfig.type === 'interval') {
-        // Rappel simple par intervalle (comme avant)
-        const intervalMs = reminderConfig.interval * 60 * 1000;
+      let intervalMs = 0;
+      let displayText = '';
+      
+      // Déterminer l'intervalle en millisecondes selon le type de rappel
+      if (reminderConfig.type === 'advanced' && reminderConfig.days && reminderConfig.time) {
+        // Pour les rappels programmés, utiliser un intervalle de vérification de 1 minute
+        intervalMs = 60 * 1000; // Vérifier chaque minute
+        displayText = `${reminderConfig.days.map(d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ')} at ${reminderConfig.time}`;
+        
+        const intervalId = setInterval(() => {
+          checkScheduledReminder(noteId, reminderConfig, note.text);
+        }, intervalMs);
+        
+        activeReminders.set(noteId, { type: 'scheduled', id: intervalId, config: reminderConfig });
+        
+      } else {
+        // Rappel simple par intervalle
+        const interval = reminderConfig.interval || reminderConfig.interval;
+        intervalMs = interval * 60 * 1000;
+        displayText = interval < 60 ? 
+          `every ${interval} minutes` : 
+          interval === 60 ? 'every hour' : 
+          `every ${Math.floor(interval / 60)}h${interval % 60 > 0 ? interval % 60 + 'min' : ''}`;
+        
         const intervalId = setInterval(() => {
           showReminderNotification(note.text);
         }, intervalMs);
         
         activeReminders.set(noteId, { type: 'interval', id: intervalId });
-        showNotification(`Reminder set for "${note.text.substring(0, 30)}..." every ${reminderConfig.interval} minutes`);
-      } else if (reminderConfig.type === 'scheduled') {
-        // Rappel programmé avec Service Worker
-        if (serviceWorker && serviceWorker.active) {
-          const reminderData = {
-            noteId: noteId,
-            noteText: note.text,
-            schedule: reminderConfig
-          };
-          
-          serviceWorker.active.postMessage({
-            type: 'SCHEDULE_REMINDER',
-            data: reminderData
-          });
-          
-          activeReminders.set(noteId, { type: 'scheduled', config: reminderConfig });
-          
-          // Message de confirmation
-          const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          const selectedDays = reminderConfig.days.map(d => dayNames[d]).join(', ');
-          showNotification(`Scheduled reminder for "${note.text.substring(0, 30)}..." on ${selectedDays} at ${reminderConfig.time}`);
-        } else {
-          showNotification('Service Worker not available. Using basic interval reminder.', 'error');
-          // Fallback sur un rappel simple
-          startReminder(noteId, { type: 'interval', interval: 60 });
+      }
+      
+      showNotification(`Reminder set for "${note.text.substring(0, 30)}..." ${displayText}`);
+    }
+    
+    // Vérifier si un rappel programmé doit être déclenché
+    function checkScheduledReminder(noteId, config, noteText) {
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const currentTime = now.toTimeString().substring(0, 5); // HH:MM format
+      
+      // Vérifier si c'est le bon jour et la bonne heure (±1 minute de tolérance)
+      if (config.days.includes(currentDay)) {
+        const [targetHour, targetMinute] = config.time.split(':').map(Number);
+        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+        
+        const targetMinutes = targetHour * 60 + targetMinute;
+        const currentMinutes = currentHour * 60 + currentMinute;
+        
+        // Déclencher si on est dans la minute cible
+        if (Math.abs(currentMinutes - targetMinutes) < 1) {
+          showReminderNotification(noteText);
         }
       }
     }
@@ -2565,13 +2599,9 @@
       if (activeReminders.has(noteId)) {
         const reminder = activeReminders.get(noteId);
         
-        if (reminder.type === 'interval') {
+        // Pour tous les types de rappels, on utilise maintenant clearInterval
+        if (reminder.id) {
           clearInterval(reminder.id);
-        } else if (reminder.type === 'scheduled' && serviceWorker && serviceWorker.active) {
-          serviceWorker.active.postMessage({
-            type: 'CANCEL_REMINDER',
-            data: { noteId: noteId }
-          });
         }
         
         activeReminders.delete(noteId);
@@ -2627,8 +2657,8 @@
               <button onclick="selectReminderType('scheduled')" id="scheduledType" class="reminder-type px-4 py-3 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors border-2 border-transparent">
                 <div class="text-center">
                   <div class="text-lg mb-1">📅</div>
-                  <div class="font-medium">Scheduled</div>
-                  <div class="text-xs text-blue-600">Specific days & times</div>
+                  <div class="font-medium">Basic Interval Only</div>
+                  <div class="text-xs text-blue-600">Advanced scheduling not reliable with closed tabs</div>
                 </div>
               </button>
             </div>
@@ -2739,6 +2769,11 @@
         time: '09:00'
       };
       
+      // Charger la configuration existante si elle existe
+      if (note.reminder) {
+        loadExistingReminderConfig(note.reminder);
+      }
+      
       // Fermer en cliquant à l'extérieur
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -2747,8 +2782,64 @@
       });
     }
 
+    // Charger la configuration de rappel existante
+    function loadExistingReminderConfig(reminderConfig) {
+      if (reminderConfig.type === 'advanced' && reminderConfig.days && reminderConfig.time) {
+        // Rappel programmé
+        selectReminderType('scheduled');
+        window.reminderConfig.days = [...reminderConfig.days];
+        window.reminderConfig.time = reminderConfig.time;
+        
+        // Mettre à jour l'heure
+        const timeInput = document.getElementById('reminderTime');
+        if (timeInput) timeInput.value = reminderConfig.time;
+        
+        // Mettre à jour les jours sélectionnés
+        reminderConfig.days.forEach(day => {
+          const dayBtn = document.getElementById(`day-${day}`);
+          if (dayBtn) {
+            dayBtn.classList.remove('bg-gray-100', 'text-gray-800');
+            dayBtn.classList.add('bg-orange-200', 'text-orange-800');
+          }
+        });
+        
+      } else if (reminderConfig.interval || (reminderConfig.type === 'basic' && reminderConfig.interval)) {
+        // Rappel simple par intervalle
+        selectReminderType('interval');
+        const interval = reminderConfig.interval || reminderConfig.interval;
+        window.reminderConfig.interval = interval;
+        
+        // Mettre à jour l'interface pour l'intervalle
+        document.querySelectorAll('.interval-option').forEach(btn => {
+          btn.classList.remove('bg-orange-200', 'text-orange-800');
+          btn.classList.add('bg-gray-100', 'text-gray-800');
+        });
+        
+        const targetBtn = [...document.querySelectorAll('.interval-option')].find(btn => 
+          btn.textContent.includes(interval === 60 ? 'hour' : `${interval} min`)
+        );
+        
+        if (targetBtn) {
+          targetBtn.classList.remove('bg-gray-100', 'text-gray-800');
+          targetBtn.classList.add('bg-orange-200', 'text-orange-800');
+        } else {
+          // Intervalle personnalisé
+          const customInput = document.getElementById('customInterval');
+          if (customInput) customInput.value = interval;
+        }
+      }
+      
+      updateReminderSummary();
+    }
+
     // Sélectionner le type de rappel
     function selectReminderType(type) {
+      // Pour l'instant, on force tout vers le type 'interval' car 'scheduled' ne fonctionne pas de façon fiable
+      if (type === 'scheduled') {
+        showNotification('Scheduled reminders with specific days/times do not work reliably when the browser tab is closed. Please use simple interval reminders.', 'warning');
+        type = 'interval';
+      }
+      
       window.reminderConfig.type = type;
       
       // Mettre à jour l'interface
