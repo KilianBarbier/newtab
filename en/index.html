@@ -1755,7 +1755,50 @@
 
   <!-- Script pour cloner le contenu de la sidebar dans le modal mobile -->
   <script>
-    document.addEventListener("DOMContentLoaded", function () {      // Clone sidebar content for mobile modal
+    // Function to validate and clean localStorage for weather data
+    function validateWeatherStorage() {
+      let storageAvailable = false;
+      
+      try {
+        // Test if localStorage is available
+        const testKey = 'test_weather_storage';
+        localStorage.setItem(testKey, 'test');
+        localStorage.removeItem(testKey);
+        storageAvailable = true;
+        
+        // Validate existing weather city data
+        const savedCity = localStorage.getItem('lastWeatherCity');
+        if (savedCity !== null) {
+          // Clean up any invalid data (empty strings, just whitespace, etc.)
+          if (typeof savedCity !== 'string' || savedCity.trim() === '') {
+            localStorage.removeItem('lastWeatherCity');
+            console.log('Removed invalid weather city data from localStorage');
+          }
+        }
+      } catch (error) {
+        console.error('localStorage is not available or corrupted:', error);
+        storageAvailable = false;
+        
+        // Try cookies as fallback
+        try {
+          document.cookie = 'test_weather_cookie=test; max-age=1; path=/';
+          const testRead = document.cookie.includes('test_weather_cookie=test');
+          if (testRead) {
+            console.log('Using cookies as fallback for weather data storage');
+            // Clean expired test cookie
+            document.cookie = 'test_weather_cookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+          }
+        } catch (cookieError) {
+          console.error('Cookies are also not available:', cookieError);
+        }
+      }
+      
+      return storageAvailable;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Validate localStorage before using it
+      const storageAvailable = validateWeatherStorage();      // Clone sidebar content for mobile modal
       const sidebarChildren = document.querySelectorAll(
         "#sidebar > *:not(:first-child)"
       );
@@ -1789,7 +1832,8 @@
       });
 
       // Check if there's a saved city and load its weather, otherwise show input
-      const savedCity = localStorage.getItem('lastWeatherCity');
+      // This will work with either localStorage or cookies fallback
+      const savedCity = getWeatherCity();
       if (savedCity) {
         document.getElementById('weather-city-input').value = savedCity;
         loadWeather(savedCity);
@@ -1797,6 +1841,58 @@
     });
 
     // Weather Widget Functions
+    
+    // Helper function to safely save to localStorage
+    function saveWeatherCity(cityName) {
+      if (!cityName || typeof cityName !== 'string' || cityName.trim() === '') {
+        console.warn('Invalid city name provided for saving');
+        return false;
+      }
+      
+      try {
+        localStorage.setItem('lastWeatherCity', cityName.trim());
+        return true;
+      } catch (error) {
+        console.error('Error saving city to localStorage, trying cookies fallback:', error);
+        // Fallback to cookies if localStorage is not available
+        try {
+          document.cookie = `lastWeatherCity=${encodeURIComponent(cityName.trim())}; max-age=2592000; path=/`; // 30 days
+          return true;
+        } catch (cookieError) {
+          console.error('Error saving city to cookies:', cookieError);
+          return false;
+        }
+      }
+    }
+    
+    // Helper function to safely read from localStorage
+    function getWeatherCity() {
+      try {
+        const savedCity = localStorage.getItem('lastWeatherCity');
+        if (savedCity && typeof savedCity === 'string' && savedCity.trim() !== '') {
+          return savedCity.trim();
+        }
+      } catch (error) {
+        console.error('Error reading city from localStorage, trying cookies fallback:', error);
+      }
+      
+      // Fallback to cookies
+      try {
+        const cookieValue = document.cookie.split('; ')
+          .find(row => row.startsWith('lastWeatherCity='));
+        if (cookieValue) {
+          const cityName = decodeURIComponent(cookieValue.split('=')[1]);
+          if (cityName && cityName.trim() !== '') {
+            return cityName.trim();
+          }
+        }
+      } catch (cookieError) {
+        console.error('Error reading city from cookies:', cookieError);
+      }
+      
+      return null;
+    }
+
     function getWeatherIcon(weatherCode, isDay) {
       const iconMap = {
         0: { day: '<img src="sunny.png" alt="Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Clear sky
@@ -1992,6 +2088,9 @@
         // Update forecast
         updateWeatherForecast(daily);
 
+        // Save the city name for future use - only save if weather loaded successfully
+        saveWeatherCity(cityName);
+
         // Show content
         weatherLoading.classList.add('hidden');
         weatherContent.classList.remove('hidden');
@@ -2019,6 +2118,9 @@
         alert('Please enter a city name');
         return;
       }
+      
+      // Save the city name immediately when user requests it
+      saveWeatherCity(cityName);
       
       loadWeather(cityName);
     }
