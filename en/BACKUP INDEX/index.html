@@ -78,142 +78,25 @@
       document.removeEventListener("click", closeContextMenu);
     }
 
-    function generateGroupBox(groupId, groupName, shortcuts = []) {
-      const shortcutCount = shortcuts.length;
-      const maxVisible = 4; // Maximum 4 icônes visibles dans la boîte
-      const visibleShortcuts = shortcuts.slice(0, maxVisible);
-      const hasMore = shortcutCount > maxVisible;
-      
-      return `
-        <div class="group-box bg-white/90 backdrop-blur-xl rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-0 outline-none hover:scale-105"
-             data-group-id="${groupId}"
-             onclick="openGroupModal('${groupId}')">
-          <!-- Group Icon Grid (2x2) -->
-          <div class="group-icons-preview relative mb-4">
-            <div class="grid grid-cols-2 gap-2 w-16 h-16 mx-auto">
-              ${visibleShortcuts.map((shortcut, index) => `
-                <div class="w-7 h-7 rounded-lg overflow-hidden bg-white shadow-sm flex items-center justify-center border-0">
-                  ${shortcut[1].faviconUrl ? 
-                    `<img src="${shortcut[1].faviconUrl}" class="w-5 h-5 object-contain" alt="${shortcut[1].title}">` :
-                    `<div class="w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded flex items-center justify-center">
-                      <span class="text-white text-xs font-bold">${shortcut[1].title.charAt(0).toUpperCase()}</span>
-                    </div>`
-                  }
-                </div>
-              `).join('')}
-              ${Array(maxVisible - visibleShortcuts.length).fill(0).map(() => `
-                <div class="w-7 h-7 rounded-lg bg-gray-200 opacity-60 flex items-center justify-center border-0">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </div>
-              `).join('')}
-            </div>
-            ${hasMore ? `
-              <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
-                <span class="text-white text-xs font-bold">+${shortcutCount - maxVisible}</span>
-              </div>
-            ` : ''}
-          </div>
-          
-          <!-- Group Name -->
-          <div class="text-center">
-            <h3 class="text-gray-700 font-medium text-sm truncate group-name mb-1">${groupName}</h3>
-            <span class="text-xs text-gray-500">${shortcutCount} raccourci${shortcutCount > 1 ? 's' : ''}</span>
-          </div>
-        </div>`;
-    }
-
-    function generateShortcut(i, groupId = null) {
+    function generateShortcut(i) {
       return `
           <div class="shortcut-container" 
              ondragover="handleDragOver(event)" 
              ondrop="handleDrop(event, '${i}')"
              ondragenter="handleDragEnter(event)"
-             ondragleave="handleDragLeave(event)"
-             data-group-id="${groupId || ''}">
-            <a href="#" 
+             ondragleave="handleDragLeave(event)">            <a href="#" 
              draggable="true"
              ondragstart="handleDragStart(event, '${i}')"
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="block p-6 bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 outline-none">
+             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
               <div class="text-center">
                 <div class="shortcut-icon" data-empty="true">
-                  <div class="w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                  </div>
-                </div>
-                <div class="text-gray-700 font-medium shortcut-title text-sm">Ajouter</div>
+                </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
               </div>
             </a>
           </div>`;
-    }
-
-    function generateIndividualShortcut(position, data) {
-      return `
-          <div class="shortcut-container" 
-             ondragover="handleDragOver(event)" 
-             ondrop="handleDrop(event, '${position}')"
-             ondragenter="handleDragEnter(event)"
-             ondragleave="handleDragLeave(event)"
-             data-group-id="">
-            <a href="${data.url}" 
-             draggable="true"
-             ondragstart="handleDragStart(event, '${position}')"
-             onclick="window.open('${data.url}', '_blank'); return false;" 
-             oncontextmenu="showContextMenu(event, '${position}'); return false;"
-             data-position="${position}"
-             class="block p-6 bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 outline-none">
-              <div class="text-center">
-                <div class="shortcut-icon">
-                  ${data.faviconUrl ? 
-                    `<img src="${data.faviconUrl}" class="w-12 h-12 rounded-xl mx-auto object-contain shadow-sm mb-3" alt="${data.title}">` :
-                    `<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-                      <span class="text-white font-bold text-lg">${data.title.charAt(0).toUpperCase()}</span>
-                    </div>`
-                  }
-                </div>
-                <div class="text-gray-700 font-medium shortcut-title text-sm truncate">${data.title}</div>
-              </div>
-            </a>
-          </div>`;
-    }
-
-    function generateGroupHeader(groupId, groupName) {
-      return `
-        <div class="group-header col-span-full mb-4 mt-8 first:mt-0" data-group-id="${groupId}">
-          <div class="flex items-center justify-between bg-white/20 backdrop-blur-xl rounded-2xl p-4 shadow-lg">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 bg-white/30 rounded-full flex items-center justify-center">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-              </div>
-              <h3 class="text-xl font-semibold text-white group-name" onclick="editGroupName('${groupId}')">${groupName}</h3>
-              <span class="text-sm text-white/60 group-count">(0 shortcuts)</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="addShortcutToGroup('${groupId}')" 
-                      class="p-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
-                      title="Add shortcut to this group">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </button>
-              <button onclick="deleteGroup('${groupId}')" 
-                      class="p-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-red-300 transition-colors"
-                      title="Delete group">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>`;
     }
 
     function handleDragOver(event) {
@@ -293,34 +176,18 @@
       event.currentTarget.classList.add('opacity-50');
     } function generateAddRowButton() {
       return `
-          <div class="flex gap-6 justify-center mt-12">
-            <button
-               onclick="addMoreShortcuts()"
-               class="p-6 bg-white/30 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 min-w-[200px] outline-none"
-               id="addRowButton">
-              <div class="text-center">
-                <div class="flex justify-center mb-3">
-                  <svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
-                  </svg>
-                </div>
-                <div class="text-white/80 font-medium">Ajouter des raccourcis</div>
-              </div>
-            </button>
-            <button
-               onclick="createNewGroup()"
-               class="p-6 bg-blue-500/30 backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl hover:bg-blue-500/40 transition-all duration-300 border-2 border-dashed border-blue-300/30 min-w-[200px] outline-none"
-               id="addGroupButton">
-              <div class="text-center">
-                <div class="flex justify-center mb-3">
-                  <svg class="w-8 h-8 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                  </svg>
-                </div>
-                <div class="text-white/80 font-medium">Créer un nouveau groupe</div>
-              </div>
-            </button>
-          </div>`;
+          <button
+             onclick="addMoreShortcuts()"
+             class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 w-full"
+             id="addRowButton">
+            <div class="text-center">
+              <div class="flex justify-center mb-2">
+                <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>              <div class="text-white/70 font-medium">Add more shortcuts</div>
+            </div>
+          </button>`;
     } function addMoreShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const currentCount =
@@ -341,7 +208,6 @@
     }    async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
-      const groupId = modal.getAttribute("data-group-id");
       const title = document.getElementById("shortcutTitle").value;
       let url = document.getElementById("shortcutUrl").value.trim();
 
@@ -355,13 +221,7 @@
         const shortcuts = JSON.parse(
           localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
         );
-        
-        const shortcutData = { title, url, faviconUrl };
-        if (groupId && groupId !== 'null') {
-          shortcutData.groupId = groupId;
-        }
-        
-        shortcuts[position] = shortcutData;
+        shortcuts[position] = { title, url, faviconUrl };
         localStorage.setItem(
           `shortcuts_${activeTab}`,
           JSON.stringify(shortcuts)
@@ -369,28 +229,62 @@
         localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
         closeConfigModal();
-        reloadShortcuts();
+        reloadShortcuts(); // Instead of reloadWithTransition()
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
-    }    function openConfigModal(position) {
+    }    function openConfigModal(position, isEdit = false) {
       const modal = document.getElementById("configModal");
       const titleInput = document.getElementById("shortcutTitle");
       const urlInput = document.getElementById("shortcutUrl");
       const modalTitle = modal.querySelector("h2");
 
       modal.setAttribute("data-position", position);
-      titleInput.value = "";
-      document.getElementById("shortcutUrl").value = "";
-      document.getElementById("saveButton").disabled = true;
+      
+      if (isEdit) {
+        // Update modal title for editing
+        modalTitle.textContent = "Edit shortcut";
+        
+        // Get current shortcut data for editing
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        const shortcutData = shortcuts[position];
+        
+        if (shortcutData) {
+          titleInput.value = shortcutData.title || "";
+          urlInput.value = shortcutData.url || "";
+          // Enable save button if both fields have values
+          document.getElementById("saveButton").disabled = !shortcutData.title || !shortcutData.url;
+        } else {
+          titleInput.value = "";
+          urlInput.value = "";
+          document.getElementById("saveButton").disabled = true;
+        }
+      } else {
+        // Update modal title for adding new shortcut
+        modalTitle.textContent = "Add a shortcut";
+        
+        // Clear fields for new shortcut
+        titleInput.value = "";
+        urlInput.value = "";
+        document.getElementById("saveButton").disabled = true;
+      }
 
       modal.classList.remove("hidden");
 
       // Improved focus method with multiple attempts
+      // First immediate attempt
       titleInput.focus();
-      setTimeout(() => titleInput.focus(), 50);
+
+      // Second attempt with a short delay
       setTimeout(() => {
         titleInput.focus();
+      }, 50);
+
+      // Third attempt with a longer delay to ensure the modal is fully rendered
+      setTimeout(() => {
+        titleInput.focus();
+        // Move cursor to the end of text
         if (titleInput.value) {
           titleInput.selectionStart = titleInput.value.length;
           titleInput.selectionEnd = titleInput.value.length;
@@ -442,18 +336,10 @@
       reloadShortcuts();
     }
 
-    function showNotification(message, type = 'success') {
+    function showNotification(message) {
       // Créer un élément de notification
       const notification = document.createElement('div');
-      
-      let bgColor = 'bg-green-500/90';
-      if (type === 'warning') {
-        bgColor = 'bg-orange-500/90';
-      } else if (type === 'error') {
-        bgColor = 'bg-red-500/90';
-      }
-      
-      notification.className = `fixed top-4 right-4 ${bgColor} backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0`;
+      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
       notification.textContent = message;
       
       // Ajouter au DOM
@@ -464,8 +350,7 @@
         notification.style.transform = 'translateX(0)';
       }, 10);
       
-      // Supprimer après 3 secondes (ou 5 pour les warnings/erreurs)
-      const timeout = type === 'success' ? 3000 : 5000;
+      // Supprimer après 3 secondes
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
         setTimeout(() => {
@@ -473,7 +358,7 @@
             notification.parentNode.removeChild(notification);
           }
         }, 300);
-      }, timeout);
+      }, 3000);
     }
 
     function deleteShortcut() {
@@ -558,9 +443,37 @@
       });
 
       const grid = document.getElementById("shortcutGrid");
+      const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "{}");
+      const shortcutCount = parseInt(
+        localStorage.getItem("shortcutCount") || "8"
+      );
 
-      // Use the new reloadShortcuts function that handles groups
-      reloadShortcuts();
+      for (let i = 0; i < shortcutCount; i++) {
+        grid.innerHTML += generateShortcut(i);
+      }
+
+      grid.innerHTML += generateAddRowButton();
+
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(
+          `[data-position="${position}"]`
+        );
+        if (shortcut) {
+          shortcut.href = data.url;
+          shortcut.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = data.url;
+          };
+          shortcut.querySelector(".shortcut-title").textContent = data.title;
+          const iconContainer = shortcut.querySelector(".shortcut-icon");
+          iconContainer.removeAttribute("data-empty");
+          iconContainer.innerHTML = `
+              <img src="${data.faviconUrl}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 alt="${data.title}" 
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
+        }
+      });
 
       const searchInput = document.getElementById("searchInput");
       const searchButton = document.querySelector(".absolute svg");
@@ -911,265 +824,66 @@
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
 
-      // Clear the grid
+      // Supprimer tous les raccourcis existants mais garder le bouton d'ajout
+      const addRowButton = document.getElementById("addRowButton");
       grid.innerHTML = '';
 
-      // Set grid to responsive grid for group boxes
-      grid.className = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 max-w-6xl mx-auto w-full";
-
-      // If no groups exist, create a simple grid for ungrouped shortcuts
-      if (Object.keys(groups).length === 0) {
-        renderSimpleGrid(grid, shortcuts);
-      } else {
-        // Render each group as a compact box
-        Object.entries(groups).forEach(([groupId, groupData]) => {
-          const groupShortcuts = Object.entries(shortcuts).filter(([position, data]) => data.groupId === groupId);
-          grid.innerHTML += generateGroupBox(groupId, groupData.name, groupShortcuts);
-        });
-
-        // Add ungrouped shortcuts as individual items
-        const ungroupedShortcuts = Object.entries(shortcuts).filter(([position, data]) => !data.groupId);
-        ungroupedShortcuts.forEach(([position, data]) => {
-          grid.innerHTML += generateIndividualShortcut(position, data);
-        });
-
-        // Add empty slots for new shortcuts
-        const usedItems = Object.keys(groups).length + ungroupedShortcuts.length;
-        const totalSlots = Math.max(8, usedItems + 3);
-        for (let i = usedItems; i < totalSlots; i++) {
-          grid.innerHTML += generateShortcut(i);
-        }
-      }
-
-      // Add the control buttons at the end
-      grid.innerHTML += generateAddRowButton();
-    }
-
-    function renderSimpleGrid(grid, shortcuts) {
-      // Restore original grid layout for ungrouped mode
-      grid.className = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full";
-      
+      // Déterminer le nombre réel de raccourcis à afficher
       const shortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
       
+      // Recréer les raccourcis
       for (let i = 0; i < shortcutCount; i++) {
         grid.innerHTML += generateShortcut(i);
       }
 
-      // Update shortcuts display
-      setTimeout(() => {
-        Object.entries(shortcuts).forEach(([position, data]) => {
-          updateShortcutDisplay(position, data);
-        });
-      }, 0);
-    }
-
-    function updateShortcutDisplay(position, data) {
-      const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
-      if (!shortcutElement || !data) return;
-
-      shortcutElement.href = data.url;
-      shortcutElement.onclick = (e) => {
-        e.preventDefault();
-        window.location.href = data.url;
-      };
-      
-      const titleElement = shortcutElement.querySelector(".shortcut-title");
-      if (titleElement) {
-        titleElement.textContent = data.title;
-        titleElement.className = "text-gray-700 font-medium text-sm"; // Keep consistent styling
-      }
-      
-      const iconContainer = shortcutElement.querySelector(".shortcut-icon");
-      if (iconContainer) {
-        iconContainer.removeAttribute("data-empty");
-        iconContainer.innerHTML = `
-            ${data.faviconUrl ? 
-              `<img src="${data.faviconUrl}" class="w-12 h-12 rounded-xl mx-auto object-contain shadow-sm mb-3" alt="${data.title}" 
-                   onerror="this.outerHTML='<div class=&quot;w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm&quot;><span class=&quot;text-white font-bold text-lg&quot;>${data.title.charAt(0).toUpperCase()}</span></div>';">` :
-              `<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
-                <span class="text-white font-bold text-lg">${data.title.charAt(0).toUpperCase()}</span>
-              </div>`
-            }`;
-      }
-
-      // Update group count if in a group
-      if (data.groupId) {
-        updateGroupCount(data.groupId);
-      }
-    }
-
-    function updateGroupCount(groupId) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      let count;
-      if (groupId === 'ungrouped') {
-        count = Object.values(shortcuts).filter(data => !data.groupId).length;
-      } else {
-        count = Object.values(shortcuts).filter(data => data.groupId === groupId).length;
-      }
-
-      // Update count in group header
-      const groupContainer = document.querySelector(`[data-group-id="${groupId}"]`);
-      if (groupContainer) {
-        const countElement = groupContainer.querySelector('.group-header span');
-        if (countElement) {
-          countElement.textContent = `${count} raccourcis`;
-        }
-
-        // Show/hide empty state
-        const groupContent = groupContainer.querySelector('.group-content');
-        if (groupContent) {
-          if (count === 0) {
-            groupContent.innerHTML = `
-              <div class="empty-group text-center py-12">
-                <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <svg class="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                  </svg>
-                </div>
-                <p class="text-white/60 text-sm mb-4">Aucun raccourci dans ce groupe</p>
-                <button onclick="addShortcutToGroup('${groupId}')" 
-                        class="px-4 py-2 bg-blue-500/30 hover:bg-blue-500/50 rounded-xl text-white text-sm transition-colors">
-                  Ajouter le premier raccourci
-                </button>
-              </div>`;
-          } else if (!groupContent.querySelector('.shortcuts-grid')) {
-            groupContent.innerHTML = `
-              <div class="shortcuts-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" id="group-${groupId}-shortcuts">
-                <!-- Shortcuts will be populated -->
-              </div>`;
+      // Mettre à jour l'apparence des raccourcis avec les données stockées
+      for (const position in shortcuts) {
+        const shortcutData = shortcuts[position];
+        const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
+        
+        if (shortcutElement && shortcutData) {
+          // Mettre à jour l'apparence du raccourci
+          const iconElement = shortcutElement.querySelector('.shortcut-icon');
+          const titleElement = shortcutElement.querySelector('.shortcut-title');
+          
+          if (shortcutData.iconURL) {
+            iconElement.innerHTML = `<img src="${shortcutData.iconURL}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded">`;
+            iconElement.setAttribute('data-empty', 'false');
+          }
+          
+          if (shortcutData.title) {
+            titleElement.textContent = shortcutData.title;
+          }
+          
+          if (shortcutData.url) {
+            shortcutElement.href = shortcutData.url;
           }
         }
       }
-    }
 
-    // Group management functions
-    function createNewGroup() {
-      const groupName = prompt("Enter group name:");
-      if (!groupName || !groupName.trim()) return;
+      // Remettre le bouton d'ajout
+      grid.appendChild(addRowButton);
 
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      
-      const groupId = `group_${Date.now()}`;
-      groups[groupId] = {
-        name: groupName.trim(),
-        created: new Date().toISOString()
-      };
-
-      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
-      reloadShortcuts();
-      showNotification(`Group "${groupName}" created successfully!`);
-    }
-
-    function editGroupName(groupId) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      
-      const currentName = groups[groupId]?.name || '';
-      const newName = prompt("Enter new group name:", currentName);
-      
-      if (!newName || !newName.trim() || newName.trim() === currentName) return;
-
-      groups[groupId].name = newName.trim();
-      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
-      
-      // Update display immediately
-      const groupNameElement = document.querySelector(`[data-group-id="${groupId}"] .group-name`);
-      if (groupNameElement) {
-        groupNameElement.textContent = newName.trim();
-      }
-      
-      showNotification("Group name updated successfully!");
-    }
-
-    function deleteGroup(groupId) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      const groupName = groups[groupId]?.name || 'this group';
-      const groupShortcutsCount = Object.values(shortcuts).filter(data => data.groupId === groupId).length;
-      
-      let confirmMessage = `Are you sure you want to delete the group "${groupName}"?`;
-      if (groupShortcutsCount > 0) {
-        confirmMessage += `\n\nThis will move ${groupShortcutsCount} shortcuts to "Other Shortcuts".`;
-      }
-      
-      if (!confirm(confirmMessage)) return;
-
-      // Move shortcuts from this group to ungrouped
-      Object.keys(shortcuts).forEach(position => {
-        if (shortcuts[position].groupId === groupId) {
-          delete shortcuts[position].groupId;
+      // Mettre à jour les raccourcis avec leurs données
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(`[data-position="${position}"]`);
+        if (shortcut) {
+          shortcut.href = data.url;
+          shortcut.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = data.url;
+          };
+          shortcut.querySelector(".shortcut-title").textContent = data.title;
+          const iconContainer = shortcut.querySelector(".shortcut-icon");
+          iconContainer.removeAttribute("data-empty");
+          iconContainer.innerHTML = `
+              <img src="${data.faviconUrl}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 alt="${data.title}" 
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
       });
-
-      // Delete the group
-      delete groups[groupId];
-      
-      localStorage.setItem(`groups_${activeTab}`, JSON.stringify(groups));
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
-      
-      reloadShortcuts();
-      showNotification(`Group "${groupName}" deleted successfully!`);
-    }
-
-    function addShortcutToGroup(groupId) {
-      // Find the next available position
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      let nextPosition = 0;
-      while (shortcuts[nextPosition.toString()]) {
-        nextPosition++;
-      }
-
-      // Open config modal for this position and group
-      openConfigModal(nextPosition.toString(), false, groupId);
-    }
-
-    function populateGroupShortcuts(groupId, shortcuts) {
-      const groupContainer = document.querySelector(`[data-group-id="${groupId}"]`);
-      if (!groupContainer) return;
-
-      const shortcutsGrid = groupContainer.querySelector('.shortcuts-grid');
-      if (!shortcutsGrid) return;
-
-      shortcutsGrid.innerHTML = '';
-
-      shortcuts.forEach(([position, data]) => {
-        shortcutsGrid.innerHTML += generateShortcut(position, groupId);
-      });
-
-      // Update each shortcut's display
-      setTimeout(() => {
-        shortcuts.forEach(([position, data]) => {
-          updateShortcutDisplay(position, data);
-        });
-      }, 0);
-    }
-
-    function moveShortcutToGroup(position, targetGroupId) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      if (!shortcuts[position]) return;
-
-      if (targetGroupId === 'ungrouped') {
-        delete shortcuts[position].groupId;
-      } else {
-        shortcuts[position].groupId = targetGroupId;
-      }
-
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
-      
-      reloadShortcuts();
     }
 
     function switchTab(tab) {
@@ -1191,34 +905,15 @@
 
       // Reload shortcuts
       reloadShortcuts();
-      
-      // Update widget order based on pins for the new tab
-      const orderedWidgets = getPinnedWidgetOrder();
-      const currentWidget = getCurrentWidget();
-      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
-      // Update the widgets array and current index
-      widgets.splice(0, widgets.length, ...orderedWidgets);
-      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
-      // Update display
-      updateWidgetDisplay();
-      updateWidgetIndicators();
     }
 
     // Export/Import Functions
     function exportShortcuts() {
       try {
-        // Récupérer toutes les données de raccourcis et groupes
+        // Récupérer toutes les données de raccourcis
         const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
         const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
-        const personalGroups = JSON.parse(localStorage.getItem("groups_personal") || "{}");
-        const professionalGroups = JSON.parse(localStorage.getItem("groups_professional") || "{}");
         const shortcutCount = localStorage.getItem("shortcutCount") || "8";
-        
-        // Récupérer les données de pins de widgets
-        const personalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_personal") || "{}");
-        const professionalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_professional") || "{}");
         
         // Créer l'objet d'export
         const exportData = {
@@ -1273,16 +968,13 @@
         try {
           const importData = JSON.parse(e.target.result);
           
-          // Validation basique pour rétrocompatibilité
-          const isLegacyFormat = !importData.personal?.shortcuts && (importData.personal || importData.professional);
-          const isNewFormat = importData.personal?.shortcuts || importData.professional?.shortcuts;
-          
-          if (!isLegacyFormat && !isNewFormat) {
+          // Validation basique
+          if (!importData.personal && !importData.professional) {
             throw new Error('Invalid file format');
           }
           
           // Demander confirmation à l'utilisateur
-          if (confirm('This will replace your current shortcuts and groups. Are you sure?')) {
+          if (confirm('This will replace your current shortcuts. Are you sure?')) {
             importShortcuts(importData);
           }
           
@@ -1299,46 +991,14 @@
 
     function importShortcuts(data) {
       try {
-        // Détecter le format (legacy ou nouveau)
-        const isLegacyFormat = !data.personal?.shortcuts && (data.personal || data.professional);
-        
-        if (isLegacyFormat) {
-          // Format legacy - seulement les raccourcis
-          if (data.personal) {
-            localStorage.setItem("shortcuts_personal", JSON.stringify(data.personal));
-          }
-          if (data.professional) {
-            localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional));
-          }
-        } else {
-          // Nouveau format - raccourcis et groupes
-          if (data.personal) {
-            if (data.personal.shortcuts) {
-              localStorage.setItem("shortcuts_personal", JSON.stringify(data.personal.shortcuts));
-            }
-            if (data.personal.groups) {
-              localStorage.setItem("groups_personal", JSON.stringify(data.personal.groups));
-            }
-          }
-          
-          if (data.professional) {
-            if (data.professional.shortcuts) {
-              localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional.shortcuts));
-            }
-            if (data.professional.groups) {
-              localStorage.setItem("groups_professional", JSON.stringify(data.professional.groups));
-            }
-          }
+        // Importer les raccourcis personnels
+        if (data.personal) {
+          localStorage.setItem("shortcuts_personal", JSON.stringify(data.personal));
         }
         
-        // Importer les préférences de widgets si disponibles
-        if (data.widgetPins) {
-          if (data.widgetPins.personal) {
-            localStorage.setItem("widgetPins_personal", JSON.stringify(data.widgetPins.personal));
-          }
-          if (data.widgetPins.professional) {
-            localStorage.setItem("widgetPins_professional", JSON.stringify(data.widgetPins.professional));
-          }
+        // Importer les raccourcis professionnels
+        if (data.professional) {
+          localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional));
         }
         
         // Mettre à jour le count si disponible
@@ -1354,15 +1014,8 @@
         // Fermer le modal
         closeImportModal();
         
-        // Recharger l'affichage et réorganiser les widgets
+        // Recharger l'affichage
         reloadShortcuts();
-        
-        // Update widget order based on imported pins
-        const orderedWidgets = getPinnedWidgetOrder();
-        widgets.splice(0, widgets.length, ...orderedWidgets);
-        currentWidgetIndex = 0;
-        updateWidgetDisplay();
-        updateWidgetIndicators();
         
         // Notification de succès
         showNotification('Shortcuts imported successfully!');
@@ -1390,181 +1043,6 @@
       saveButton.disabled = !isTitleValid || !isUrlValid;
     }
 
-    function showMoveToGroupModal(position) {
-      const modal = document.getElementById('moveToGroupModal');
-      const groupList = document.getElementById('groupList');
-      
-      modal.setAttribute('data-position', position);
-      
-      // Populate groups
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      
-      groupList.innerHTML = '';
-      Object.entries(groups).forEach(([groupId, groupData]) => {
-        groupList.innerHTML += `
-          <button onclick="moveShortcutToSelectedGroup('${groupId}')" 
-                  class="w-full p-3 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 bg-blue-300 rounded-full flex items-center justify-center">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-              </div>
-              <span class="font-medium text-gray-700">${groupData.name}</span>
-            </div>
-          </button>`;
-      });
-      
-      modal.classList.remove('hidden');
-      closeContextMenu();
-    }
-
-    function closeMoveToGroupModal() {
-      document.getElementById('moveToGroupModal').classList.add('hidden');
-    }
-
-    function moveShortcutToSelectedGroup(targetGroupId) {
-      const modal = document.getElementById('moveToGroupModal');
-      const position = modal.getAttribute('data-position');
-      
-      moveShortcutToGroup(position, targetGroupId);
-      closeMoveToGroupModal();
-      
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      
-      let targetName;
-      if (targetGroupId === 'ungrouped') {
-        targetName = 'Other Shortcuts';
-      } else {
-        targetName = groups[targetGroupId]?.name || 'Unknown Group';
-      }
-      
-      showNotification(`Shortcut moved to "${targetName}"!`);
-    }
-
-    // ==================== GROUP MODAL FUNCTIONALITY ====================
-    
-    let currentGroupId = null;
-
-    function openGroupModal(groupId) {
-      currentGroupId = groupId;
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const groups = JSON.parse(localStorage.getItem(`groups_${activeTab}`) || "{}");
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      const group = groups[groupId];
-      if (!group) return;
-      
-      // Set group info
-      document.getElementById('groupModalName').textContent = group.name;
-      
-      // Get shortcuts in this group
-      const groupShortcuts = Object.entries(shortcuts).filter(([position, data]) => data.groupId === groupId);
-      document.getElementById('groupModalCount').textContent = `${groupShortcuts.length} raccourcis`;
-      
-      // Load shortcuts in modal
-      const container = document.getElementById('groupModalShortcuts');
-      const emptyState = document.getElementById('groupModalEmpty');
-      
-      if (groupShortcuts.length === 0) {
-        container.classList.add('hidden');
-        emptyState.classList.remove('hidden');
-      } else {
-        container.classList.remove('hidden');
-        emptyState.classList.add('hidden');
-        
-        container.innerHTML = '';
-        groupShortcuts.forEach(([position, data]) => {
-          container.innerHTML += generateGroupModalShortcut(position, data);
-        });
-      }
-      
-      // Show modal
-      document.getElementById('groupModal').classList.remove('hidden');
-    }
-
-    function closeGroupModal() {
-      document.getElementById('groupModal').classList.add('hidden');
-      currentGroupId = null;
-    }
-
-    function generateGroupModalShortcut(position, data) {
-      return `
-        <div class="group-modal-shortcut p-4 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer relative"
-             onclick="window.open('${data.url}', '_blank')"
-             oncontextmenu="showShortcutContextMenu(event, '${position}')">
-          <div class="text-center">
-            <div class="shortcut-icon mb-3">
-              ${data.faviconUrl ? 
-                `<img src="${data.faviconUrl}" class="w-12 h-12 rounded-xl mx-auto object-contain shadow-sm" alt="${data.title}">` :
-                `<div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto">
-                  <span class="text-white font-bold text-lg">${data.title.charAt(0).toUpperCase()}</span>
-                </div>`
-              }
-            </div>
-            <div class="text-gray-800 font-medium text-sm truncate">${data.title}</div>
-            <div class="text-gray-500 text-xs truncate">${new URL(data.url).hostname}</div>
-          </div>
-          
-          <!-- Remove from group button -->
-          <button onclick="event.stopPropagation(); removeFromGroup('${position}')" 
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>`;
-    }
-
-    function addShortcutToGroupFromModal() {
-      if (!currentGroupId) return;
-      
-      const title = prompt("Titre du raccourci :");
-      if (!title) return;
-      
-      const url = prompt("URL du raccourci :");
-      if (!url) return;
-      
-      // Find next available position
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      let nextPosition = 1;
-      while (shortcuts[nextPosition]) {
-        nextPosition++;
-      }
-      
-      // Add shortcut to group
-      const shortcutData = {
-        title: title.trim(),
-        url: url.trim(),
-        groupId: currentGroupId,
-        faviconUrl: `https://www.google.com/s2/favicons?domain=${new URL(url.trim()).hostname}&sz=64`
-      };
-      
-      shortcuts[nextPosition] = shortcutData;
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-      
-      // Refresh modal and main view
-      openGroupModal(currentGroupId);
-      reloadShortcuts();
-    }
-
-    function removeFromGroup(position) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
-      if (shortcuts[position]) {
-        shortcuts[position].groupId = '';
-        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-        
-        // Refresh modal and main view
-        openGroupModal(currentGroupId);
-        reloadShortcuts();
-      }
-    }
-
     // ==================== SETTINGS MENU FUNCTIONALITY ====================
 
     function toggleSettingsMenu() {
@@ -1576,28 +1054,19 @@
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50';
       modal.innerHTML = `
-        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl max-h-[80vh] overflow-y-auto">
+        <div class="bg-white/95 rounded-2xl p-6 w-[400px] shadow-2xl backdrop-blur-xl">
           <h2 class="text-2xl font-bold mb-4 text-gray-900">About New Tab</h2>
           <div class="text-gray-700 space-y-3">
-            <p><strong>Version:</strong> 2.1</p>
+            <p><strong>Version:</strong> 2.0</p>
             <p><strong>Developer:</strong> Kilian Barbier</p>
             <p><strong>Features:</strong></p>
             <ul class="list-disc list-inside ml-4 space-y-1">
               <li>Personal & Professional shortcuts</li>
-              <li><strong>NEW:</strong> Shortcut Groups - Organize your shortcuts!</li>
               <li>Weather widget</li>
               <li>Notes widget</li>
               <li>Pomodoro timer</li>
               <li>Export/Import functionality</li>
             </ul>
-            
-            <h3 class="text-lg font-semibold mt-6 mb-3">📁 Shortcut Groups</h3>
-            <div class="text-sm text-gray-600 space-y-2">
-              <p><strong>Create groups:</strong> Click "Create new group" to organize your shortcuts.</p>
-              <p><strong>Add to groups:</strong> Right-click any shortcut → "Move to Group"</p>
-              <p><strong>Manage groups:</strong> Click group name to rename, or use the group controls</p>
-              <p><strong>Examples:</strong> "Work Tools", "Social Media", "Entertainment", etc.</p>
-            </div>
           </div>
           <div class="flex justify-end gap-3 mt-6">
             <button onclick="this.closest('.fixed').remove()" 
@@ -1618,12 +1087,12 @@
     }
 
     function clearAllData() {
-      if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, widget preferences, and settings. This action cannot be undone.')) {
+      if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, and settings. This action cannot be undone.')) {
         // Clear all localStorage
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && (key.includes('shortcuts') || key.includes('notes') || key.includes('pomodoro') || key.includes('weather') || key.includes('widgetPins'))) {
+          if (key && (key.includes('shortcuts') || key.includes('notes') || key.includes('pomodoro') || key.includes('weather'))) {
             keysToRemove.push(key);
           }
         }
@@ -1695,23 +1164,6 @@
           
           <!-- Navigation Controls -->
           <div class="flex items-center gap-2">
-            <!-- Pin Menu Button -->
-            <div class="relative">
-              <button onclick="toggleWidgetPinMenu()" id="widgetPinButton" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                <img src="../media/pin.svg" alt="Pin" class="w-4 h-4" />
-              </button>
-              <div id="widgetPinMenu" class="hidden absolute top-full right-0 mt-2 bg-black/60 backdrop-blur-xl rounded-lg shadow-lg min-w-[140px] z-50 border border-white/10">
-                <button onclick="pinWidget('primary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm">
-                  📌 Pin as Primary
-                </button>
-                <button onclick="pinWidget('secondary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 text-sm">
-                  📎 Pin as Secondary
-                </button>
-                <button onclick="unpinWidget()" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm">
-                  ❌ Unpin Widget
-                </button>
-              </div>
-            </div>
             <button onclick="previousWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -1816,20 +1268,6 @@
                               placeholder="Write your note..." 
                               class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
                               rows="3"></textarea>
-                    
-                    <!-- Reminder Option -->
-                    <div class="flex items-center gap-2 text-sm">
-                      <input type="checkbox" id="add-reminder-checkbox" class="rounded">
-                      <label for="add-reminder-checkbox" class="text-white/80">Set reminder</label>
-                      <select id="reminder-interval-select" class="ml-2 px-2 py-1 bg-white/20 rounded text-white text-xs border border-white/20 disabled:opacity-50" disabled>
-                        <option value="5">5 min</option>
-                        <option value="15" selected>15 min</option>
-                        <option value="30">30 min</option>
-                        <option value="60">1 hour</option>
-                        <option value="120">2 hours</option>
-                      </select>
-                    </div>
-                    
                     <div class="flex gap-2">
                       <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
                       <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
@@ -2053,11 +1491,6 @@
           class="text-white hover:text-white/80 text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center hover:bg-white/30 transition-all duration-300">
           ?
         </button>
-        <button onclick="showGroupsHelp()"
-          class="text-white hover:text-white/80 text-xl font-medium w-10 h-10 rounded-full bg-blue-500/30 backdrop-blur-xl flex items-center justify-center hover:bg-blue-500/40 transition-all duration-300"
-          title="Groups Help">
-          📁
-        </button>
       </div>
 
       <!-- Grid Shortcuts -->
@@ -2111,10 +1544,6 @@
           style="border-top-left-radius: 8px; border-top-right-radius: 8px;">
           Edit Shortcut
         </button>
-        <button onclick="showMoveToGroupModal(document.getElementById('contextMenu').getAttribute('data-position'))"
-          class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
-          Move to Group
-        </button>
         <button onclick="pinToBothTabs(document.getElementById('contextMenu').getAttribute('data-position'))"
           class="w-full border-t-0 border-r-0 border-l-0 border-b-0 px-4 py-4 text-left hover:bg-blue-500/20 text-blue-300 transition-colors duration-200 transform hover:translate-y-0">
           Pin to both tabs
@@ -2146,87 +1575,6 @@
         </div>
       </div>
 
-      <div id="moveToGroupModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
-        <div class="bg-white/95 rounded-2xl p-6 w-[400px] shadow-2xl backdrop-blur-xl">
-          <h2 class="text-2xl font-bold mb-4 text-gray-900">Move to Group</h2>
-          <div class="space-y-3 max-h-60 overflow-y-auto">
-            <button onclick="moveShortcutToSelectedGroup('ungrouped')" 
-                    class="w-full p-3 text-left bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                  </svg>
-                </div>
-                <span class="font-medium text-gray-700">Other Shortcuts</span>
-              </div>
-            </button>
-            <div id="groupList">
-              <!-- Groups will be populated here -->
-            </div>
-          </div>
-          <div class="flex justify-end gap-3 mt-6">
-            <button onclick="closeMoveToGroupModal()" 
-                    class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Group Content Modal -->
-      <div id="groupModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
-        <div class="bg-white/95 rounded-3xl p-8 w-[90%] max-w-4xl max-h-[80%] shadow-2xl backdrop-blur-xl overflow-hidden">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2-2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-3xl font-bold text-gray-800 group-modal-name" id="groupModalName"></h2>
-                <span class="text-gray-500 group-modal-count" id="groupModalCount"></span>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <button onclick="addShortcutToGroupFromModal()" 
-                      class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-xl text-white text-sm transition-colors flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Ajouter
-              </button>
-              <button onclick="closeGroupModal()" 
-                      class="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-xl flex items-center justify-center transition-colors">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-          
-          <div class="overflow-y-auto max-h-[60vh]">
-            <div id="groupModalShortcuts" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <!-- Group shortcuts will be loaded here -->
-            </div>
-            
-            <div id="groupModalEmpty" class="hidden text-center py-16">
-              <div class="w-20 h-20 bg-gray-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </div>
-              <p class="text-gray-500 text-lg mb-4">Ce groupe est vide</p>
-              <button onclick="addShortcutToGroupFromModal()" 
-                      class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white transition-colors">
-                Ajouter le premier raccourci
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Popup d'autocorrection -->
       <div id="autocorrectionModal"
         class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
@@ -2246,6 +1594,43 @@
               Yes
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Add search help modal -->
+      <div id="searchHelpModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-white">Search Commands</h2>
+          <div class="grid grid-cols-2 gap-4 text-white">
+            <div>
+              <p><strong>/g</strong> - Google</p>
+              <p><strong>/yt</strong> - YouTube</p>
+              <p><strong>/gh</strong> - GitHub</p>
+              <p><strong>/w</strong> - Wikipedia</p>
+              <p><strong>/r</strong> - Reddit</p>
+              <p><strong>/so</strong> - Stack Overflow</p>
+              <p><strong>/a</strong> - Amazon</p>
+              <p><strong>/n</strong> - Netflix</p>
+            </div>
+            <div>
+              <p><strong>/sp</strong> - Spotify</p>
+              <p><strong>/tw</strong> - Twitter</p>
+              <p><strong>/ig</strong> - Instagram</p>
+              <p><strong>/maps</strong> - Google Maps</p>
+              <p><strong>/i</strong> - Google Images</p>
+              <p><strong>/ddg</strong> - DuckDuckGo</p>
+              <p><strong>/px</strong> - Perplexity</p>
+            </div>
+          </div>
+          <div class="text-white/80 text-sm mt-4">
+            <p>
+              Tip: Use a slash (/) before a command, or just type your search to search with Google
+            </p>
+          </div>
+          <button onclick="closeSearchHelp()" class="mt-6 px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white">
+            Close
+          </button>
         </div>
       </div>
 
@@ -2394,63 +1779,6 @@
 
     .shortcut-container:hover::before {
       opacity: 1;
-    }
-
-    /* Styles for group headers */
-    .group-header {
-      animation: fadeInUp 0.3s ease-out;
-    }
-
-    .group-name {
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .group-name:hover {
-      color: rgba(255, 255, 255, 0.8);
-      text-decoration: underline;
-    }
-
-    /* Animation for shortcuts appearing */
-    .shortcut-container {
-      animation: fadeInUp 0.4s ease-out;
-      animation-fill-mode: both;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Stagger animation for multiple shortcuts */
-    .shortcut-container:nth-child(1) { animation-delay: 0.1s; }
-    .shortcut-container:nth-child(2) { animation-delay: 0.2s; }
-    .shortcut-container:nth-child(3) { animation-delay: 0.3s; }
-    .shortcut-container:nth-child(4) { animation-delay: 0.4s; }
-    .shortcut-container:nth-child(5) { animation-delay: 0.5s; }
-    .shortcut-container:nth-child(6) { animation-delay: 0.6s; }
-    .shortcut-container:nth-child(7) { animation-delay: 0.7s; }
-    .shortcut-container:nth-child(8) { animation-delay: 0.8s; }
-
-    /* Group drag and drop styles */
-    .shortcut-container[data-group-id] {
-      border: 2px solid transparent;
-      transition: border-color 0.2s ease;
-    }
-
-    .shortcut-container[data-group-id]:hover {
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    .shortcut-container.drag-over {
-      border-color: rgba(59, 130, 246, 0.5);
-      background: rgba(59, 130, 246, 0.1);
     }
   </style>
 
@@ -2728,17 +2056,11 @@
     function showAddNoteForm() {
       document.getElementById('add-note-form').classList.remove('hidden');
       document.getElementById('note-text').focus();
-      
-      // Reset form
-      document.getElementById('add-reminder-checkbox').checked = false;
-      document.getElementById('reminder-interval-select').disabled = true;
     }
 
     function hideAddNoteForm() {
       document.getElementById('add-note-form').classList.add('hidden');
       document.getElementById('note-text').value = '';
-      document.getElementById('add-reminder-checkbox').checked = false;
-      document.getElementById('reminder-interval-select').disabled = true;
     }
 
     function addNote(color) {
@@ -2748,28 +2070,16 @@
         return;
       }
 
-      const reminderCheckbox = document.getElementById('add-reminder-checkbox');
-      const reminderInterval = document.getElementById('reminder-interval-select');
-      
       const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
       const newNote = {
         id: Date.now(),
         text: noteText,
         color: color,
-        createdAt: new Date().toISOString(),
-        reminder: reminderCheckbox.checked ? {
-          interval: parseInt(reminderInterval.value),
-          createdAt: new Date().toISOString()
-        } : null
+        createdAt: new Date().toISOString()
       };
 
       notes.push(newNote);
       localStorage.setItem('userNotes', JSON.stringify(notes));
-
-      // Si un rappel est configuré, le démarrer
-      if (newNote.reminder) {
-        startReminder(newNote.id, newNote.reminder.interval);
-      }
 
       hideAddNoteForm();
       loadNotes();
@@ -2931,88 +2241,30 @@
       // Sort notes by creation date (newest first)
       notes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      container.innerHTML = notes.map(note => {
-        let hasReminder = false;
-        let reminderText = '';
-        
-        if (note.reminder) {
-          if (note.reminder.type === 'advanced' && note.reminder.days && note.reminder.time) {
-            hasReminder = true;
-            reminderText = `${note.reminder.days.join(', ')} at ${note.reminder.time}`;
-          } else if (note.reminder.type === 'basic' && note.reminder.interval) {
-            hasReminder = true;
-            reminderText = note.reminder.interval < 60 ? 
-              `${note.reminder.interval}min` : 
-              note.reminder.interval === 60 ? '1h' : 
-              `${Math.floor(note.reminder.interval / 60)}h${note.reminder.interval % 60 > 0 ? note.reminder.interval % 60 + 'min' : ''}`;
-          } else if (note.reminder.interval) {
-            // Ancienne méthode de rappel
-            hasReminder = true;
-            reminderText = note.reminder.interval < 60 ? 
-              `${note.reminder.interval}min` : 
-              note.reminder.interval === 60 ? '1h' : 
-              `${Math.floor(note.reminder.interval / 60)}h${note.reminder.interval % 60 > 0 ? note.reminder.interval % 60 + 'min' : ''}`;
-          }
-        }
-        
-        return `
-          <div class="relative ${getColorClasses(note.color)} ${getDynamicPadding(note.text)} border-2 shadow-sm font-patrick transition-transform hover:scale-105 hover:z-10" 
-               style="${getRandomNoteStyle()}"
-               oncontextmenu="showNoteContextMenu(event, ${note.id})">
-            ${hasReminder ? `
-              <div class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                ${reminderText}
-              </div>
-            ` : ''}
-            <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
-            <div class="flex justify-end gap-1 mt-2">
-              ${hasReminder ? `
-                <button onclick="event.stopPropagation(); openReminderModal(${note.id})" 
-                        class="p-1 rounded hover:bg-orange-500/20 transition-colors text-orange-600"
-                        title="Edit reminder">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7m-5 3L9 10l-4 4v4h4z"/>
-                  </svg>
-                </button>
-                <button onclick="event.stopPropagation(); removeReminder(${note.id})" 
-                        class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
-                        title="Remove reminder">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
-                  </svg>
-                </button>
-              ` : `
-                <button onclick="event.stopPropagation(); openReminderModal(${note.id})" 
-                        class="p-1 rounded hover:bg-green-500/20 transition-colors text-green-600"
-                        title="Add reminder">
-                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </button>
-              `}
-              <button onclick="event.stopPropagation(); editNote(${note.id})" 
-                      class="p-1 rounded hover:bg-black/10 transition-colors"
-                      title="Edit note">
-                <svg class="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-              </button>
-              <button onclick="event.stopPropagation(); deleteNote(${note.id})" 
-                      class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
-                      title="Delete note">
-                <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
-            </div>
+      container.innerHTML = notes.map(note => `
+        <div class="relative ${getColorClasses(note.color)} ${getDynamicPadding(note.text)} border-2 shadow-sm font-patrick transition-transform hover:scale-105 hover:z-10" 
+             style="${getRandomNoteStyle()}">
+          <div class="${getDynamicFontSize(note.text)} ${getDynamicLineHeight(note.text)} break-words">${escapeHtml(note.text)}</div>
+          <div class="flex justify-end gap-1 mt-2">
+            <button onclick="editNote(${note.id})" 
+                    class="p-1 rounded hover:bg-black/10 transition-colors"
+                    title="Edit note">
+              <svg class="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+            </button>
+            <button onclick="deleteNote(${note.id})" 
+                    class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
+                    title="Delete note">
+              <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
           </div>
-        `;
-      }).join('');
+        </div>
+      `).join('');
     }
 
     function escapeHtml(text) {
@@ -3021,744 +2273,12 @@
       return div.innerHTML;
     }
 
-    // ==================== ADVANCED REMINDER FUNCTIONALITY ====================
-    
-    // Variables globales pour les rappels
-    let serviceWorker = null;
-    let activeReminders = new Map();
-
-    // Initialiser le Service Worker
-    async function initServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        try {
-          const registration = await navigator.serviceWorker.register('./sw.js');
-          console.log('Service Worker registered:', registration);
-          
-          // Attendre que le SW soit prêt
-          await navigator.serviceWorker.ready;
-          serviceWorker = registration;
-          
-          // Demander la permission pour les notifications
-          if ('Notification' in window && Notification.permission === 'default') {
-            await Notification.requestPermission();
-          }
-          
-          return true;
-        } catch (error) {
-          console.error('Service Worker registration failed:', error);
-          return false;
-        }
-      }
-      return false;
-    }
-
-    // Son de notification - utilise Web Audio API
-    function playReminderSound() {
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // Configuration du son - tonalité douce mais audible
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
-        
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } catch (error) {
-        console.log('Could not play reminder sound:', error);
-      }
-    }
-
-    // Afficher une notification de rappel
-    function showReminderNotification(noteText) {
-      // Son d'abord
-      playReminderSound();
-      
-      // Notification visuelle améliorée
-      const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-orange-500/95 backdrop-blur-xl text-white px-6 py-4 rounded-lg shadow-xl z-[9999] transition-all duration-300 transform translate-x-0 max-w-sm border-l-4 border-orange-300';
-      
-      notification.innerHTML = `
-        <div class="flex items-start gap-3">
-          <div class="flex-shrink-0">
-            <svg class="w-6 h-6 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zm-8-1h8v-2H7v2zm0-4h8v-2H7v2zm0-4h8V6H7v2z"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h4 class="font-bold text-orange-100 mb-1">📝 Note Reminder</h4>
-            <p class="text-orange-50 text-sm">${escapeHtml(noteText.length > 100 ? noteText.substring(0, 100) + '...' : noteText)}</p>
-          </div>
-          <button onclick="this.closest('.fixed').remove()" class="flex-shrink-0 text-orange-200 hover:text-white">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-      `;
-      
-      document.body.appendChild(notification);
-      
-      // Animation d'entrée
-      setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-      }, 10);
-      
-      // Auto-suppression après 8 secondes
-      setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-          }
-        }, 300);
-      }, 8000);
-    }
-
-    // Démarrer un rappel (version simplifiée et plus fiable)
-    function startReminder(noteId, reminderConfig) {
-      // Arrêter le rappel existant s'il y en a un
-      stopReminder(noteId);
-      
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      
-      if (!note) return;
-      
-      let intervalMs = 0;
-      let displayText = '';
-      
-      // Déterminer l'intervalle en millisecondes selon le type de rappel
-      if (reminderConfig.type === 'advanced' && reminderConfig.days && reminderConfig.time) {
-        // Pour les rappels programmés, utiliser un intervalle de vérification de 1 minute
-        intervalMs = 60 * 1000; // Vérifier chaque minute
-        displayText = `${reminderConfig.days.map(d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ')} at ${reminderConfig.time}`;
-        
-        const intervalId = setInterval(() => {
-          checkScheduledReminder(noteId, reminderConfig, note.text);
-        }, intervalMs);
-        
-        activeReminders.set(noteId, { type: 'scheduled', id: intervalId, config: reminderConfig });
-        
-      } else {
-        // Rappel simple par intervalle
-        const interval = reminderConfig.interval || reminderConfig.interval;
-        intervalMs = interval * 60 * 1000;
-        displayText = interval < 60 ? 
-          `every ${interval} minutes` : 
-          interval === 60 ? 'every hour' : 
-          `every ${Math.floor(interval / 60)}h${interval % 60 > 0 ? interval % 60 + 'min' : ''}`;
-        
-        const intervalId = setInterval(() => {
-          showReminderNotification(note.text);
-        }, intervalMs);
-        
-        activeReminders.set(noteId, { type: 'interval', id: intervalId });
-      }
-      
-      showNotification(`Reminder set for "${note.text.substring(0, 30)}..." ${displayText}`);
-    }
-    
-    // Vérifier si un rappel programmé doit être déclenché
-    function checkScheduledReminder(noteId, config, noteText) {
-      const now = new Date();
-      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-      const currentTime = now.toTimeString().substring(0, 5); // HH:MM format
-      
-      // Vérifier si c'est le bon jour et la bonne heure (±1 minute de tolérance)
-      if (config.days.includes(currentDay)) {
-        const [targetHour, targetMinute] = config.time.split(':').map(Number);
-        const [currentHour, currentMinute] = currentTime.split(':').map(Number);
-        
-        const targetMinutes = targetHour * 60 + targetMinute;
-        const currentMinutes = currentHour * 60 + currentMinute;
-        
-        // Déclencher si on est dans la minute cible
-        if (Math.abs(currentMinutes - targetMinutes) < 1) {
-          showReminderNotification(noteText);
-        }
-      }
-    }
-
-    // Arrêter un rappel
-    function stopReminder(noteId) {
-      if (activeReminders.has(noteId)) {
-        const reminder = activeReminders.get(noteId);
-        
-        // Pour tous les types de rappels, on utilise maintenant clearInterval
-        if (reminder.id) {
-          clearInterval(reminder.id);
-        }
-        
-        activeReminders.delete(noteId);
-      }
-    }
-
-    // Redémarrer tous les rappels actifs
-    function restartActiveReminders() {
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      
-      notes.forEach(note => {
-        if (note.reminder) {
-          startReminder(note.id, note.reminder);
-        }
-      });
-    }
-
-    // Ouvrir le modal de configuration de rappel avancé
-    function openReminderModal(noteId) {
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50';
-      modal.id = 'reminderModal';
-      
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      modal.innerHTML = `
-        <div class="bg-white/95 rounded-2xl p-6 w-[600px] max-w-[90vw] shadow-2xl backdrop-blur-xl max-h-[90vh] overflow-y-auto">
-          <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-            <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Advanced Reminder Settings
-          </h2>
-          
-          <div class="mb-4 p-3 bg-gray-100 rounded-lg">
-            <p class="text-sm text-gray-600">Note:</p>
-            <p class="font-medium text-gray-800">${escapeHtml(note.text.length > 80 ? note.text.substring(0, 80) + '...' : note.text)}</p>
-          </div>
-          
-          <!-- Type de rappel -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-3">Reminder Type:</label>
-            <div class="grid grid-cols-2 gap-3">
-              <button onclick="selectReminderType('interval')" id="intervalType" class="reminder-type px-4 py-3 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors border-2 border-transparent">
-                <div class="text-center">
-                  <div class="text-lg mb-1">⏱️</div>
-                  <div class="font-medium">Simple Interval</div>
-                  <div class="text-xs text-blue-600">Every X minutes</div>
-                </div>
-              </button>
-              <button onclick="selectReminderType('scheduled')" id="scheduledType" class="reminder-type px-4 py-3 bg-blue-100 hover:bg-blue-200 rounded-lg text-blue-800 transition-colors border-2 border-transparent">
-                <div class="text-center">
-                  <div class="text-lg mb-1">📅</div>
-                  <div class="font-medium">Basic Interval Only</div>
-                  <div class="text-xs text-blue-600">Advanced scheduling not reliable with closed tabs</div>
-                </div>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Configuration pour intervalle simple -->
-          <div id="intervalConfig" class="hidden mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Reminder Frequency:</label>
-            <div class="grid grid-cols-2 gap-2 mb-3">
-              <button onclick="selectInterval(5)" class="interval-option px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors">
-                Every 5 min
-              </button>
-              <button onclick="selectInterval(15)" class="interval-option px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors">
-                Every 15 min
-              </button>
-              <button onclick="selectInterval(30)" class="interval-option px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors">
-                Every 30 min
-              </button>
-              <button onclick="selectInterval(60)" class="interval-option px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors">
-                Every hour
-              </button>
-            </div>
-            
-            <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-600">Custom:</label>
-              <input type="number" id="customInterval" min="1" max="1440" placeholder="Minutes" 
-                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30">
-              <button onclick="selectInterval(parseInt(document.getElementById('customInterval').value))" 
-                      class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors">
-                Set
-              </button>
-            </div>
-          </div>
-          
-          <!-- Configuration pour rappel programmé -->
-          <div id="scheduledConfig" class="hidden mb-6">
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Days of the week:</label>
-              <div class="grid grid-cols-7 gap-1">
-                <button onclick="toggleDay(0)" id="day-0" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Sun</div>
-                </button>
-                <button onclick="toggleDay(1)" id="day-1" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Mon</div>
-                </button>
-                <button onclick="toggleDay(2)" id="day-2" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Tue</div>
-                </button>
-                <button onclick="toggleDay(3)" id="day-3" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Wed</div>
-                </button>
-                <button onclick="toggleDay(4)" id="day-4" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Thu</div>
-                </button>
-                <button onclick="toggleDay(5)" id="day-5" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Fri</div>
-                </button>
-                <button onclick="toggleDay(6)" id="day-6" class="day-selector px-2 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-800 transition-colors text-center">
-                  <div class="text-xs font-medium">Sat</div>
-                </button>
-              </div>
-              
-              <div class="flex gap-2 mt-2">
-                <button onclick="selectDayPreset('weekdays')" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-800 text-xs transition-colors">
-                  Weekdays
-                </button>
-                <button onclick="selectDayPreset('weekends')" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-800 text-xs transition-colors">
-                  Weekends
-                </button>
-                <button onclick="selectDayPreset('daily')" class="px-3 py-1 bg-blue-100 hover:bg-blue-200 rounded text-blue-800 text-xs transition-colors">
-                  Daily
-                </button>
-              </div>
-            </div>
-            
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Time:</label>
-              <input type="time" id="reminderTime" 
-                     class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30"
-                     value="09:00">
-            </div>
-          </div>
-          
-          <div id="selectedReminderSummary" class="hidden mb-4 p-3 bg-green-100 rounded-lg">
-            <p class="text-green-800 font-medium">Selected: <span id="reminderSummaryText"></span></p>
-          </div>
-          
-          <div class="flex justify-end gap-3">
-            <button onclick="closeReminderModal()" 
-                    class="px-4 py-2 bg-gray-500/80 hover:bg-gray-600/80 rounded-lg text-white transition-colors">
-              Cancel
-            </button>
-            <button id="confirmAdvancedReminderBtn" onclick="confirmAdvancedReminder(${noteId})" disabled
-                    class="px-4 py-2 bg-orange-500/80 hover:bg-orange-600/80 rounded-lg text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-              Start Reminder
-            </button>
-          </div>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      // Variables pour stocker la configuration
-      window.reminderConfig = {
-        type: null,
-        interval: null,
-        days: [],
-        time: '09:00'
-      };
-      
-      // Charger la configuration existante si elle existe
-      if (note.reminder) {
-        loadExistingReminderConfig(note.reminder);
-      }
-      
-      // Fermer en cliquant à l'extérieur
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          closeReminderModal();
-        }
-      });
-    }
-
-    // Charger la configuration de rappel existante
-    function loadExistingReminderConfig(reminderConfig) {
-      if (reminderConfig.type === 'advanced' && reminderConfig.days && reminderConfig.time) {
-        // Rappel programmé
-        selectReminderType('scheduled');
-        window.reminderConfig.days = [...reminderConfig.days];
-        window.reminderConfig.time = reminderConfig.time;
-        
-        // Mettre à jour l'heure
-        const timeInput = document.getElementById('reminderTime');
-        if (timeInput) timeInput.value = reminderConfig.time;
-        
-        // Mettre à jour les jours sélectionnés
-        reminderConfig.days.forEach(day => {
-          const dayBtn = document.getElementById(`day-${day}`);
-          if (dayBtn) {
-            dayBtn.classList.remove('bg-gray-100', 'text-gray-800');
-            dayBtn.classList.add('bg-orange-200', 'text-orange-800');
-          }
-        });
-        
-      } else if (reminderConfig.interval || (reminderConfig.type === 'basic' && reminderConfig.interval)) {
-        // Rappel simple par intervalle
-        selectReminderType('interval');
-        const interval = reminderConfig.interval || reminderConfig.interval;
-        window.reminderConfig.interval = interval;
-        
-        // Mettre à jour l'interface pour l'intervalle
-        document.querySelectorAll('.interval-option').forEach(btn => {
-          btn.classList.remove('bg-orange-200', 'text-orange-800');
-          btn.classList.add('bg-gray-100', 'text-gray-800');
-        });
-        
-        const targetBtn = [...document.querySelectorAll('.interval-option')].find(btn => 
-          btn.textContent.includes(interval === 60 ? 'hour' : `${interval} min`)
-        );
-        
-        if (targetBtn) {
-          targetBtn.classList.remove('bg-gray-100', 'text-gray-800');
-          targetBtn.classList.add('bg-orange-200', 'text-orange-800');
-        } else {
-          // Intervalle personnalisé
-          const customInput = document.getElementById('customInterval');
-          if (customInput) customInput.value = interval;
-        }
-      }
-      
-      updateReminderSummary();
-    }
-
-    // Sélectionner le type de rappel
-    function selectReminderType(type) {
-      // Pour l'instant, on force tout vers le type 'interval' car 'scheduled' ne fonctionne pas de façon fiable
-      if (type === 'scheduled') {
-        showNotification('Scheduled reminders with specific days/times do not work reliably when the browser tab is closed. Please use simple interval reminders.', 'warning');
-        type = 'interval';
-      }
-      
-      window.reminderConfig.type = type;
-      
-      // Mettre à jour l'interface
-      document.querySelectorAll('.reminder-type').forEach(btn => {
-        btn.classList.remove('bg-orange-200', 'text-orange-800', 'border-orange-300');
-        btn.classList.add('bg-blue-100', 'text-blue-800', 'border-transparent');
-      });
-      
-      const selectedBtn = document.getElementById(type + 'Type');
-      selectedBtn.classList.remove('bg-blue-100', 'text-blue-800', 'border-transparent');
-      selectedBtn.classList.add('bg-orange-200', 'text-orange-800', 'border-orange-300');
-      
-      // Afficher/masquer les configurations
-      document.getElementById('intervalConfig').classList.toggle('hidden', type !== 'interval');
-      document.getElementById('scheduledConfig').classList.toggle('hidden', type !== 'scheduled');
-      
-      // Réinitialiser les sélections
-      if (type === 'interval') {
-        window.reminderConfig.interval = null;
-        document.querySelectorAll('.interval-option').forEach(btn => {
-          btn.classList.remove('bg-orange-200', 'text-orange-800');
-          btn.classList.add('bg-gray-100', 'text-gray-800');
-        });
-      } else {
-        window.reminderConfig.days = [];
-        window.reminderConfig.time = '09:00';
-        document.querySelectorAll('.day-selector').forEach(btn => {
-          btn.classList.remove('bg-orange-200', 'text-orange-800');
-          btn.classList.add('bg-gray-100', 'text-gray-800');
-        });
-      }
-      
-      updateReminderSummary();
-    }
-
-    // Sélectionner un intervalle (pour le mode simple)
-    function selectInterval(minutes) {
-      if (!minutes || minutes < 1 || minutes > 1440) {
-        alert('Please enter a valid interval between 1 and 1440 minutes (24 hours)');
-        return;
-      }
-      
-      window.reminderConfig.interval = minutes;
-      
-      // Mettre à jour l'interface
-      document.querySelectorAll('.interval-option').forEach(btn => {
-        btn.classList.remove('bg-orange-200', 'text-orange-800');
-        btn.classList.add('bg-gray-100', 'text-gray-800');
-      });
-      
-      // Marquer l'option sélectionnée
-      const targetBtn = [...document.querySelectorAll('.interval-option')].find(btn => 
-        btn.textContent.includes(minutes === 60 ? 'hour' : `${minutes} min`)
-      );
-      
-      if (targetBtn) {
-        targetBtn.classList.remove('bg-gray-100', 'text-gray-800');
-        targetBtn.classList.add('bg-orange-200', 'text-orange-800');
-      }
-      
-      updateReminderSummary();
-    }
-
-    // Activer/désactiver un jour
-    function toggleDay(dayIndex) {
-      const days = window.reminderConfig.days;
-      const dayBtn = document.getElementById(`day-${dayIndex}`);
-      
-      if (days.includes(dayIndex)) {
-        // Retirer le jour
-        window.reminderConfig.days = days.filter(d => d !== dayIndex);
-        dayBtn.classList.remove('bg-orange-200', 'text-orange-800');
-        dayBtn.classList.add('bg-gray-100', 'text-gray-800');
-      } else {
-        // Ajouter le jour
-        window.reminderConfig.days.push(dayIndex);
-        dayBtn.classList.remove('bg-gray-100', 'text-gray-800');
-        dayBtn.classList.add('bg-orange-200', 'text-orange-800');
-      }
-      
-      updateReminderSummary();
-    }
-
-    // Sélectionner un preset de jours
-    function selectDayPreset(preset) {
-      // Réinitialiser tous les jours
-      document.querySelectorAll('.day-selector').forEach(btn => {
-        btn.classList.remove('bg-orange-200', 'text-orange-800');
-        btn.classList.add('bg-gray-100', 'text-gray-800');
-      });
-      
-      let selectedDays = [];
-      
-      switch (preset) {
-        case 'weekdays':
-          selectedDays = [1, 2, 3, 4, 5]; // Lun-Ven
-          break;
-        case 'weekends':
-          selectedDays = [0, 6]; // Dim, Sam
-          break;
-        case 'daily':
-          selectedDays = [0, 1, 2, 3, 4, 5, 6]; // Tous les jours
-          break;
-      }
-      
-      window.reminderConfig.days = selectedDays;
-      
-      // Mettre à jour l'interface
-      selectedDays.forEach(day => {
-        const dayBtn = document.getElementById(`day-${day}`);
-        dayBtn.classList.remove('bg-gray-100', 'text-gray-800');
-        dayBtn.classList.add('bg-orange-200', 'text-orange-800');
-      });
-      
-      updateReminderSummary();
-    }
-
-    // Mettre à jour le résumé du rappel
-    function updateReminderSummary() {
-      const config = window.reminderConfig;
-      let summaryText = '';
-      let isValid = false;
-      
-      if (config.type === 'interval' && config.interval) {
-        if (config.interval < 60) {
-          summaryText = `Every ${config.interval} minute${config.interval > 1 ? 's' : ''}`;
-        } else if (config.interval === 60) {
-          summaryText = 'Every hour';
-        } else {
-          const hours = Math.floor(config.interval / 60);
-          const minutes = config.interval % 60;
-          summaryText = `Every ${hours} hour${hours > 1 ? 's' : ''}`;
-          if (minutes > 0) {
-            summaryText += ` ${minutes} minute${minutes > 1 ? 's' : ''}`;
-          }
-        }
-        isValid = true;
-      } else if (config.type === 'scheduled' && config.days.length > 0) {
-        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const selectedDayNames = config.days.map(d => dayNames[d]);
-        
-        const timeInput = document.getElementById('reminderTime');
-        const time = timeInput ? timeInput.value : config.time;
-        config.time = time;
-        
-        if (config.days.length === 7) {
-          summaryText = `Daily at ${time}`;
-        } else if (config.days.length === 5 && config.days.every(d => d >= 1 && d <= 5)) {
-          summaryText = `Weekdays at ${time}`;
-        } else if (config.days.length === 2 && config.days.includes(0) && config.days.includes(6)) {
-          summaryText = `Weekends at ${time}`;
-        } else {
-          summaryText = `${selectedDayNames.join(', ')} at ${time}`;
-        }
-        isValid = true;
-      }
-      
-      if (isValid) {
-        document.getElementById('selectedReminderSummary').classList.remove('hidden');
-        document.getElementById('reminderSummaryText').textContent = summaryText;
-        document.getElementById('confirmAdvancedReminderBtn').disabled = false;
-      } else {
-        document.getElementById('selectedReminderSummary').classList.add('hidden');
-        document.getElementById('confirmAdvancedReminderBtn').disabled = true;
-      }
-    }
-
-    // Confirmer la création du rappel avancé
-    function confirmAdvancedReminder(noteId) {
-      const config = window.reminderConfig;
-      
-      if (!config.type) return;
-      
-      // Mettre à jour la note avec l'information de rappel
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const noteIndex = notes.findIndex(n => n.id === noteId);
-      
-      if (noteIndex !== -1) {
-        notes[noteIndex].reminder = {
-          ...config,
-          createdAt: new Date().toISOString()
-        };
-        localStorage.setItem('userNotes', JSON.stringify(notes));
-      }
-      
-      // Démarrer le rappel avec la nouvelle configuration
-      startReminder(noteId, config);
-      
-      closeReminderModal();
-      loadNotes(); // Recharger les notes pour afficher l'indicateur de rappel
-    }
-
-    // Fermer le modal de rappel
-    function closeReminderModal() {
-      const modal = document.getElementById('reminderModal');
-      if (modal) {
-        modal.remove();
-      }
-      window.reminderConfig = null;
-    }
-
-    // Supprimer un rappel
-    function removeReminder(noteId) {
-      // Arrêter l'intervalle
-      stopReminder(noteId);
-      
-      // Mettre à jour la note
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const noteIndex = notes.findIndex(n => n.id === noteId);
-      
-      if (noteIndex !== -1) {
-        notes[noteIndex].reminder = null;
-        localStorage.setItem('userNotes', JSON.stringify(notes));
-      }
-      
-      showNotification('Reminder removed successfully');
-      loadNotes(); // Recharger les notes
-    }
-
-    // Gestion du clic droit sur les notes
-    function showNoteContextMenu(event, noteId) {
-      event.preventDefault();
-      
-      // Supprimer le menu existant s'il y en a un
-      const existingMenu = document.getElementById('noteContextMenu');
-      if (existingMenu) {
-        existingMenu.remove();
-      }
-      
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      const note = notes.find(n => n.id === noteId);
-      if (!note) return;
-      
-      const hasReminder = note.reminder && note.reminder.interval;
-      
-      const menu = document.createElement('div');
-      menu.className = 'fixed rounded-lg shadow-2xl min-w-[160px] z-50 bg-black/80 backdrop-blur-xl border border-white/10';
-      menu.id = 'noteContextMenu';
-      menu.style.left = `${event.pageX}px`;
-      menu.style.top = `${event.pageY}px`;
-      
-      menu.innerHTML = `
-        ${hasReminder ? `
-          <button onclick="removeReminder(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
-            </svg>
-            Cancel Reminder
-          </button>
-          <button onclick="openReminderModal(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Change Reminder
-          </button>
-        ` : `
-          <button onclick="openReminderModal(${noteId}); closeNoteContextMenu();" 
-                  class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm flex items-center gap-2">
-            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Add Reminder
-          </button>
-        `}
-        <button onclick="editNote(${noteId}); closeNoteContextMenu();" 
-                class="w-full px-4 py-2 text-left text-white hover:bg-white/10 text-sm flex items-center gap-2">
-          <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-          </svg>
-          Edit Note
-        </button>
-        <button onclick="deleteNote(${noteId}); closeNoteContextMenu();" 
-                class="w-full px-4 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm flex items-center gap-2">
-          <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-          </svg>
-          Delete Note
-        </button>
-      `;
-      
-      document.body.appendChild(menu);
-      
-      // Fermer le menu en cliquant ailleurs
-      document.addEventListener('click', closeNoteContextMenu);
-    }
-
-    // Fermer le menu contextuel
-    function closeNoteContextMenu() {
-      const menu = document.getElementById('noteContextMenu');
-      if (menu) {
-        menu.remove();
-      }
-      document.removeEventListener('click', closeNoteContextMenu);
-    }
-
-    // Restaurer les rappels actifs au chargement de la page
-    function restoreActiveReminders() {
-      const notes = JSON.parse(localStorage.getItem('userNotes') || '[]');
-      
-      notes.forEach(note => {
-        if (note.reminder && note.reminder.interval) {
-          startReminder(note.id, note.reminder.interval);
-        }
-      });
-    }
-
     // Load notes on page load
     document.addEventListener('DOMContentLoaded', function() {
       // Load notes after other initialization
       setTimeout(() => {
         loadNotes();
         loadPomodoroStats();
-        restoreActiveReminders(); // Restaurer les rappels actifs
-        
-        // Gérer l'activation/désactivation de la select box pour les rappels
-        const reminderCheckbox = document.getElementById('add-reminder-checkbox');
-        const reminderSelect = document.getElementById('reminder-interval-select');
-        
-        if (reminderCheckbox && reminderSelect) {
-          reminderCheckbox.addEventListener('change', function() {
-            reminderSelect.disabled = !this.checked;
-          });
-        }
       }, 100);
     });
 
@@ -4068,92 +2588,11 @@
       Notification.requestPermission();
     }
 
-    function showGroupsHelp() {
-      const modal = document.createElement('div');
-      modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50';
-      modal.innerHTML = `
-        <div class="bg-white/95 rounded-2xl p-6 w-[600px] shadow-2xl backdrop-blur-xl max-h-[80vh] overflow-y-auto">
-          <h2 class="text-2xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-            📁 Shortcut Groups Guide
-          </h2>
-          <div class="text-gray-700 space-y-4">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 class="font-semibold text-blue-900 mb-2">✨ What are Shortcut Groups?</h3>
-              <p class="text-blue-800 text-sm">
-                Groups help you organize your shortcuts into categories like "Work Tools", "Social Media", "Entertainment", etc.
-              </p>
-            </div>
-
-            <div class="space-y-3">
-              <h3 class="text-lg font-semibold">🚀 How to use Groups:</h3>
-              
-              <div class="flex items-start gap-3">
-                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded font-bold">1</span>
-                <div>
-                  <p class="font-medium">Create a Group</p>
-                  <p class="text-sm text-gray-600">Click the "Create new group" button at the bottom</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3">
-                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded font-bold">2</span>
-                <div>
-                  <p class="font-medium">Add Shortcuts to Groups</p>
-                  <p class="text-sm text-gray-600">Right-click any shortcut → "Move to Group" → Select group</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3">
-                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded font-bold">3</span>
-                <div>
-                  <p class="font-medium">Manage Groups</p>
-                  <p class="text-sm text-gray-600">Click group name to rename, use ➕ to add shortcuts, 🗑️ to delete</p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-3">
-                <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded font-bold">4</span>
-                <div>
-                  <p class="font-medium">Export & Import</p>
-                  <p class="text-sm text-gray-600">Your groups are saved with shortcuts when you export/import</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 class="font-semibold text-green-900 mb-2">💡 Pro Tips:</h3>
-              <ul class="text-green-800 text-sm space-y-1 list-disc list-inside">
-                <li>Groups work in both Personal and Professional tabs</li>
-                <li>Ungrouped shortcuts appear in "Other Shortcuts"</li>
-                <li>Drag and drop shortcuts between positions</li>
-                <li>Use descriptive group names like "Daily Tools" or "Design Resources"</li>
-              </ul>
-            </div>
-          </div>
-          <div class="flex justify-end gap-3 mt-6">
-            <button onclick="this.closest('.fixed').remove()" 
-                    class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
-              Got it!
-            </button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-      
-      // Close on click outside
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-    }
-
     // ==================== WIDGETS SLIDER FUNCTIONALITY ====================
 
     let currentWidgetIndex = 0;
     const widgets = [
       {
-        id: 'weather',
         name: 'Weather',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <path stroke-linecap="round" stroke-linejoin="round"
@@ -4161,7 +2600,6 @@
                </svg>`
       },
       {
-        id: 'notes',
         name: 'Notes',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <path stroke-linecap="round" stroke-linejoin="round"
@@ -4169,7 +2607,6 @@
                </svg>`
       },
       {
-        id: 'pomodoro',
         name: 'Pomodoro',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <circle cx="12" cy="12" r="10"/>
@@ -4178,146 +2615,10 @@
       }
     ];
 
-    // Widget pinning functionality
-    function getWidgetPinData() {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const data = JSON.parse(localStorage.getItem(`widgetPins_${activeTab}`) || '{}');
-      console.log('📖 Getting pin data for tab:', activeTab, 'Data:', data);
-      return data;
-    }
-
-    function saveWidgetPinData(pinData) {
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      localStorage.setItem(`widgetPins_${activeTab}`, JSON.stringify(pinData));
-      console.log('💾 Saved pin data for tab:', activeTab, 'Data:', pinData);
-    }
-
-    function getCurrentWidget() {
-      return widgets[currentWidgetIndex];
-    }
-
-    function getPinnedWidgetOrder() {
-      const pinData = getWidgetPinData();
-      const orderedWidgets = [...widgets];
-      
-      // Sort widgets by pin priority: primary first, then secondary, then unpinned
-      orderedWidgets.sort((a, b) => {
-        const aPinStatus = pinData[a.id] || 'none';
-        const bPinStatus = pinData[b.id] || 'none';
-        
-        const priority = { 'primary': 0, 'secondary': 1, 'none': 2 };
-        return priority[aPinStatus] - priority[bPinStatus];
-      });
-      
-      return orderedWidgets;
-    }
-
-    function toggleWidgetPinMenu() {
-      const menu = document.getElementById('widgetPinMenu');
-      menu.classList.toggle('hidden');
-    }
-
-    function pinWidget(pinType) {
-      console.log('🔄 pinWidget called with:', pinType);
-      const currentWidget = getCurrentWidget();
-      console.log('📍 Current widget:', currentWidget);
-      const pinData = getWidgetPinData();
-      console.log('💾 Current pin data:', pinData);
-      
-      // Update pin status
-      pinData[currentWidget.id] = pinType;
-      saveWidgetPinData(pinData);
-      console.log('✅ Saved pin data:', pinData);
-      
-      // Close menu
-      document.getElementById('widgetPinMenu').classList.add('hidden');
-      
-      // Update widget order and display
-      const orderedWidgets = getPinnedWidgetOrder();
-      console.log('🔀 New widget order:', orderedWidgets.map(w => w.id));
-      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
-      // Update the widgets array and current index
-      widgets.splice(0, widgets.length, ...orderedWidgets);
-      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      console.log('🎯 New current index:', currentWidgetIndex);
-      
-      // Update display
-      updateWidgetDisplay();
-      updateWidgetIndicators();
-      
-      // Show notification
-      const pinTypeText = pinType === 'primary' ? 'Primary' : 'Secondary';
-      showNotification(`${currentWidget.name} widget pinned as ${pinTypeText}!`);
-    }
-
-    function unpinWidget() {
-      const currentWidget = getCurrentWidget();
-      const pinData = getWidgetPinData();
-      
-      // Remove pin status
-      delete pinData[currentWidget.id];
-      saveWidgetPinData(pinData);
-      
-      // Close menu
-      document.getElementById('widgetPinMenu').classList.add('hidden');
-      
-      // Update widget order and display
-      const orderedWidgets = getPinnedWidgetOrder();
-      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
-      // Update the widgets array and current index
-      widgets.splice(0, widgets.length, ...orderedWidgets);
-      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
-      // Update display
-      updateWidgetDisplay();
-      updateWidgetIndicators();
-      
-      // Show notification
-      showNotification(`${currentWidget.name} widget unpinned!`);
-    }
-
-    function initializeWidgetFunctions() {
-      // This function is no longer needed since we don't rebuild widgets
-    }
-
-    function updateWidgetOrder() {
-      const orderedWidgets = getPinnedWidgetOrder();
-      const currentWidget = getCurrentWidget();
-      
-      // Find the current widget's new position in the ordered array
-      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
-      // Update the widgets array and current index
-      widgets.splice(0, widgets.length, ...orderedWidgets);
-      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
-      // Update display without rebuilding
-      updateWidgetDisplay();
-      updateWidgetIndicators();
-    }
-
-    function updateWidgetIndicators() {
-      const indicatorsContainer = document.querySelector('.flex.justify-center.gap-2.mt-0');
-      indicatorsContainer.innerHTML = '';
-      
-      widgets.forEach((widget, index) => {
-        const indicator = document.createElement('button');
-        indicator.onclick = () => goToWidget(index);
-        indicator.className = `w-2 h-2 rounded-full transition-colors duration-300 ${index === currentWidgetIndex ? 'bg-white/60' : 'bg-white/30'}`;
-        indicator.id = `indicator-${index}`;
-        indicatorsContainer.appendChild(indicator);
-      });
-    }
-
     function updateWidgetDisplay() {
       const slider = document.getElementById('widgets-slider');
       const titleElement = document.getElementById('current-widget-title');
       const iconElement = document.getElementById('current-widget-icon');
-      
-      // Reorder DOM elements to match the widgets array order
-      reorderWidgetSlides();
       
       // Update slider position
       const translateX = -currentWidgetIndex * 100;
@@ -4338,33 +2639,6 @@
             indicator.classList.remove('bg-white/60');
             indicator.classList.add('bg-white/30');
           }
-        }
-      });
-    }
-
-    function reorderWidgetSlides() {
-      const slider = document.getElementById('widgets-slider');
-      const slides = Array.from(slider.children);
-      
-      // Map widget IDs to their DOM elements
-      const slideMap = {
-        'weather': slides.find(slide => slide.querySelector('#weather-widget')),
-        'notes': slides.find(slide => slide.querySelector('#notes-widget')),
-        'pomodoro': slides.find(slide => slide.querySelector('#pomodoro-widget'))
-      };
-      
-      // Remove all slides from the slider
-      slides.forEach(slide => {
-        if (slide.parentNode) {
-          slide.parentNode.removeChild(slide);
-        }
-      });
-      
-      // Re-add slides in the order defined by the widgets array
-      widgets.forEach(widget => {
-        const slide = slideMap[widget.id];
-        if (slide) {
-          slider.appendChild(slide);
         }
       });
     }
@@ -4430,13 +2704,6 @@
 
     // Initialize slider
     document.addEventListener('DOMContentLoaded', () => {
-      // First load widget order based on pins, then update display
-      const orderedWidgets = getPinnedWidgetOrder();
-      widgets.splice(0, widgets.length, ...orderedWidgets);
-      
-      // Set initial widget index to 0 (first widget in the ordered list)
-      currentWidgetIndex = 0;
-      
       updateWidgetDisplay();
       
       // Add touch support
@@ -4446,23 +2713,16 @@
       
       // Add keyboard support
       document.addEventListener('keydown', handleKeyNavigation);
-      
-      // Initialize Service Worker for reminders
-      initServiceWorker();
-      
-      // Restart active reminders
-      restartActiveReminders();
     });
 
-    // Close pin menu when clicking outside
-    document.addEventListener('click', (e) => {
-      const pinMenu = document.getElementById('widgetPinMenu');
-      const pinButton = document.getElementById('widgetPinButton');
-      
-      if (pinMenu && !pinMenu.contains(e.target) && !pinButton.contains(e.target)) {
-        pinMenu.classList.add('hidden');
-      }
-    });
+    // Search help modal functions
+    function showSearchHelp() {
+      document.getElementById("searchHelpModal").classList.remove("hidden");
+    }
+
+    function closeSearchHelp() {
+      document.getElementById("searchHelpModal").classList.add("hidden");
+    }
 
   </script>
   <script src="aurora-svelte.js"></script>

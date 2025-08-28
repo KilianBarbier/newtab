@@ -233,14 +233,42 @@
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
-    }    function openConfigModal(position) {
+    }    function openConfigModal(position, isEdit = false) {
       const modal = document.getElementById("configModal");
       const titleInput = document.getElementById("shortcutTitle");
+      const urlInput = document.getElementById("shortcutUrl");
+      const modalTitle = modal.querySelector("h2");
 
       modal.setAttribute("data-position", position);
-      titleInput.value = "";
-      document.getElementById("shortcutUrl").value = "";
-      document.getElementById("saveButton").disabled = true;
+      
+      if (isEdit) {
+        // Update modal title for editing
+        modalTitle.textContent = "Edit shortcut";
+        
+        // Get current shortcut data for editing
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        const shortcutData = shortcuts[position];
+        
+        if (shortcutData) {
+          titleInput.value = shortcutData.title || "";
+          urlInput.value = shortcutData.url || "";
+          // Enable save button if both fields have values
+          document.getElementById("saveButton").disabled = !shortcutData.title || !shortcutData.url;
+        } else {
+          titleInput.value = "";
+          urlInput.value = "";
+          document.getElementById("saveButton").disabled = true;
+        }
+      } else {
+        // Update modal title for adding new shortcut
+        modalTitle.textContent = "Add a shortcut";
+        
+        // Clear fields for new shortcut
+        titleInput.value = "";
+        urlInput.value = "";
+        document.getElementById("saveButton").disabled = true;
+      }
 
       modal.classList.remove("hidden");
 
@@ -877,6 +905,19 @@
 
       // Reload shortcuts
       reloadShortcuts();
+      
+      // Update widget order based on pins for the new tab
+      const orderedWidgets = getPinnedWidgetOrder();
+      const currentWidget = getCurrentWidget();
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
+      // Update display
+      updateWidgetDisplay();
+      updateWidgetIndicators();
     }
 
     // Export/Import Functions
@@ -887,13 +928,21 @@
         const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
         const shortcutCount = localStorage.getItem("shortcutCount") || "8";
         
+        // Récupérer les données de pins de widgets
+        const personalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_personal") || "{}");
+        const professionalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_professional") || "{}");
+        
         // Créer l'objet d'export
         const exportData = {
-          version: "1.0",
+          version: "2.0",
           exportDate: new Date().toISOString(),
           shortcutCount: parseInt(shortcutCount),
           personal: personalShortcuts,
-          professional: professionalShortcuts
+          professional: professionalShortcuts,
+          widgetPins: {
+            personal: personalWidgetPins,
+            professional: professionalWidgetPins
+          }
         };
         
         // Créer le fichier JSON
@@ -911,7 +960,7 @@
         document.body.removeChild(link);
         
         // Notification de succès
-        showNotification('Shortcuts exported successfully!');
+        showNotification('Shortcuts and widget preferences exported successfully!');
         
       } catch (error) {
         console.error('Export error:', error);
@@ -973,6 +1022,16 @@
           localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional));
         }
         
+        // Importer les préférences de widgets si disponibles
+        if (data.widgetPins) {
+          if (data.widgetPins.personal) {
+            localStorage.setItem("widgetPins_personal", JSON.stringify(data.widgetPins.personal));
+          }
+          if (data.widgetPins.professional) {
+            localStorage.setItem("widgetPins_professional", JSON.stringify(data.widgetPins.professional));
+          }
+        }
+        
         // Mettre à jour le count si disponible
         if (data.shortcutCount) {
           localStorage.setItem("shortcutCount", data.shortcutCount.toString());
@@ -986,11 +1045,18 @@
         // Fermer le modal
         closeImportModal();
         
-        // Recharger l'affichage
+        // Recharger l'affichage et réorganiser les widgets
         reloadShortcuts();
         
+        // Update widget order based on imported pins
+        const orderedWidgets = getPinnedWidgetOrder();
+        widgets.splice(0, widgets.length, ...orderedWidgets);
+        currentWidgetIndex = 0;
+        updateWidgetDisplay();
+        updateWidgetIndicators();
+        
         // Notification de succès
-        showNotification('Shortcuts imported successfully!');
+        showNotification('Shortcuts and widget preferences imported successfully!');
         
       } catch (error) {
         console.error('Import processing error:', error);
@@ -1059,12 +1125,12 @@
     }
 
     function clearAllData() {
-      if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, and settings. This action cannot be undone.')) {
+      if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, widget preferences, and settings. This action cannot be undone.')) {
         // Clear all localStorage
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && (key.includes('shortcuts') || key.includes('notes') || key.includes('pomodoro') || key.includes('weather'))) {
+          if (key && (key.includes('shortcuts') || key.includes('notes') || key.includes('pomodoro') || key.includes('weather') || key.includes('widgetPins'))) {
             keysToRemove.push(key);
           }
         }
@@ -1136,6 +1202,23 @@
           
           <!-- Navigation Controls -->
           <div class="flex items-center gap-2">
+            <!-- Pin Menu Button -->
+            <div class="relative">
+              <button onclick="toggleWidgetPinMenu()" id="widgetPinButton" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                <img src="../media/pin.svg" alt="Pin" class="w-4 h-4" />
+              </button>
+              <div id="widgetPinMenu" class="hidden absolute top-full right-0 mt-2 bg-black/60 backdrop-blur-xl rounded-lg shadow-lg min-w-[140px] z-50 border border-white/10">
+                <button onclick="pinWidget('primary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm">
+                  📌 Pin as Primary
+                </button>
+                <button onclick="pinWidget('secondary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 text-sm">
+                  📎 Pin as Secondary
+                </button>
+                <button onclick="unpinWidget()" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm">
+                  ❌ Unpin Widget
+                </button>
+              </div>
+            </div>
             <button onclick="previousWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -1242,7 +1325,7 @@
                 <div class="mb-4">
                   <button onclick="showAddNoteForm()" 
                           class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     New note
@@ -1296,7 +1379,7 @@
                 <!-- Close button (like in the design) -->
                 <div class="absolute top-4 right-4">
                   <button onclick="resetPomodoro()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                   </button>
@@ -1304,8 +1387,9 @@
 
                 <!-- Header with task name -->
                 <div class="text-center mb-6">
-                  <div id="pomodoro-task" class="text-lg font-medium text-white/90 mb-4 px-8">Project research</div>
-                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work<br><span class="text-2xl font-bold">Kilian !</span></div>
+                  <br>
+                  <br>
+                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work !</div>
                 </div>
 
                 <!-- Large Timer Display -->
@@ -1639,7 +1723,7 @@
           <div class="py-2">
             <button onclick="exportShortcuts(); toggleSettingsMenu();" 
                     class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
               </svg>
               Export Shortcuts
@@ -1647,7 +1731,7 @@
             
             <button onclick="showImportModal(); toggleSettingsMenu();" 
                     class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
               </svg>
               Import Shortcuts
@@ -1657,7 +1741,7 @@
             
             <button onclick="showAboutModal(); toggleSettingsMenu();" 
                     class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               About
@@ -1665,7 +1749,7 @@
             
             <button onclick="clearAllData(); toggleSettingsMenu();" 
                     class="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 transition-colors flex items-center gap-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
               Clear All Data
@@ -2514,7 +2598,7 @@
             <button onclick="editNote(${note.id})" 
                     class="p-1 rounded hover:bg-black/10 transition-colors"
                     title="Edit note">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
               </svg>
@@ -2522,7 +2606,7 @@
             <button onclick="deleteNote(${note.id})" 
                     class="p-1 rounded hover:bg-red-500/20 transition-colors text-red-600"
                     title="Delete note">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
@@ -2691,7 +2775,7 @@
       let modeText, messageText, emoji;
       if (pomodoroState.mode === 'focus') {
         modeText = 'FOCUS SESSION';
-        messageText = 'Focus on your work<br><span class="text-2xl font-bold">Kilian !</span>';
+        messageText = 'Focus on your work !';
         emoji = '🧠';
       } else if (pomodoroState.mode === 'break') {
         modeText = 'SHORT BREAK';
@@ -2858,6 +2942,7 @@
     let currentWidgetIndex = 0;
     const widgets = [
       {
+        id: 'weather',
         name: 'Weather',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <path stroke-linecap="round" stroke-linejoin="round"
@@ -2865,6 +2950,7 @@
                </svg>`
       },
       {
+        id: 'notes',
         name: 'Notes',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <path stroke-linecap="round" stroke-linejoin="round"
@@ -2872,6 +2958,7 @@
                </svg>`
       },
       {
+        id: 'pomodoro',
         name: 'Pomodoro',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                  <circle cx="12" cy="12" r="10"/>
@@ -2880,10 +2967,146 @@
       }
     ];
 
+    // Widget pinning functionality
+    function getWidgetPinData() {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const data = JSON.parse(localStorage.getItem(`widgetPins_${activeTab}`) || '{}');
+      console.log('📖 Getting pin data for tab:', activeTab, 'Data:', data);
+      return data;
+    }
+
+    function saveWidgetPinData(pinData) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      localStorage.setItem(`widgetPins_${activeTab}`, JSON.stringify(pinData));
+      console.log('💾 Saved pin data for tab:', activeTab, 'Data:', pinData);
+    }
+
+    function getCurrentWidget() {
+      return widgets[currentWidgetIndex];
+    }
+
+    function getPinnedWidgetOrder() {
+      const pinData = getWidgetPinData();
+      const orderedWidgets = [...widgets];
+      
+      // Sort widgets by pin priority: primary first, then secondary, then unpinned
+      orderedWidgets.sort((a, b) => {
+        const aPinStatus = pinData[a.id] || 'none';
+        const bPinStatus = pinData[b.id] || 'none';
+        
+        const priority = { 'primary': 0, 'secondary': 1, 'none': 2 };
+        return priority[aPinStatus] - priority[bPinStatus];
+      });
+      
+      return orderedWidgets;
+    }
+
+    function toggleWidgetPinMenu() {
+      const menu = document.getElementById('widgetPinMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    function pinWidget(pinType) {
+      console.log('🔄 pinWidget called with:', pinType);
+      const currentWidget = getCurrentWidget();
+      console.log('📍 Current widget:', currentWidget);
+      const pinData = getWidgetPinData();
+      console.log('💾 Current pin data:', pinData);
+      
+      // Update pin status
+      pinData[currentWidget.id] = pinType;
+      saveWidgetPinData(pinData);
+      console.log('✅ Saved pin data:', pinData);
+      
+      // Close menu
+      document.getElementById('widgetPinMenu').classList.add('hidden');
+      
+      // Update widget order and display
+      const orderedWidgets = getPinnedWidgetOrder();
+      console.log('🔀 New widget order:', orderedWidgets.map(w => w.id));
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      console.log('🎯 New current index:', currentWidgetIndex);
+      
+      // Update display
+      updateWidgetDisplay();
+      updateWidgetIndicators();
+      
+      // Show notification
+      const pinTypeText = pinType === 'primary' ? 'Primary' : 'Secondary';
+      showNotification(`${currentWidget.name} widget pinned as ${pinTypeText}!`);
+    }
+
+    function unpinWidget() {
+      const currentWidget = getCurrentWidget();
+      const pinData = getWidgetPinData();
+      
+      // Remove pin status
+      delete pinData[currentWidget.id];
+      saveWidgetPinData(pinData);
+      
+      // Close menu
+      document.getElementById('widgetPinMenu').classList.add('hidden');
+      
+      // Update widget order and display
+      const orderedWidgets = getPinnedWidgetOrder();
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
+      // Update display
+      updateWidgetDisplay();
+      updateWidgetIndicators();
+      
+      // Show notification
+      showNotification(`${currentWidget.name} widget unpinned!`);
+    }
+
+    function initializeWidgetFunctions() {
+      // This function is no longer needed since we don't rebuild widgets
+    }
+
+    function updateWidgetOrder() {
+      const orderedWidgets = getPinnedWidgetOrder();
+      const currentWidget = getCurrentWidget();
+      
+      // Find the current widget's new position in the ordered array
+      const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
+      
+      // Update the widgets array and current index
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
+      
+      // Update display without rebuilding
+      updateWidgetDisplay();
+      updateWidgetIndicators();
+    }
+
+    function updateWidgetIndicators() {
+      const indicatorsContainer = document.querySelector('.flex.justify-center.gap-2.mt-0');
+      indicatorsContainer.innerHTML = '';
+      
+      widgets.forEach((widget, index) => {
+        const indicator = document.createElement('button');
+        indicator.onclick = () => goToWidget(index);
+        indicator.className = `w-2 h-2 rounded-full transition-colors duration-300 ${index === currentWidgetIndex ? 'bg-white/60' : 'bg-white/30'}`;
+        indicator.id = `indicator-${index}`;
+        indicatorsContainer.appendChild(indicator);
+      });
+    }
+
     function updateWidgetDisplay() {
       const slider = document.getElementById('widgets-slider');
       const titleElement = document.getElementById('current-widget-title');
       const iconElement = document.getElementById('current-widget-icon');
+      
+      // Reorder DOM elements to match the widgets array order
+      reorderWidgetSlides();
       
       // Update slider position
       const translateX = -currentWidgetIndex * 100;
@@ -2904,6 +3127,33 @@
             indicator.classList.remove('bg-white/60');
             indicator.classList.add('bg-white/30');
           }
+        }
+      });
+    }
+
+    function reorderWidgetSlides() {
+      const slider = document.getElementById('widgets-slider');
+      const slides = Array.from(slider.children);
+      
+      // Map widget IDs to their DOM elements
+      const slideMap = {
+        'weather': slides.find(slide => slide.querySelector('#weather-widget')),
+        'notes': slides.find(slide => slide.querySelector('#notes-widget')),
+        'pomodoro': slides.find(slide => slide.querySelector('#pomodoro-widget'))
+      };
+      
+      // Remove all slides from the slider
+      slides.forEach(slide => {
+        if (slide.parentNode) {
+          slide.parentNode.removeChild(slide);
+        }
+      });
+      
+      // Re-add slides in the order defined by the widgets array
+      widgets.forEach(widget => {
+        const slide = slideMap[widget.id];
+        if (slide) {
+          slider.appendChild(slide);
         }
       });
     }
@@ -2969,6 +3219,13 @@
 
     // Initialize slider
     document.addEventListener('DOMContentLoaded', () => {
+      // First load widget order based on pins, then update display
+      const orderedWidgets = getPinnedWidgetOrder();
+      widgets.splice(0, widgets.length, ...orderedWidgets);
+      
+      // Set initial widget index to 0 (first widget in the ordered list)
+      currentWidgetIndex = 0;
+      
       updateWidgetDisplay();
       
       // Add touch support
@@ -2978,6 +3235,16 @@
       
       // Add keyboard support
       document.addEventListener('keydown', handleKeyNavigation);
+    });
+
+    // Close pin menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const pinMenu = document.getElementById('widgetPinMenu');
+      const pinButton = document.getElementById('widgetPinButton');
+      
+      if (pinMenu && !pinMenu.contains(e.target) && !pinButton.contains(e.target)) {
+        pinMenu.classList.add('hidden');
+      }
     });
 
     // Search help modal functions
