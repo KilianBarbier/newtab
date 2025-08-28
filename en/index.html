@@ -1171,8 +1171,24 @@
                             class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
                       Get Weather
                     </button>
+                    <button onclick="saveCurrentCity()" 
+                            class="px-3 py-2 bg-green-500/60 hover:bg-green-500/80 rounded-lg text-white text-sm transition-colors"
+                            title="Save current city">
+                      💾
+                    </button>
                   </div>
                   <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
+                  
+                  <!-- Saved Cities -->
+                  <div id="saved-cities" class="mt-3" style="display: none;">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-xs text-white/70">Saved Cities:</div>
+                      <div class="text-xs text-white/50" id="cities-count"></div>
+                    </div>
+                    <div id="saved-cities-list" class="flex flex-wrap gap-1">
+                      <!-- Saved cities will be populated here -->
+                    </div>
+                  </div>
                 </div>
                 
                 <div id="weather-loading" class="hidden flex items-center justify-center py-8">
@@ -1751,6 +1767,18 @@
     .shortcut-container:hover::before {
       opacity: 1;
     }
+
+    /* Animation for save city button suggestion */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+      }
+    }
   </style>
 
   <!-- Script pour cloner le contenu de la sidebar dans le modal mobile -->
@@ -1838,6 +1866,9 @@
         document.getElementById('weather-city-input').value = savedCity;
         loadWeather(savedCity);
       }
+      
+      // Initialize saved cities display
+      updateSavedCitiesDisplay();
     });
 
     // Weather Widget Functions
@@ -1891,6 +1922,164 @@
       }
       
       return null;
+    }
+
+    // Functions for managing saved cities
+    function getSavedCities() {
+      try {
+        const savedCities = localStorage.getItem('savedWeatherCities');
+        if (savedCities) {
+          return JSON.parse(savedCities);
+        }
+      } catch (error) {
+        console.error('Error reading saved cities from localStorage, trying cookies:', error);
+        try {
+          const cookieValue = document.cookie.split('; ')
+            .find(row => row.startsWith('savedWeatherCities='));
+          if (cookieValue) {
+            return JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
+          }
+        } catch (cookieError) {
+          console.error('Error reading saved cities from cookies:', cookieError);
+        }
+      }
+      return [];
+    }
+
+    function saveCitiesList(cities) {
+      try {
+        localStorage.setItem('savedWeatherCities', JSON.stringify(cities));
+        return true;
+      } catch (error) {
+        console.error('Error saving cities to localStorage, trying cookies:', error);
+        try {
+          document.cookie = `savedWeatherCities=${encodeURIComponent(JSON.stringify(cities))}; max-age=2592000; path=/`;
+          return true;
+        } catch (cookieError) {
+          console.error('Error saving cities to cookies:', cookieError);
+          return false;
+        }
+      }
+    }
+
+    function saveCurrentCity() {
+      const cityInput = document.getElementById('weather-city-input');
+      const cityName = cityInput.value.trim();
+      
+      if (!cityName) {
+        alert('Please enter a city name first');
+        return;
+      }
+
+      const savedCities = getSavedCities();
+      
+      // Check if city is already saved (case insensitive)
+      const cityExists = savedCities.some(city => 
+        city.toLowerCase() === cityName.toLowerCase()
+      );
+      
+      if (cityExists) {
+        alert('This city is already saved');
+        return;
+      }
+
+      // Limit to 5 saved cities
+      if (savedCities.length >= 5) {
+        alert('Maximum 5 cities can be saved. Please remove one first.');
+        return;
+      }
+
+      savedCities.push(cityName);
+      saveCitiesList(savedCities);
+      updateSavedCitiesDisplay();
+      
+      // Show confirmation
+      const saveButton = event.target;
+      const originalText = saveButton.innerHTML;
+      const originalBg = saveButton.style.backgroundColor;
+      saveButton.innerHTML = '✅';
+      saveButton.style.backgroundColor = 'rgba(34, 197, 94, 0.8)';
+      setTimeout(() => {
+        saveButton.innerHTML = originalText;
+        saveButton.style.backgroundColor = originalBg;
+      }, 1500);
+    }
+
+    function loadSavedCity(cityName) {
+      document.getElementById('weather-city-input').value = cityName;
+      loadWeather(cityName);
+    }
+
+    function removeSavedCity(cityName) {
+      if (!confirm(`Remove "${cityName}" from saved cities?`)) {
+        return;
+      }
+      
+      const savedCities = getSavedCities();
+      const filteredCities = savedCities.filter(city => city !== cityName);
+      saveCitiesList(filteredCities);
+      updateSavedCitiesDisplay();
+    }
+
+    function updateSavedCitiesDisplay() {
+      const savedCitiesList = document.getElementById('saved-cities-list');
+      const savedCitiesContainer = document.getElementById('saved-cities');
+      const citiesCount = document.getElementById('cities-count');
+      const savedCities = getSavedCities();
+
+      if (savedCities.length === 0) {
+        savedCitiesContainer.style.display = 'none';
+        return;
+      }
+
+      savedCitiesContainer.style.display = 'block';
+      citiesCount.textContent = `${savedCities.length}/5`;
+      savedCitiesList.innerHTML = '';
+
+      savedCities.forEach(city => {
+        const cityContainer = document.createElement('div');
+        cityContainer.className = 'group relative inline-flex items-center px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-xs text-white transition-colors mr-1 mb-1 cursor-pointer';
+        
+        const citySpan = document.createElement('span');
+        citySpan.textContent = city;
+        citySpan.className = 'select-none';
+        
+        const removeButton = document.createElement('button');
+        removeButton.textContent = '×';
+        removeButton.className = 'ml-1 opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-100 transition-opacity text-sm font-bold';
+        removeButton.title = 'Remove city';
+        removeButton.onclick = (e) => {
+          e.stopPropagation();
+          removeSavedCity(city);
+        };
+        
+        cityContainer.onclick = () => loadSavedCity(city);
+        cityContainer.appendChild(citySpan);
+        cityContainer.appendChild(removeButton);
+        savedCitiesList.appendChild(cityContainer);
+      });
+    }
+
+    function suggestSavingCity(cityName) {
+      const savedCities = getSavedCities();
+      
+      // Don't suggest if already saved or if we have max cities
+      if (savedCities.includes(cityName) || savedCities.length >= 5) {
+        return;
+      }
+      
+      // Show a subtle suggestion (could be a toast notification)
+      const saveButton = document.querySelector('button[onclick="saveCurrentCity()"]');
+      if (saveButton) {
+        saveButton.style.animation = 'pulse 2s infinite';
+        saveButton.title = `Save "${cityName}" to favorites`;
+        
+        // Remove animation after 5 seconds
+        setTimeout(() => {
+          saveButton.style.animation = '';
+          saveButton.title = 'Save current city';
+        }, 5000);
+      }
     }
 
     function getWeatherIcon(weatherCode, isDay) {
@@ -2090,6 +2279,9 @@
 
         // Save the city name for future use - only save if weather loaded successfully
         saveWeatherCity(cityName);
+
+        // Check if we should suggest saving this city
+        suggestSavingCity(locationDisplayName);
 
         // Show content
         weatherLoading.classList.add('hidden');
