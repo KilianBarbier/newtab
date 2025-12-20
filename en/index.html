@@ -587,7 +587,7 @@
         let query = document.getElementById("searchInput").value.trim();
         let selectedEngine = document.getElementById("searchEngine").value;
 
-        const searchEngines = {
+  const searchEngines = {
           g: "https://www.google.com/search?q=",
           yt: "https://www.youtube.com/results?search_query=",
           gh: "https://github.com/search?q=",
@@ -604,6 +604,15 @@
           ddg: "https://duckduckgo.com/?q=",
           px: "https://www.perplexity.ai/search?q=",
         };      // Check if we should suggest an autocorrection
+      // If the query ends with a question mark, perform the search directly on Perplexity
+      if (query.endsWith('?')) {
+        const cleaned = query.slice(0, -1).trim();
+        if (cleaned.length > 0) {
+          window.location.href = searchEngines['px'] + encodeURIComponent(cleaned);
+          return; // stop further processing
+        }
+      }
+
       if (shouldSuggestAutocorrection(query)) {
         // Display the autocorrection popup
         showAutocorrectionModal(query);
