@@ -56,7 +56,7 @@
       } else if (isEmpty) {
         openConfigModal(position);
       } else {
-        window.location.href = shortcut.href;
+        performSearchRedirect(shortcut.href, shortcut.href, 5);
       }
     }
 
@@ -462,7 +462,7 @@
           shortcut.href = data.url;
           shortcut.onclick = (e) => {
             e.preventDefault();
-            window.location.href = data.url;
+            performSearchRedirect(data.url, data.title || data.url, 5);
           };
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
@@ -478,8 +478,14 @@
       const searchInput = document.getElementById("searchInput");
       const searchButton = document.querySelector(".absolute svg");
 
-      searchInput.addEventListener("keydown", handleSearch);
-      searchButton.addEventListener("click", handleSearch);
+      // Initialize search counter display
+      const searchCounterEl = document.getElementById('searchCounter');
+      if (searchCounterEl && typeof formatSearchCounter === 'function') {
+        searchCounterEl.textContent = formatSearchCounter(getSearchCounterSeconds());
+      }
+
+      if (searchInput) searchInput.addEventListener("keydown", handleSearch);
+      if (searchButton) searchButton.addEventListener("click", handleSearch);
 
       const menuButton = document.getElementById("mobileMenuButton");
       const sidebar = document.getElementById("sidebar");
@@ -577,7 +583,42 @@
       switchTab(activeTab);
     });
 
-    function handleSearch(event) {
+      // Search counter helpers: stored in seconds
+      function formatSearchCounter(seconds) {
+        if (!seconds || seconds < 60) return `${seconds || 0}s`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+        return `${Math.floor(seconds / 3600)}h`;
+      }
+
+      function getSearchCounterSeconds() {
+        return parseInt(localStorage.getItem('searchCounterSeconds') || '0', 10);
+      }
+
+      function setSearchCounterSeconds(sec) {
+        localStorage.setItem('searchCounterSeconds', String(Math.max(0, Math.floor(sec || 0))));
+      }
+
+      function incrementSearchCounterSeconds(by) {
+        const next = getSearchCounterSeconds() + (parseInt(by, 10) || 0);
+        setSearchCounterSeconds(next);
+        const el = document.getElementById('searchCounter');
+        if (el) el.textContent = formatSearchCounter(next);
+        return next;
+      }
+
+      function performSearchRedirect(url, query) {
+        const updated = incrementSearchCounterSeconds(10);
+        try {
+          const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+          searches.push({ query: query || '', time: Date.now(), counterSeconds: updated });
+          localStorage.setItem('searches', JSON.stringify(searches));
+        } catch (e) {
+          localStorage.setItem('searches', JSON.stringify([{ query: query || '', time: Date.now(), counterSeconds: updated }]));
+        }
+        setTimeout(() => { window.location.href = url; }, 60);
+      }
+
+      function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
         event.type === "click"
@@ -608,7 +649,7 @@
       if (query.endsWith('?')) {
         const cleaned = query.slice(0, -1).trim();
         if (cleaned.length > 0) {
-          window.location.href = searchEngines['px'] + encodeURIComponent(cleaned);
+          performSearchRedirect(searchEngines['px'] + encodeURIComponent(cleaned), cleaned);
           return; // stop further processing
         }
       }
@@ -632,7 +673,7 @@
 
         const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
         if (query) {
-          window.location.href = searchUrl + encodeURIComponent(query);
+          performSearchRedirect(searchUrl + encodeURIComponent(query), query);
         }
       }
     }    // Function to check if we should suggest an autocorrection
@@ -780,14 +821,14 @@
         const parts = originalQuery.substring(1).split(" ");
         if (parts.length > 0 && searchEngines[parts[0].toLowerCase()]) {
           selectedEngine = parts[0].toLowerCase();
-          query = parts.slice(1).join(" ");
-          window.location.href = searchEngines[selectedEngine] + encodeURIComponent(query);
+          const query = parts.slice(1).join(" ");
+          performSearchRedirect(searchEngines[selectedEngine] + encodeURIComponent(query), query);
           return;
         }
       }
 
       // If no specific command, use the original query directly
-      window.location.href = searchEngines[selectedEngine] + encodeURIComponent(originalQuery);
+      performSearchRedirect(searchEngines[selectedEngine] + encodeURIComponent(originalQuery), originalQuery);
     }    // Function to execute the corrected search
     function executeCorrectedSearch() {
       const correctedQuery = document.getElementById("autocorrectionModal").getAttribute("data-corrected-query");
@@ -820,7 +861,7 @@
 
         // If the command is valid, execute the search directly
         if (searchEngines[command]) {
-          window.location.href = searchEngines[command] + encodeURIComponent(searchTerms);
+          performSearchRedirect(searchEngines[command] + encodeURIComponent(searchTerms), searchTerms);
           return;
         }
       }
@@ -881,7 +922,7 @@
           shortcut.href = data.url;
           shortcut.onclick = (e) => {
             e.preventDefault();
-            window.location.href = data.url;
+            performSearchRedirect(data.url, data.title || data.url, 5);
           };
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
@@ -1494,7 +1535,7 @@
       <!-- Search Bar -->
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
-            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer hover:bg-white/30 transition-all duration-300 flex items-center justify-center">
+            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
@@ -1567,8 +1608,10 @@
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
+        <div id="searchCounter" class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">0s</div>
         <button onclick="showSearchHelp()"
-          class="text-white hover:text-white/80 text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center hover:bg-white/30 transition-all duration-300">
+          class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
+           transition-all duration-300">
           ?
         </button>
       </div>
@@ -1597,7 +1640,7 @@
             </div>
             <div class="flex justify-end gap-2 mt-6">
               <button onclick="closeConfigModal()"
-                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
                 Cancel
               </button>
               <button id="saveButton" onclick="saveShortcut()" disabled
