@@ -606,6 +606,18 @@
         return next;
       }
 
+      function performSearchRedirect(url, query) {
+        const updated = incrementSearchCounterSeconds(10);
+        try {
+          const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+          searches.push({ query: query || '', time: Date.now(), counterSeconds: updated });
+          localStorage.setItem('searches', JSON.stringify(searches));
+        } catch (e) {
+          localStorage.setItem('searches', JSON.stringify([{ query: query || '', time: Date.now(), counterSeconds: updated }]));
+        }
+        setTimeout(() => { window.location.href = url; }, 60);
+      }
+
       function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
@@ -637,7 +649,7 @@
       if (query.endsWith('?')) {
         const cleaned = query.slice(0, -1).trim();
         if (cleaned.length > 0) {
-          window.location.href = searchEngines['px'] + encodeURIComponent(cleaned);
+          performSearchRedirect(searchEngines['px'] + encodeURIComponent(cleaned), cleaned);
           return; // stop further processing
         }
       }
@@ -661,7 +673,7 @@
 
         const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
         if (query) {
-          window.location.href = searchUrl + encodeURIComponent(query);
+          performSearchRedirect(searchUrl + encodeURIComponent(query), query);
         }
       }
     }    // Function to check if we should suggest an autocorrection
@@ -809,14 +821,14 @@
         const parts = originalQuery.substring(1).split(" ");
         if (parts.length > 0 && searchEngines[parts[0].toLowerCase()]) {
           selectedEngine = parts[0].toLowerCase();
-          query = parts.slice(1).join(" ");
-          window.location.href = searchEngines[selectedEngine] + encodeURIComponent(query);
+          const query = parts.slice(1).join(" ");
+          performSearchRedirect(searchEngines[selectedEngine] + encodeURIComponent(query), query);
           return;
         }
       }
 
       // If no specific command, use the original query directly
-      window.location.href = searchEngines[selectedEngine] + encodeURIComponent(originalQuery);
+      performSearchRedirect(searchEngines[selectedEngine] + encodeURIComponent(originalQuery), originalQuery);
     }    // Function to execute the corrected search
     function executeCorrectedSearch() {
       const correctedQuery = document.getElementById("autocorrectionModal").getAttribute("data-corrected-query");
@@ -849,7 +861,7 @@
 
         // If the command is valid, execute the search directly
         if (searchEngines[command]) {
-          window.location.href = searchEngines[command] + encodeURIComponent(searchTerms);
+          performSearchRedirect(searchEngines[command] + encodeURIComponent(searchTerms), searchTerms);
           return;
         }
       }
