@@ -56,7 +56,7 @@
       } else if (isEmpty) {
         openConfigModal(position);
       } else {
-        window.location.href = shortcut.href;
+        performSearchRedirect(shortcut.href, shortcut.href, 5);
       }
     }
 
@@ -462,7 +462,7 @@
           shortcut.href = data.url;
           shortcut.onclick = (e) => {
             e.preventDefault();
-            window.location.href = data.url;
+            performSearchRedirect(data.url, data.title || data.url, 5);
           };
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
@@ -922,7 +922,7 @@
           shortcut.href = data.url;
           shortcut.onclick = (e) => {
             e.preventDefault();
-            window.location.href = data.url;
+            performSearchRedirect(data.url, data.title || data.url, 5);
           };
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
