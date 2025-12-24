@@ -1535,7 +1535,7 @@
       <!-- Search Bar -->
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
-            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer hover:bg-white/30 transition-all duration-300 flex items-center justify-center">
+            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
@@ -1608,9 +1608,10 @@
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div id="searchCounter" class="flex items-center justify-center text-white/90 px-3 mx-2 text-sm select-none">0s</div>
+        <div id="searchCounter" class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">0s</div>
         <button onclick="showSearchHelp()"
-          class="text-white hover:text-white/80 text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center hover:bg-white/30 transition-all duration-300">
+          class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
+           transition-all duration-300">
           ?
         </button>
       </div>
@@ -1639,7 +1640,7 @@
             </div>
             <div class="flex justify-end gap-2 mt-6">
               <button onclick="closeConfigModal()"
-                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
                 Cancel
               </button>
               <button id="saveButton" onclick="saveShortcut()" disabled
