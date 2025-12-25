@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>New Tab</title>  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="style-overrides.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -91,13 +90,10 @@
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-            class="group p-0 rounded-2xl shadow-lg hover:shadow-xl transition-transform transition-colors duration-200 block">
-              <div class="tile-inner">
-                <div class="text-center">
-                  <div class="shortcut-icon" data-empty="true">
-                  </div>
-                  <div class="text-white font-medium shortcut-title">Add a shortcut</div>
-                </div>
+             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+              <div class="text-center">
+                <div class="shortcut-icon" data-empty="true">
+                </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
               </div>
             </a>
           </div>`;
@@ -182,15 +178,14 @@
       return `
           <button
              onclick="addMoreShortcuts()"
-             class="group p-0 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-transform transition-colors duration-200 border-2 border-dashed border-white/30 w-full"
+             class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-all duration-300 border-2 border-dashed border-white/30 w-full"
              id="addRowButton">
-            <div class="tile-inner text-center">
+            <div class="text-center">
               <div class="flex justify-center mb-2">
                 <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-              </div>
-              <div class="text-white/70 font-medium">Add more shortcuts</div>
+              </div>              <div class="text-white/70 font-medium">Add more shortcuts</div>
             </div>
           </button>`;
     } function addMoreShortcuts() {
@@ -344,7 +339,7 @@
     function showNotification(message) {
       // Créer un élément de notification
       const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-transform transition-colors duration-200 transform translate-x-0';
+      notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
       notification.textContent = message;
       
       // Ajouter au DOM
@@ -474,7 +469,7 @@
           iconContainer.removeAttribute("data-empty");
           iconContainer.innerHTML = `
               <img src="${data.faviconUrl}" 
-                 class="w-10 h-10 mt-2 mb-2 group-hover:scale-110 transition-transform duration-200" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -934,7 +929,7 @@
           iconContainer.removeAttribute("data-empty");
           iconContainer.innerHTML = `
               <img src="${data.faviconUrl}" 
-                 class="w-10 h-10 mt-2 mb-2 group-hover:scale-110 transition-transform duration-200" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -1220,10 +1215,10 @@
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
-      class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-transform transition-colors duration-200 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
+      class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
 
       <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-transform transition-colors duration-200 flex items-center gap-3 bg-white/30"
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
         onclick="switchTab('personal')" id="personalTab">
         <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -1232,7 +1227,7 @@
         <a id="perso" class="block w-full">Personal</a>
       </div>
       <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-transform transition-colors duration-200 flex items-center gap-3 bg-white/30"
+        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
         onclick="switchTab('professional')" id="professionalTab">
         <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -1294,7 +1289,7 @@
             <!-- Weather Widget Slide -->
             <div class="w-full flex-shrink-0">
               <div id="weather-widget"
-                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-transform transition-colors duration-200 border-2 border-white-500/60 height-[300px] flex flex-col justify-between"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 height-[300px] flex flex-col justify-between"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
                 
                 <!-- City Input -->
@@ -1373,7 +1368,7 @@
             <!-- Notes Widget Slide -->
             <div class="w-full flex-shrink-0">
               <div id="notes-widget"
-                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-transform transition-colors duration-200 border-2 border-white-500/60"
+                class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
                 
                 <!-- Add Note Button -->
@@ -1428,7 +1423,7 @@
             <!-- Pomodoro Widget Slide -->
             <div class="w-full flex-shrink-0">
               <div id="pomodoro-widget"
-                class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-transform transition-colors duration-200 border-2 border-white-500/60 relative overflow-hidden"
+                class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
                 
                 <!-- Close button (like in the design) -->
@@ -1540,7 +1535,7 @@
       <!-- Search Bar -->
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
-            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-transform transition-colors duration-200 flex items-center justify-center">
+            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
@@ -1606,17 +1601,17 @@
 
         <div class="relative flex-1">
           <input type="text" placeholder="Search..." id="searchInput"
-            class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-transform transition-colors duration-200 placeholder-white/50" />
+            class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
           <svg class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-white" viewBox="0 0 24 24"
             fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="{2}"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div id="searchCounter" class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-transform transition-colors duration-200 flex items-center justify-center">0s</div>
+        <div id="searchCounter" class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">0s</div>
         <button onclick="showSearchHelp()"
           class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
-           transition-transform transition-colors duration-200">
+           transition-all duration-300">
           ?
         </button>
       </div>
@@ -1767,7 +1762,7 @@
       <div class="fixed top-4 right-4 z-50">
         <!-- Settings Button -->
         <button onclick="toggleSettingsMenu()" 
-                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-transform transition-colors duration-200 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
+                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
                 title="Settings">
           <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
