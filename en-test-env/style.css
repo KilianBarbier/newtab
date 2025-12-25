@@ -40,7 +40,8 @@ input:focus {
 body {
   background: linear-gradient(to bottom right, #3b82f6, #8b5cf6);
   background-size: cover !important;
-  background-attachment: fixed;
+    /* avoid fixed background to reduce rendering seams with backdrop-filter */
+    background-attachment: scroll;
   color: white;
   transition: none;
   animation: none;
@@ -48,12 +49,10 @@ body {
 
 /* Remettre l'ancien style pour .backdrop-blur-xl */
 .backdrop-blur-xl {
-  background: rgba(255, 255, 255, 0.16) !important;
-  backdrop-filter: blur(25px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    0 8px 32px rgba(255, 255, 255, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(22px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 /* Darker backdrop for dark mode */
@@ -120,18 +119,18 @@ input::placeholder {
 
 /* Boosted card effects */
 .group {
-  transform: perspective(1000px) rotateX(0deg);
-  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1) !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    transform: none;
+    transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s ease;
+    will-change: transform, box-shadow;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .group:hover {
-  transform: perspective(1000px) rotateX(10deg) translateY(-5px);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }
 
 .group > div {
@@ -553,6 +552,19 @@ select option[value="i"] {
     align-items: center;
     justify-content: center;
     margin: 0 auto 12px;
+}
+
+/* Ensure container doesn't clip shadows/tooltips */
+.shortcut-container, .shortcut-container a {
+    overflow: visible !important;
+}
+
+/* Make favicons blend better with rounded cards */
+.shortcut-icon img {
+    background: transparent;
+    border-radius: 8px;
+    display: block;
+    object-fit: contain;
 }
 
 /* Animations pour le chargement initial */
