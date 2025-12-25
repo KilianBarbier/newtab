@@ -91,10 +91,13 @@
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-transform transition-colors duration-200 block">
-              <div class="text-center">
-                <div class="shortcut-icon" data-empty="true">
-                </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
+            class="group p-0 rounded-2xl shadow-lg hover:shadow-xl transition-transform transition-colors duration-200 block">
+              <div class="tile-inner">
+                <div class="text-center">
+                  <div class="shortcut-icon" data-empty="true">
+                  </div>
+                  <div class="text-white font-medium shortcut-title">Add a shortcut</div>
+                </div>
               </div>
             </a>
           </div>`;
@@ -179,14 +182,15 @@
       return `
           <button
              onclick="addMoreShortcuts()"
-             class="group p-6 backdrop-blur-xl bg-white/30 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-transform transition-colors duration-200 border-2 border-dashed border-white/30 w-full"
+             class="group p-0 rounded-2xl shadow-lg hover:shadow-xl hover:bg-white/40 transition-transform transition-colors duration-200 border-2 border-dashed border-white/30 w-full"
              id="addRowButton">
-            <div class="text-center">
+            <div class="tile-inner text-center">
               <div class="flex justify-center mb-2">
                 <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-              </div>              <div class="text-white/70 font-medium">Add more shortcuts</div>
+              </div>
+              <div class="text-white/70 font-medium">Add more shortcuts</div>
             </div>
           </button>`;
     } function addMoreShortcuts() {
@@ -470,7 +474,7 @@
           iconContainer.removeAttribute("data-empty");
           iconContainer.innerHTML = `
               <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 class="w-10 h-10 mt-2 mb-2 group-hover:scale-110 transition-transform duration-200" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -930,7 +934,7 @@
           iconContainer.removeAttribute("data-empty");
           iconContainer.innerHTML = `
               <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+                 class="w-10 h-10 mt-2 mb-2 group-hover:scale-110 transition-transform duration-200" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }

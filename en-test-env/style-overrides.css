@@ -68,3 +68,41 @@
   position: relative;
   z-index: 45;
 }
+
+/* Tile inner wrapper to host backdrop-filter and avoid rounded-corner seam */
+.tile-inner {
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border-radius: 1rem; /* slightly smaller to avoid seam with outer shadow */
+  overflow: hidden; /* clip the blurred area to avoid hairline */
+  padding: 1.5rem; /* matches previous p-6 spacing inside */
+  background-clip: padding-box;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background-color: rgba(255,255,255,0.9);
+}
+
+/* restore gentle 3D card effect while keeping transitions limited */
+.group {
+  transform-origin: center center;
+  perspective: 900px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+.group:hover {
+  transform: translateY(-6px) rotateX(6deg) scale(1.02);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.22) !important;
+}
+
+/* larger icons and milder hover scale */
+.shortcut-icon img {
+  width: 40px !important;
+  height: 40px !important;
+  transition: transform 220ms ease, opacity 180ms ease !important;
+}
+.group:hover .shortcut-icon img {
+  transform: scale(1.08);
+}
