@@ -45,3 +45,26 @@
   -webkit-backdrop-filter: none !important;
   background-color: rgba(255,255,255,0.85) !important;
 }
+
+/* Ensure tiles are above most UI effects but below modals/popups (modals use z-50) */
+.shortcut-container {
+  position: relative;
+  z-index: 45; /* below modals (z-50), above sidebar (z-40) */
+}
+
+.shortcut-container a.group {
+  position: relative; /* create stacking context for each tile */
+  z-index: 45;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* On hover, lift slightly but keep below modals */
+.shortcut-container a.group:hover {
+  z-index: 48;
+}
+
+/* Also ensure the Add Row button sits in the same stack (it's not inside .shortcut-container) */
+#addRowButton {
+  position: relative;
+  z-index: 45;
+}
