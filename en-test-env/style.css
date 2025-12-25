@@ -20,9 +20,11 @@
   background: rgba(156, 163, 175, 0.7);
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+/* Smooth transitions: apply only to interactive elements to avoid layout flashing */
+button, a, input, select, textarea, .group, .shortcut-container a, .shortcut-icon, .selected-option, .search-option, #contextMenu, .options-container {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* Enhanced focus styles */
@@ -453,15 +455,15 @@ select option[value="i"] {
 /* Update shortcut icon styles */
 .shortcut-icon[data-empty="true"] {
     position: relative;
-    width: 72px;          /* Increased to 72px */
-    height: 72px;         /* Increased to 72px */
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 18px;  /* Adjusted for larger size */
-    transition: all 0.3s ease;
-    margin: 0 auto 16px;  /* Reduced from 20px to 16px */
+    border-radius: 12px;
+    transition: transform 0.25s ease, background-color 0.2s ease;
+    margin: 0 auto 12px;
 }
 
 /* Make the plus icon bigger */
@@ -479,28 +481,22 @@ select option[value="i"] {
     transform: translate(-50%, -50%);
 }
 
-/* Update favicon image size for configured shortcuts */
+/* Favicon image size for configured shortcuts */
 .shortcut-icon img {
-    width: 36px !important;  
+    width: 36px !important;
     height: 36px !important;
-    transform: scale(1.3); /* Added scale for saved shortcuts */
+    transition: transform 0.25s ease;
 }
 
 /* Hover effect only for saved shortcuts */
 .shortcut-icon:not([data-empty="true"]) img:hover {
-    transform: scale(1.4);
+    transform: scale(1.15);
 }
 
 /* Keep empty shortcut styles unchanged */
 .shortcut-icon[data-empty="true"]:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.2);
-}
-
-/* Update favicon image size for configured shortcuts */
-.shortcut-icon img {
-    width: 36px !important;  /* Increased from 32px */
-    height: 36px !important; /* Increased from 32px */
+    transform: scale(1.05);
 }
 
 /* Adjust title spacing */
