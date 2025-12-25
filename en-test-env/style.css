@@ -31,9 +31,8 @@ button, a, input, select, textarea, .group, .shortcut-container a, .shortcut-ico
 input:focus {
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   box-shadow: 
-    0 8px 32px rgba(31, 38, 135, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-    0 0 0 3px rgba(255, 255, 255, 0.1) !important;
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        0 0 0 3px rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Remove the custom-gradient class since we're using random gradients now */
@@ -51,8 +50,10 @@ body {
 .backdrop-blur-xl {
     background: rgba(255, 255, 255, 0.12) !important;
     backdrop-filter: blur(22px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    /* remove border to avoid hairline seam on rounded corners */
+    border: none !important;
+    background-clip: padding-box !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* Darker backdrop for dark mode */
@@ -81,8 +82,7 @@ input {
   backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   box-shadow: 
-    0 8px 32px rgba(31, 38, 135, 0.15),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+        0 8px 32px rgba(31, 38, 135, 0.15);
     color: white !important;
 }
 
@@ -156,8 +156,7 @@ button {
 button:hover {
   transform: translateY(-2px);
   box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+        0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 button:active {
@@ -565,6 +564,13 @@ select option[value="i"] {
     border-radius: 8px;
     display: block;
     object-fit: contain;
+}
+
+/* Ensure card links don't render an extra border that creates a hairline with backdrop-filter */
+.shortcut-container a.backdrop-blur-xl,
+.shortcut-container a {
+    border: none !important;
+    background-clip: padding-box !important;
 }
 
 /* Animations pour le chargement initial */
