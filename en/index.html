@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>New Tab</title>  <script src="https://cdn.tailwindcss.com"></script>
+  <title>New Tab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
   <link rel="icon" href="../media/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="../media/favicon.ico" type="image/x-icon">
-  <link rel="apple-touch-icon" href="../media/favicon.ico"> 
+  <link rel="apple-touch-icon" href="../media/favicon.ico">
   <script>
     tailwind.config = {
       theme: {
@@ -34,10 +35,12 @@
   </script>
   <script>
     async function getFaviconUrl(url) {
-      try {        const domain = new URL(url).hostname;
+      try {
+        const domain = new URL(url).hostname;
         // Directly use the Google Favicons API which is more reliable
         return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-      } catch (e) {        console.error("Error retrieving favicon:", e);
+      } catch (e) {
+        console.error("Error retrieving favicon:", e);
         // Return a default icon in case of error
         return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>';
       }
@@ -118,7 +121,7 @@
     async function handleDrop(event, newPosition) {
       event.preventDefault();
       const container = event.currentTarget;
-      container.querySelector("a").classList.remove("bg-white/40");      const oldPosition = event.dataTransfer.getData('text/plain');
+      container.querySelector("a").classList.remove("bg-white/40"); const oldPosition = event.dataTransfer.getData('text/plain');
 
       // If it's an external drag (URL)
       if (oldPosition === '') {
@@ -205,7 +208,7 @@
 
       localStorage.setItem("shortcutCount", currentCount + 4);
       reloadShortcuts(); // Au lieu de reloadWithTransition()
-    }    async function saveShortcut() {
+    } async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
       const title = document.getElementById("shortcutTitle").value;
@@ -233,23 +236,23 @@
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
-    }    function openConfigModal(position, isEdit = false) {
+    } function openConfigModal(position, isEdit = false) {
       const modal = document.getElementById("configModal");
       const titleInput = document.getElementById("shortcutTitle");
       const urlInput = document.getElementById("shortcutUrl");
       const modalTitle = modal.querySelector("h2");
 
       modal.setAttribute("data-position", position);
-      
+
       if (isEdit) {
         // Update modal title for editing
         modalTitle.textContent = "Edit shortcut";
-        
+
         // Get current shortcut data for editing
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
         const shortcutData = shortcuts[position];
-        
+
         if (shortcutData) {
           titleInput.value = shortcutData.title || "";
           urlInput.value = shortcutData.url || "";
@@ -263,7 +266,7 @@
       } else {
         // Update modal title for adding new shortcut
         modalTitle.textContent = "Add a shortcut";
-        
+
         // Clear fields for new shortcut
         titleInput.value = "";
         urlInput.value = "";
@@ -304,34 +307,34 @@
     function pinToBothTabs(position) {
       const activeTab = localStorage.getItem("activeTab") || "personal";
       const currentShortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
-      
+
       // Vérifier que le raccourci existe dans l'onglet actuel
       if (!currentShortcuts[position]) {
         console.error("Shortcut not found in current tab");
         closeContextMenu();
         return;
       }
-      
+
       const shortcutData = currentShortcuts[position];
-      
+
       // Sauvegarder dans l'onglet personnel
       const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
       personalShortcuts[position] = { ...shortcutData };
       localStorage.setItem("shortcuts_personal", JSON.stringify(personalShortcuts));
-      
+
       // Sauvegarder dans l'onglet professionnel
       const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
       professionalShortcuts[position] = { ...shortcutData };
       localStorage.setItem("shortcuts_professional", JSON.stringify(professionalShortcuts));
-      
+
       // Mettre à jour le localStorage principal avec l'onglet actuel
       localStorage.setItem("shortcuts", JSON.stringify(currentShortcuts));
-      
+
       closeContextMenu();
-      
+
       // Afficher une notification de succès
       showNotification(`Shortcut "${shortcutData.title}" pinned to both tabs!`);
-      
+
       // Recharger les raccourcis pour refléter les changements
       reloadShortcuts();
     }
@@ -341,15 +344,15 @@
       const notification = document.createElement('div');
       notification.className = 'fixed top-4 right-4 bg-green-500/90 backdrop-blur-xl text-white px-6 py-3 rounded-lg shadow-lg z-[9999] transition-all duration-300 transform translate-x-0';
       notification.textContent = message;
-      
+
       // Ajouter au DOM
       document.body.appendChild(notification);
-      
+
       // Animation d'entrée
       setTimeout(() => {
         notification.style.transform = 'translateX(0)';
       }, 10);
-      
+
       // Supprimer après 3 secondes
       setTimeout(() => {
         notification.style.transform = 'translateX(100%)';
@@ -366,22 +369,22 @@
         .getElementById("contextMenu")
         .getAttribute("data-position");
       const activeTab = localStorage.getItem("activeTab") || "personal";
-      
+
       // Get shortcuts from localStorage
       const shortcuts = JSON.parse(
         localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
       );
-      
+
       // Check if the shortcut is already empty (placeholder)
       const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
       const iconContainer = shortcutElement?.querySelector(".shortcut-icon");
       const isEmpty = iconContainer?.getAttribute("data-empty") === "true";
-      
+
       if (isEmpty) {
         // If it's already empty, remove it completely from the grid
         const currentShortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
         const positionNum = parseInt(position);
-        
+
         // Shift all shortcuts after this position down by one
         const newShortcuts = {};
         Object.keys(shortcuts).forEach(key => {
@@ -392,7 +395,7 @@
             newShortcuts[(keyNum - 1).toString()] = shortcuts[key];
           }
         });
-        
+
         // Reduce shortcut count by 1
         localStorage.setItem("shortcutCount", (currentShortcutCount - 1).toString());
         localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(newShortcuts));
@@ -403,16 +406,16 @@
         localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
         localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
       }
-      
+
       closeContextMenu();
-      
+
       // Reload shortcuts to update the display
       reloadShortcuts();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
       let allowHardFocus = true;
-      
+
       function focusSearch() {
         const searchInput = document.getElementById("searchInput");
         if (searchInput && allowHardFocus) {
@@ -423,7 +426,7 @@
       // Focus initial et pendant les premières secondes
       focusSearch();
       setTimeout(focusSearch, 100);
-      
+
       // Désactiver le hard focus après 3 secondes
       setTimeout(() => {
         allowHardFocus = false;
@@ -496,6 +499,59 @@
           menuButton.classList.toggle("open");
         });
       }
+
+      // Tab morphing indicator: create element and update position
+      function createTabIndicator() {
+        const sidebarEl = document.getElementById('sidebar');
+        if (!sidebarEl) return;
+        let ind = document.getElementById('tabIndicator');
+        if (!ind) {
+          ind = document.createElement('div');
+          ind.id = 'tabIndicator';
+          sidebarEl.appendChild(ind);
+        }
+        // Position initially to the active tab
+        const active = localStorage.getItem('activeTab') || 'personal';
+        updateTabIndicator(active, true);
+        window.addEventListener('resize', () => updateTabIndicator(localStorage.getItem('activeTab') || 'personal'));
+      }
+
+      function updateTabIndicator(tab, skipAnimation) {
+        const sidebarEl = document.getElementById('sidebar');
+        const ind = document.getElementById('tabIndicator');
+        const target = document.getElementById(tab + 'Tab');
+        if (!sidebarEl || !ind || !target) return;
+        const sidebarRect = sidebarEl.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        const left = rect.left - sidebarRect.left;
+        const top = rect.top - sidebarRect.top;
+        const radius = Math.min(24, rect.height / 2) + 'px';
+        if (skipAnimation) {
+          ind.style.transition = 'none';
+          ind.style.left = left + 'px';
+          ind.style.top = top + 'px';
+          ind.style.width = rect.width + 'px';
+          ind.style.height = rect.height + 'px';
+          ind.style.borderRadius = radius;
+          requestAnimationFrame(() => ind.style.transition = '');
+        } else {
+          ind.style.left = left + 'px';
+          ind.style.top = top + 'px';
+          ind.style.width = rect.width + 'px';
+          ind.style.height = rect.height + 'px';
+          ind.style.borderRadius = radius;
+          // subtle squash to emphasize morph
+          ind.style.transform = 'scaleX(0.995) scaleY(1.02)';
+          clearTimeout(ind._morphTimeout);
+          ind._morphTimeout = setTimeout(() => {
+            ind.style.transform = '';
+          }, 150);
+        }
+      }
+
+      // Expose globally so other functions can call it
+      window.updateTabIndicator = updateTabIndicator;
+      createTabIndicator();
 
       const searchIcon = document.querySelector(".absolute svg");
       const currentSearch = document.getElementById("currentSearch");
@@ -583,42 +639,42 @@
       switchTab(activeTab);
     });
 
-      // Search counter helpers: stored in seconds
-      function formatSearchCounter(seconds) {
-        if (!seconds || seconds < 60) return `${seconds || 0}s`;
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
-        return `${Math.floor(seconds / 3600)}h`;
-      }
+    // Search counter helpers: stored in seconds
+    function formatSearchCounter(seconds) {
+      if (!seconds || seconds < 60) return `${seconds || 0}s`;
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+      return `${Math.floor(seconds / 3600)}h`;
+    }
 
-      function getSearchCounterSeconds() {
-        return parseInt(localStorage.getItem('searchCounterSeconds') || '0', 10);
-      }
+    function getSearchCounterSeconds() {
+      return parseInt(localStorage.getItem('searchCounterSeconds') || '0', 10);
+    }
 
-      function setSearchCounterSeconds(sec) {
-        localStorage.setItem('searchCounterSeconds', String(Math.max(0, Math.floor(sec || 0))));
-      }
+    function setSearchCounterSeconds(sec) {
+      localStorage.setItem('searchCounterSeconds', String(Math.max(0, Math.floor(sec || 0))));
+    }
 
-      function incrementSearchCounterSeconds(by) {
-        const next = getSearchCounterSeconds() + (parseInt(by, 10) || 0);
-        setSearchCounterSeconds(next);
-        const el = document.getElementById('searchCounter');
-        if (el) el.textContent = formatSearchCounter(next);
-        return next;
-      }
+    function incrementSearchCounterSeconds(by) {
+      const next = getSearchCounterSeconds() + (parseInt(by, 10) || 0);
+      setSearchCounterSeconds(next);
+      const el = document.getElementById('searchCounter');
+      if (el) el.textContent = formatSearchCounter(next);
+      return next;
+    }
 
-      function performSearchRedirect(url, query) {
-        const updated = incrementSearchCounterSeconds(10);
-        try {
-          const searches = JSON.parse(localStorage.getItem('searches') || '[]');
-          searches.push({ query: query || '', time: Date.now(), counterSeconds: updated });
-          localStorage.setItem('searches', JSON.stringify(searches));
-        } catch (e) {
-          localStorage.setItem('searches', JSON.stringify([{ query: query || '', time: Date.now(), counterSeconds: updated }]));
-        }
-        setTimeout(() => { window.location.href = url; }, 60);
+    function performSearchRedirect(url, query) {
+      const updated = incrementSearchCounterSeconds(10);
+      try {
+        const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+        searches.push({ query: query || '', time: Date.now(), counterSeconds: updated });
+        localStorage.setItem('searches', JSON.stringify(searches));
+      } catch (e) {
+        localStorage.setItem('searches', JSON.stringify([{ query: query || '', time: Date.now(), counterSeconds: updated }]));
       }
+      setTimeout(() => { window.location.href = url; }, 60);
+    }
 
-      function handleSearch(event) {
+    function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
         event.type === "click"
@@ -628,7 +684,7 @@
         let query = document.getElementById("searchInput").value.trim();
         let selectedEngine = document.getElementById("searchEngine").value;
 
-  const searchEngines = {
+        const searchEngines = {
           g: "https://www.google.com/search?q=",
           yt: "https://www.youtube.com/results?search_query=",
           gh: "https://github.com/search?q=",
@@ -645,20 +701,20 @@
           ddg: "https://duckduckgo.com/?q=",
           px: "https://www.perplexity.ai/search?q=",
         };      // Check if we should suggest an autocorrection
-      // If the query ends with a question mark, perform the search directly on Perplexity
-      if (query.endsWith('?')) {
-        const cleaned = query.slice(0, -1).trim();
-        if (cleaned.length > 0) {
-          performSearchRedirect(searchEngines['px'] + encodeURIComponent(cleaned), cleaned);
-          return; // stop further processing
+        // If the query ends with a question mark, perform the search directly on Perplexity
+        if (query.endsWith('?')) {
+          const cleaned = query.slice(0, -1).trim();
+          if (cleaned.length > 0) {
+            performSearchRedirect(searchEngines['px'] + encodeURIComponent(cleaned), cleaned);
+            return; // stop further processing
+          }
         }
-      }
 
-      if (shouldSuggestAutocorrection(query)) {
-        // Display the autocorrection popup
-        showAutocorrectionModal(query);
-        return; // Stop execution here
-      }
+        if (shouldSuggestAutocorrection(query)) {
+          // Display the autocorrection popup
+          showAutocorrectionModal(query);
+          return; // Stop execution here
+        }
 
         if (query.startsWith("/")) {
           const parts = query.substring(1).split(" ");
@@ -869,7 +925,7 @@
       // Fallback: execute the search via handleSearch
       handleSearch({ type: "click" });
     }
-    
+
     function reloadShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
@@ -881,7 +937,7 @@
 
       // Déterminer le nombre réel de raccourcis à afficher
       const shortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
-      
+
       // Recréer les raccourcis
       for (let i = 0; i < shortcutCount; i++) {
         grid.innerHTML += generateShortcut(i);
@@ -891,21 +947,21 @@
       for (const position in shortcuts) {
         const shortcutData = shortcuts[position];
         const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
-        
+
         if (shortcutElement && shortcutData) {
           // Mettre à jour l'apparence du raccourci
           const iconElement = shortcutElement.querySelector('.shortcut-icon');
           const titleElement = shortcutElement.querySelector('.shortcut-title');
-          
+
           if (shortcutData.iconURL) {
             iconElement.innerHTML = `<img src="${shortcutData.iconURL}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded">`;
             iconElement.setAttribute('data-empty', 'false');
           }
-          
+
           if (shortcutData.title) {
             titleElement.textContent = shortcutData.title;
           }
-          
+
           if (shortcutData.url) {
             shortcutElement.href = shortcutData.url;
           }
@@ -946,6 +1002,11 @@
       document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
       document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
 
+      // Move the morphing indicator
+      if (typeof window.updateTabIndicator === 'function') {
+        window.updateTabIndicator(tab);
+      }
+
       // Save active tab
       localStorage.setItem("activeTab", tab);
 
@@ -955,16 +1016,16 @@
 
       // Reload shortcuts
       reloadShortcuts();
-      
+
       // Update widget order based on pins for the new tab
       const orderedWidgets = getPinnedWidgetOrder();
       const currentWidget = getCurrentWidget();
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
+
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
+
       // Update display
       updateWidgetDisplay();
       updateWidgetIndicators();
@@ -977,11 +1038,11 @@
         const personalShortcuts = JSON.parse(localStorage.getItem("shortcuts_personal") || "{}");
         const professionalShortcuts = JSON.parse(localStorage.getItem("shortcuts_professional") || "{}");
         const shortcutCount = localStorage.getItem("shortcutCount") || "8";
-        
+
         // Récupérer les données de pins de widgets
         const personalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_personal") || "{}");
         const professionalWidgetPins = JSON.parse(localStorage.getItem("widgetPins_professional") || "{}");
-        
+
         // Créer l'objet d'export
         const exportData = {
           version: "2.0",
@@ -994,24 +1055,24 @@
             professional: professionalWidgetPins
           }
         };
-        
+
         // Créer le fichier JSON
         const dataStr = JSON.stringify(exportData, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        
+
         // Créer le lien de téléchargement
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
         link.download = `newtab-shortcuts-${new Date().toISOString().split('T')[0]}.json`;
-        
+
         // Déclencher le téléchargement
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Notification de succès
         showNotification('Shortcuts and widget preferences exported successfully!');
-        
+
       } catch (error) {
         console.error('Export error:', error);
         showNotification('Export failed. Please try again.');
@@ -1033,28 +1094,28 @@
     function handleFileImport(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         try {
           const importData = JSON.parse(e.target.result);
-          
+
           // Validation basique
           if (!importData.personal && !importData.professional) {
             throw new Error('Invalid file format');
           }
-          
+
           // Demander confirmation à l'utilisateur
           if (confirm('This will replace your current shortcuts. Are you sure?')) {
             importShortcuts(importData);
           }
-          
+
         } catch (error) {
           console.error('Import error:', error);
           showNotification('Import failed. Please check your file format.');
         }
       };
-      
+
       reader.readAsText(file);
       // Reset input pour permettre de réimporter le même fichier
       event.target.value = '';
@@ -1066,12 +1127,12 @@
         if (data.personal) {
           localStorage.setItem("shortcuts_personal", JSON.stringify(data.personal));
         }
-        
+
         // Importer les raccourcis professionnels
         if (data.professional) {
           localStorage.setItem("shortcuts_professional", JSON.stringify(data.professional));
         }
-        
+
         // Importer les préférences de widgets si disponibles
         if (data.widgetPins) {
           if (data.widgetPins.personal) {
@@ -1081,33 +1142,33 @@
             localStorage.setItem("widgetPins_professional", JSON.stringify(data.widgetPins.professional));
           }
         }
-        
+
         // Mettre à jour le count si disponible
         if (data.shortcutCount) {
           localStorage.setItem("shortcutCount", data.shortcutCount.toString());
         }
-        
+
         // Mettre à jour l'onglet actuel
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const currentShortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
         localStorage.setItem("shortcuts", JSON.stringify(currentShortcuts));
-        
+
         // Fermer le modal
         closeImportModal();
-        
+
         // Recharger l'affichage et réorganiser les widgets
         reloadShortcuts();
-        
+
         // Update widget order based on imported pins
         const orderedWidgets = getPinnedWidgetOrder();
         widgets.splice(0, widgets.length, ...orderedWidgets);
         currentWidgetIndex = 0;
         updateWidgetDisplay();
         updateWidgetIndicators();
-        
+
         // Notification de succès
         showNotification('Shortcuts and widget preferences imported successfully!');
-        
+
       } catch (error) {
         console.error('Import processing error:', error);
         showNotification('Import failed during processing.');
@@ -1119,15 +1180,15 @@
       const title = document.getElementById("shortcutTitle");
       const url = document.getElementById("shortcutUrl");
       const saveButton = document.getElementById("saveButton");
-      
+
       if (!title || !url || !saveButton) return;
-      
+
       const titleValue = title.value.trim();
       const urlValue = url.value.trim();
-      
+
       const isTitleValid = titleValue.length > 0;
       const isUrlValid = urlValue.length > 0;
-      
+
       saveButton.disabled = !isTitleValid || !isUrlValid;
     }
 
@@ -1165,7 +1226,7 @@
         </div>
       `;
       document.body.appendChild(modal);
-      
+
       // Close on click outside
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -1184,9 +1245,9 @@
             keysToRemove.push(key);
           }
         }
-        
+
         keysToRemove.forEach(key => localStorage.removeItem(key));
-        
+
         // Refresh the page to show clean state
         showNotification('All data cleared successfully!', 'success');
         setTimeout(() => {
@@ -1195,23 +1256,20 @@
       }
     }
 
-    // Close settings menu when clicking outside
     document.addEventListener('click', (e) => {
       const settingsMenu = document.getElementById('settingsMenu');
       const settingsButton = e.target.closest('[onclick*="toggleSettingsMenu"]');
-      
+
       if (settingsMenu && !settingsMenu.contains(e.target) && !settingsButton) {
         settingsMenu.classList.add('hidden');
       }
     });
 
-    // ...existing code...
   </script>
-  <script src="aurora-animation.js"></script>
+
 </head>
 
 <body class="min-h-screen font-sf">
-  <!-- Suppression du bouton hamburger pour le remplacer par une barre de navigation mobile en bas -->
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
@@ -1242,41 +1300,49 @@
         <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
           <div class="flex items-center gap-2">
             <div id="current-widget-icon" class="w-6 h-6 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
                   d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
             <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
           </div>
-          
+
           <!-- Navigation Controls -->
           <div class="flex items-center gap-2">
             <!-- Pin Menu Button -->
             <div class="relative">
-              <button onclick="toggleWidgetPinMenu()" id="widgetPinButton" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+              <button onclick="toggleWidgetPinMenu()" id="widgetPinButton"
+                class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
                 <img src="../media/pin.svg" alt="Pin" class="w-4 h-4" />
               </button>
-              <div id="widgetPinMenu" class="hidden absolute top-full right-0 mt-2 bg-black/60 backdrop-blur-xl rounded-lg shadow-lg min-w-[140px] z-50 border border-white/10">
-                <button onclick="pinWidget('primary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm">
+              <div id="widgetPinMenu"
+                class="hidden absolute top-full right-0 mt-2 bg-black/60 backdrop-blur-xl rounded-lg shadow-lg min-w-[140px] z-50 border border-white/10">
+                <button onclick="pinWidget('primary')"
+                  class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm">
                   📌 Pin as Primary
                 </button>
-                <button onclick="pinWidget('secondary')" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 text-sm">
+                <button onclick="pinWidget('secondary')"
+                  class="w-full px-3 py-2 text-left text-white hover:bg-white/10 text-sm">
                   📎 Pin as Secondary
                 </button>
-                <button onclick="unpinWidget()" class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm">
+                <button onclick="unpinWidget()"
+                  class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm">
                   ❌ Unpin Widget
                 </button>
               </div>
             </div>
-            <button onclick="previousWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+            <button onclick="previousWidget()"
+              class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <button onclick="nextWidget()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+            <button onclick="nextWidget()"
+              class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
@@ -1284,34 +1350,33 @@
 
         <!-- Slider Container -->
         <div class="relative overflow-hidden rounded-xl">
-          <div id="widgets-slider" class="flex transition-transform duration-500 ease-in-out" style="transform: translateX(0%);">
-            
+          <div id="widgets-slider" class="flex transition-transform duration-500 ease-in-out"
+            style="transform: translateX(0%);">
+
             <!-- Weather Widget Slide -->
             <div class="w-full flex-shrink-0">
               <div id="weather-widget"
                 class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 height-[300px] flex flex-col justify-between"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-                
+
                 <!-- City Input -->
                 <div id="weather-input" class="mb-4">
                   <div class="flex gap-2 hop-colonne">
-                    <input type="text" 
-                           id="weather-city-input" 
-                           placeholder="Enter city name..." 
-                           class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
-                           onkeypress="if(event.key==='Enter') loadWeatherForCity()">
-                    <button onclick="loadWeatherForCity()" 
-                            class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
+                    <input type="text" id="weather-city-input" placeholder="Enter city name..."
+                      class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
+                      onkeypress="if(event.key==='Enter') loadWeatherForCity()">
+                    <button onclick="loadWeatherForCity()"
+                      class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
                       Get Weather
                     </button>
-                    <button onclick="saveCurrentCity()" 
-                            class="px-3 py-2 bg-green-500/60 hover:bg-green-500/80 rounded-lg text-white text-sm transition-colors"
-                            title="Save current city">
+                    <button onclick="saveCurrentCity()"
+                      class="px-3 py-2 bg-green-500/60 hover:bg-green-500/80 rounded-lg text-white text-sm transition-colors"
+                      title="Save current city">
                       💾
                     </button>
                   </div>
                   <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
-                  
+
                   <!-- Saved Cities -->
                   <div id="saved-cities" class="mt-3" style="display: none;">
                     <div class="flex items-center justify-between mb-2">
@@ -1323,38 +1388,39 @@
                     </div>
                   </div>
                 </div>
-                
+
                 <div id="weather-loading" class="hidden flex items-center justify-center py-8">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                   <span class="ml-2">Loading weather...</span>
                 </div>
-                
+
                 <div id="weather-content" class="hidden">
                   <!-- Weather Header -->
                   <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
-                    <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider" style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
+                    <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider"
+                      style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
                   </div>
-                  
+
                   <!-- Current Weather Icon and Temperature -->
                   <div class="text-center mb-6">
-                    <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]">☀️</div>
+                    <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]" style="font-size: 50px;">☀️</div>
                     <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
                     <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
                     <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
                   </div>
-                  
+
                   <!-- Weather Forecast -->
                   <div id="weather-forecast" class="space-y-3">
                     <!-- Forecast items will be populated here -->
                   </div>
-                  
-                  <button onclick="showCityInput()" 
-                          class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
+
+                  <button onclick="showCityInput()"
+                    class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
                     Change city
                   </button>
                 </div>
-                
+
                 <div id="weather-error" class="hidden text-center py-4">
                   <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
                   <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
@@ -1370,13 +1436,14 @@
               <div id="notes-widget"
                 class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-                
+
                 <!-- Add Note Button -->
                 <div class="mb-4">
-                  <button onclick="showAddNoteForm()" 
-                          class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
+                  <button onclick="showAddNoteForm()"
+                    class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     New note
                   </button>
@@ -1385,21 +1452,26 @@
                 <!-- Add Note Form -->
                 <div id="add-note-form" class="hidden mb-4">
                   <div class="space-y-3">
-                    <textarea id="note-text" 
-                              placeholder="Write your note..." 
-                              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
-                              rows="3"></textarea>
+                    <textarea id="note-text" placeholder="Write your note..."
+                      class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
+                      rows="3"></textarea>
                     <div class="flex gap-2">
-                      <button onclick="addNote('yellow')" class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-                      <button onclick="addNote('green')" class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-                      <button onclick="addNote('pink')" class="flex-1 h-8 bg-pink-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
-                      <button onclick="addNote('blue')" class="flex-1 h-8 bg-blue-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('yellow')"
+                        class="flex-1 h-8 bg-yellow-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('green')"
+                        class="flex-1 h-8 bg-green-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('pink')"
+                        class="flex-1 h-8 bg-pink-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
+                      <button onclick="addNote('blue')"
+                        class="flex-1 h-8 bg-blue-300 rounded border-2 border-white/20 hover:border-white/40 transition-colors"></button>
                     </div>
                     <div class="flex gap-2">
-                      <button onclick="hideAddNoteForm()" class="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">
+                      <button onclick="hideAddNoteForm()"
+                        class="flex-1 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">
                         Cancel
                       </button>
-                      <button onclick="addNote('yellow')" class="flex-1 px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-xs transition-colors">
+                      <button onclick="addNote('yellow')"
+                        class="flex-1 px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-xs transition-colors">
                         Add Note
                       </button>
                     </div>
@@ -1425,12 +1497,14 @@
               <div id="pomodoro-widget"
                 class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
-                
+
                 <!-- Close button (like in the design) -->
                 <div class="absolute top-4 right-4">
-                  <button onclick="resetPomodoro()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                  <button onclick="resetPomodoro()"
+                    class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
                     <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                     </svg>
                   </button>
                 </div>
@@ -1444,7 +1518,8 @@
 
                 <!-- Large Timer Display -->
                 <div class="text-center mb-8">
-                  <div id="pomodoro-timer" class="font-bold text-white tracking-tight font-mono mb-2" style="font-size: 5rem; line-height: 0.9;">25:00</div>
+                  <div id="pomodoro-timer" class="font-bold text-white tracking-tight font-mono mb-2"
+                    style="font-size: 5rem; line-height: 0.9;">25:00</div>
                 </div>
 
                 <!-- Progress Ring with Emoji -->
@@ -1452,11 +1527,11 @@
                   <div class="relative w-32 h-32">
                     <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
                       <!-- Background circle -->
-                      <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.15)" stroke-width="12" fill="none"/>
+                      <circle cx="50" cy="50" r="42" stroke="rgba(255,255,255,0.15)" stroke-width="12" fill="none" />
                       <!-- Progress circle -->
-                      <circle id="pomodoro-progress" cx="50" cy="50" r="42" stroke="#22D3EE" stroke-width="12" fill="none"
-                              stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
-                              class="transition-all duration-1000 ease-linear"/>
+                      <circle id="pomodoro-progress" cx="50" cy="50" r="42" stroke="#22D3EE" stroke-width="12"
+                        fill="none" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"
+                        class="transition-all duration-1000 ease-linear" />
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
                       <span id="pomodoro-emoji" class="text-4xl">🧠</span>
@@ -1466,12 +1541,12 @@
 
                 <!-- Simple Controls -->
                 <div class="flex gap-3 mb-6">
-                  <button id="pomodoro-start" onclick="startPomodoro()" 
-                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg">
+                  <button id="pomodoro-start" onclick="startPomodoro()"
+                    class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg">
                     Start Focus
                   </button>
-                  <button id="pomodoro-pause" onclick="pausePomodoro()" 
-                          class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg hidden">
+                  <button id="pomodoro-pause" onclick="pausePomodoro()"
+                    class="flex-1 px-6 py-4 bg-white/20 hover:bg-white/30 rounded-2xl text-white font-medium transition-colors text-lg hidden">
                     Pause
                   </button>
                 </div>
@@ -1484,7 +1559,8 @@
 
                 <!-- Settings Toggle -->
                 <div class="mt-4 mb-0 text-center">
-                  <button onclick="togglePomodoroSettings()" class="text-sm text-white/60 hover:text-white/80 transition-colors">
+                  <button onclick="togglePomodoroSettings()"
+                    class="text-sm text-white/60 hover:text-white/80 transition-colors">
                     ⚙️ Settings
                   </button>
                 </div>
@@ -1494,20 +1570,24 @@
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-white/80">Focus time</span>
                     <div class="flex items-center gap-2">
-                      <button onclick="adjustTime('focus', -5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <button onclick="adjustTime('focus', -5)"
+                        class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
                       <span id="focus-time" class="text-xs font-medium min-w-[3rem] text-center">25 min</span>
-                      <button onclick="adjustTime('focus', 5)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                      <button onclick="adjustTime('focus', 5)"
+                        class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
                     </div>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-white/80">Break time</span>
                     <div class="flex items-center gap-2">
-                      <button onclick="adjustTime('break', -1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
+                      <button onclick="adjustTime('break', -1)"
+                        class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">−</button>
                       <span id="break-time" class="text-xs font-medium min-w-[3rem] text-center">5 min</span>
-                      <button onclick="adjustTime('break', 1)" class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
+                      <button onclick="adjustTime('break', 1)"
+                        class="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full text-white text-sm">+</button>
                     </div>
                   </div>
-                  
+
                   <!-- Stats in settings -->
                   <div class="pt-3 border-t border-white/10">
                     <div class="flex justify-between text-xs text-white/60">
@@ -1523,16 +1603,19 @@
 
         <!-- Widget Indicators -->
         <div class="flex justify-center gap-2 mt-0">
-          <button onclick="goToWidget(0)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/60" id="indicator-0"></button>
-          <button onclick="goToWidget(1)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-1"></button>
-          <button onclick="goToWidget(2)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30" id="indicator-2"></button>
+          <button onclick="goToWidget(0)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/60"
+            id="indicator-0"></button>
+          <button onclick="goToWidget(1)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30"
+            id="indicator-1"></button>
+          <button onclick="goToWidget(2)" class="w-2 h-2 rounded-full transition-colors duration-300 bg-white/30"
+            id="indicator-2"></button>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0"> <!-- Hello Kilian Title -->
-      <!-- Search Bar -->
+    
+    <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0">
+      
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
             class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
@@ -1541,7 +1624,7 @@
               alt="Google" />
           </button>
           <div id="searchEngineDropdown" style="
-                background: #437cd9;
+                background-color: rgb(255 255 255 / 0.2);
                 border: 1px solid #6897e2;
                 margin-top: 17px;
                 width: 325px;
@@ -1592,7 +1675,8 @@
               <img src="https://favicone.com/www.perplexity.ai?s=128" class="w-6 h-6" alt="Perplexity" />
             </button>
           </div>
-          <select id="searchEngine" class="hidden">            <option value="g">Google</option>
+          <select id="searchEngine" class="hidden">
+            <option value="g">Google</option>
             <option value="yt">YouTube</option>
             <option value="gh">GitHub</option>
             <!-- ... keep the values for search functionality ... -->
@@ -1608,9 +1692,10 @@
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
-        <div id="searchCounter" class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">0s</div>
-        <button onclick="showSearchHelp()"
-          class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
+        <div id="searchCounter"
+          class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
+          0s</div>
+        <button onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
            transition-all duration-300">
           ?
         </button>
@@ -1639,8 +1724,7 @@
               </p>
             </div>
             <div class="flex justify-end gap-2 mt-6">
-              <button onclick="closeConfigModal()"
-                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
+              <button onclick="closeConfigModal()" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
                 Cancel
               </button>
               <button id="saveButton" onclick="saveShortcut()" disabled
@@ -1652,7 +1736,7 @@
                     <path class="opacity-75" fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                     </path>
-                  </svg>                  <span id="saveText">Add</span>
+                  </svg> <span id="saveText">Add</span>
                 </span></span>
               </button>
             </div>
@@ -1678,20 +1762,24 @@
         </button>
       </div>
 
-      <div id="importModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+      <div id="importModal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
         <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
           <h2 class="text-2xl font-bold mb-4 text-gray-900">Import Shortcuts</h2>
           <div class="text-gray-700 mb-6">
             <p class="mb-3">Select a .json file containing your shortcuts to import them.</p>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-              <strong>⚠️ Important:</strong> This will replace your current shortcuts. Make sure to export your current shortcuts first if you want to keep them.
+              <strong>⚠️ Important:</strong> This will replace your current shortcuts. Make sure to export your current
+              shortcuts first if you want to keep them.
             </div>
           </div>
           <div class="flex justify-end gap-3">
-            <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">
+            <button onclick="closeImportModal()"
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-700">
               Cancel
             </button>
-            <button onclick="triggerFileImport()" class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
+            <button onclick="triggerFileImport()"
+              class="px-4 py-2 bg-blue-500/80 hover:bg-blue-600/80 rounded-lg text-white">
               Choose File
             </button>
           </div>
@@ -1701,7 +1789,8 @@
       <!-- Popup d'autocorrection -->
       <div id="autocorrectionModal"
         class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
-        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">          <h2 class="text-2xl font-bold mb-4 text-white">Correction Suggestion</h2>
+        <div class="bg-white/95 rounded-2xl p-6 w-[500px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-white">Correction Suggestion</h2>
           <div class="text-white mb-6">
             <p>You entered: <span id="originalQuery" class="font-semibold"></span></p>
             <p class="mt-3">Did you mean: <span id="correctedQuery" class="font-semibold"></span> ?</p>
@@ -1761,63 +1850,207 @@
       <!-- Settings Menu -->
       <div class="fixed top-4 right-4 z-50">
         <!-- Settings Button -->
-        <button onclick="toggleSettingsMenu()" 
-                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
-                title="Settings">
-          <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        <button onclick="toggleSettingsMenu()"
+          class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
+          title="Settings">
+          <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
           </svg>
         </button>
-        
-        <!-- Settings Dropdown Menu -->
-        <div id="settingsMenu" class="hidden absolute top-14 right-0 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 min-w-[200px] overflow-hidden">
+
+
+        <div id="settingsMenu"
+          class="hidden absolute top-14 right-0 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 min-w-[200px] overflow-hidden">
           <div class="py-2">
-            <button onclick="exportShortcuts(); toggleSettingsMenu();" 
-                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+            <button onclick="exportShortcuts(); toggleSettingsMenu();"
+              class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
               <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
               </svg>
               Export Shortcuts
             </button>
-            
-            <button onclick="showImportModal(); toggleSettingsMenu();" 
-                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+
+            <button onclick="showImportModal(); toggleSettingsMenu();"
+              class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
               <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
               </svg>
               Import Shortcuts
             </button>
-            
+
             <div class="border-t border-gray-200 my-2"></div>
-            
-            <button onclick="showAboutModal(); toggleSettingsMenu();" 
-                    class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+
+            <button onclick="showAboutModal(); toggleSettingsMenu();"
+              class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
               <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               About
             </button>
-            
-            <button onclick="clearAllData(); toggleSettingsMenu();" 
-                    class="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 transition-colors flex items-center gap-3">
+
+            <button onclick="clearAllData(); toggleSettingsMenu();"
+              class="w-full px-4 py-3 text-left hover:bg-red-50 text-red-600 transition-colors flex items-center gap-3">
               <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                </path>
               </svg>
               Clear All Data
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Input file caché pour l'import -->
-      <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+          <button id="gSuiteToggle" 
+            class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg" style="position:fixed; right:80px; top:20px;">G Suite</button>
 
-      <div class="wrapper">
-        <canvas id="aurora"></canvas>
-      </div>
-    </main>
+        <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 60px;">
+          <div id="googleWorkspaceTools" class="hidden mt-2 bg-white/20 shadow-lg rounded-lg p-4 space-y-2" style="width: 150px;">
+            <a href="https://drive.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-drive.svg" alt="Google Drive" class="h-8 w-8">
+              <span>Drive</span>
+            </a>
+            <a href="https://mail.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/gmail.svg" alt="Gmail" class="h-8 w-8">
+              <span>Gmail</span>
+            </a>
+            <a href="https://maps.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-maps.svg" alt="Google Maps" class="h-8 w-8">
+              <span>Maps</span>
+            </a>
+            <a href="https://docs.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-docs.svg" alt="Google Docs" class="h-8 w-8">
+              <span>Docs</span>
+            </a>
+            <a href="https://sheets.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-sheets.svg" alt="Google Sheets" class="h-8 w-8">
+              <span>Sheets</span>
+            </a>
+            <a href="https://slides.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-slides.svg" alt="Google Slides" class="h-8 w-8">
+              <span>Slides</span>
+            </a>
+            <a href="https://calendar.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-calendar.svg" alt="Google Calendar" class="h-8 w-8">
+              <span>Calendar</span>
+            </a>
+            <a href="https://meet.google.com" target="_blank" class="workspace-tool flex items-center space-x-2 bg-bg">
+              <img src="google-icons/google-meet.svg" alt="Google Meet" class="h-8 w-8">
+              <span>Meet</span>
+            </a>
+          </div>
+        </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const btn = document.getElementById('gSuiteToggle');
+              const panel = document.getElementById('googleWorkspaceTools');
+              if (!btn || !panel) return;
+
+              let hideTimeout;
+              const show = () => {
+                clearTimeout(hideTimeout);
+                panel.classList.remove('hidden');
+              };
+              const hide = () => {
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                  panel.classList.add('hidden');
+                }, 150);
+              };
+
+              // Hover / mouseenter support (prevents flicker when moving between btn and panel)
+              btn.addEventListener('mouseenter', show);
+              panel.addEventListener('mouseenter', show);
+              btn.addEventListener('mouseleave', hide);
+              panel.addEventListener('mouseleave', hide);
+
+              // Keep click toggling for accessibility / touch
+              btn.addEventListener('click', (e) => {
+                panel.classList.toggle('hidden');
+                const visible = !panel.classList.contains('hidden');
+                e.stopPropagation();
+              });
+
+              // Close when clicking outside
+              document.addEventListener('click', (e) => {
+                if (!btn.contains(e.target) && !panel.contains(e.target)) {
+                  panel.classList.add('hidden');
+                }
+              });
+
+              // Increment counter when a G Suite tool is used and record the click
+              try {
+                panel.querySelectorAll('.workspace-tool').forEach((a) => {
+                  a.addEventListener('click', (e) => {
+                    // Increment and update display
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    // Record the action similar to performSearchRedirect
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                  });
+                });
+
+                // Also support middle-click (wheel click) on G Suite tools
+                panel.querySelectorAll('.workspace-tool').forEach((a) => {
+                  a.addEventListener('auxclick', (e) => {
+                    if (e.button !== 1) return; // only middle click
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                    // allow default behavior (open in new tab)
+                  });
+                });
+
+                // Global delegation: middle-click on any shortcut (and workspace-tool) increments counter
+                document.addEventListener('auxclick', (e) => {
+                  if (e.button !== 1) return;
+                  const anchor = e.target.closest('a[data-position], a.workspace-tool');
+                  if (!anchor) return;
+                  try {
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: anchor.href || anchor.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: anchor.href || anchor.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                  } catch (err) {
+                    console.warn('Error handling middle-click for shortcuts:', err);
+                  }
+                });
+
+              } catch (e) {
+                // If panel or functions are not available, silently ignore
+                console.warn('Could not attach G Suite tool click handlers:', e);
+              }
+            });
+          </script>
   </div>
+
+  <!-- Input file caché pour l'import -->
+  <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+
+
 
   <!-- Navigation bar mobile en bas de l'écran -->
   <nav id="mobileNavBar" class="fixed bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl p-2 z-50 lg:hidden">
@@ -1866,7 +2099,7 @@
       /* Firefox */
       scrollbar-width: none;
     }
-    
+
     .scrollbar-hide::-webkit-scrollbar {
       /* Chrome, Safari and Opera */
       display: none;
@@ -1883,7 +2116,8 @@
       position: relative;
     }
 
-    .shortcut-container::before {      content: "Right-click to edit or delete";
+    .shortcut-container::before {
+      content: "Right-click to edit or delete";
       position: absolute;
       top: -30px;
       left: 50%;
@@ -1906,10 +2140,13 @@
 
     /* Animation for save city button suggestion */
     @keyframes pulse {
-      0%, 100% {
+
+      0%,
+      100% {
         transform: scale(1);
         opacity: 1;
       }
+
       50% {
         transform: scale(1.05);
         opacity: 0.8;
@@ -1922,14 +2159,14 @@
     // Function to validate and clean localStorage for weather data
     function validateWeatherStorage() {
       let storageAvailable = false;
-      
+
       try {
         // Test if localStorage is available
         const testKey = 'test_weather_storage';
         localStorage.setItem(testKey, 'test');
         localStorage.removeItem(testKey);
         storageAvailable = true;
-        
+
         // Validate existing weather city data
         const savedCity = localStorage.getItem('lastWeatherCity');
         if (savedCity !== null) {
@@ -1942,7 +2179,7 @@
       } catch (error) {
         console.error('localStorage is not available or corrupted:', error);
         storageAvailable = false;
-        
+
         // Try cookies as fallback
         try {
           document.cookie = 'test_weather_cookie=test; max-age=1; path=/';
@@ -1956,7 +2193,7 @@
           console.error('Cookies are also not available:', cookieError);
         }
       }
-      
+
       return storageAvailable;
     }
 
@@ -2002,20 +2239,20 @@
         document.getElementById('weather-city-input').value = savedCity;
         loadWeather(savedCity);
       }
-      
+
       // Initialize saved cities display
       updateSavedCitiesDisplay();
     });
 
     // Weather Widget Functions
-    
+
     // Helper function to safely save to localStorage
     function saveWeatherCity(cityName) {
       if (!cityName || typeof cityName !== 'string' || cityName.trim() === '') {
         console.warn('Invalid city name provided for saving');
         return false;
       }
-      
+
       try {
         localStorage.setItem('lastWeatherCity', cityName.trim());
         return true;
@@ -2031,7 +2268,7 @@
         }
       }
     }
-    
+
     // Helper function to safely read from localStorage
     function getWeatherCity() {
       try {
@@ -2042,7 +2279,7 @@
       } catch (error) {
         console.error('Error reading city from localStorage, trying cookies fallback:', error);
       }
-      
+
       // Fallback to cookies
       try {
         const cookieValue = document.cookie.split('; ')
@@ -2056,7 +2293,7 @@
       } catch (cookieError) {
         console.error('Error reading city from cookies:', cookieError);
       }
-      
+
       return null;
     }
 
@@ -2101,19 +2338,19 @@
     function saveCurrentCity() {
       const cityInput = document.getElementById('weather-city-input');
       const cityName = cityInput.value.trim();
-      
+
       if (!cityName) {
         alert('Please enter a city name first');
         return;
       }
 
       const savedCities = getSavedCities();
-      
+
       // Check if city is already saved (case insensitive)
-      const cityExists = savedCities.some(city => 
+      const cityExists = savedCities.some(city =>
         city.toLowerCase() === cityName.toLowerCase()
       );
-      
+
       if (cityExists) {
         alert('This city is already saved');
         return;
@@ -2128,7 +2365,7 @@
       savedCities.push(cityName);
       saveCitiesList(savedCities);
       updateSavedCitiesDisplay();
-      
+
       // Show confirmation
       const saveButton = event.target;
       const originalText = saveButton.innerHTML;
@@ -2150,7 +2387,7 @@
       if (!confirm(`Remove "${cityName}" from saved cities?`)) {
         return;
       }
-      
+
       const savedCities = getSavedCities();
       const filteredCities = savedCities.filter(city => city !== cityName);
       saveCitiesList(filteredCities);
@@ -2175,11 +2412,11 @@
       savedCities.forEach(city => {
         const cityContainer = document.createElement('div');
         cityContainer.className = 'group relative inline-flex items-center px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-xs text-white transition-colors mr-1 mb-1 cursor-pointer';
-        
+
         const citySpan = document.createElement('span');
         citySpan.textContent = city;
         citySpan.className = 'select-none';
-        
+
         const removeButton = document.createElement('button');
         removeButton.textContent = '×';
         removeButton.className = 'ml-1 opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-100 transition-opacity text-sm font-bold';
@@ -2188,7 +2425,7 @@
           e.stopPropagation();
           removeSavedCity(city);
         };
-        
+
         cityContainer.onclick = () => loadSavedCity(city);
         cityContainer.appendChild(citySpan);
         cityContainer.appendChild(removeButton);
@@ -2198,18 +2435,18 @@
 
     function suggestSavingCity(cityName) {
       const savedCities = getSavedCities();
-      
+
       // Don't suggest if already saved or if we have max cities
       if (savedCities.includes(cityName) || savedCities.length >= 5) {
         return;
       }
-      
+
       // Show a subtle suggestion (could be a toast notification)
       const saveButton = document.querySelector('button[onclick="saveCurrentCity()"]');
       if (saveButton) {
         saveButton.style.animation = 'pulse 2s infinite';
         saveButton.title = `Save "${cityName}" to favorites`;
-        
+
         // Remove animation after 5 seconds
         setTimeout(() => {
           saveButton.style.animation = '';
@@ -2245,7 +2482,7 @@
         96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
         99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
       };
-      
+
       const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
       return isDay ? icons.day : icons.night;
     }
@@ -2278,7 +2515,7 @@
         96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
         99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
       };
-      
+
       const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
       return isDay ? icons.day : icons.night;
     }
@@ -2310,17 +2547,17 @@
         96: 'Thunderstorm with slight hail',
         99: 'Thunderstorm with heavy hail'
       };
-      
+
       return descriptions[weatherCode] || 'Unknown';
     }
 
     function updateWeatherForecast(daily) {
       const forecastContainer = document.getElementById('weather-forecast');
       if (!forecastContainer) return;
-      
+
       // Clear existing forecast
       forecastContainer.innerHTML = '';
-      
+
       // Create forecast items for the next few days (skip today, start from tomorrow)
       for (let i = 1; i < Math.min(daily.time.length, 3); i++) {
         const date = new Date(daily.time[i]);
@@ -2364,9 +2601,9 @@
         const geocodeResponse = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`
         );
-        
+
         let latitude, longitude, locationDisplayName, countryName;
-        
+
         if (geocodeResponse.ok) {
           const geocodeData = await geocodeResponse.json();
           if (geocodeData.length > 0) {
@@ -2374,7 +2611,7 @@
             longitude = parseFloat(geocodeData[0].lon);
             const addressParts = geocodeData[0].display_name.split(',');
             locationDisplayName = addressParts[0].trim();
-            
+
             // Try to extract country from address
             const address = geocodeData[0].address || {};
             countryName = address.country || addressParts[addressParts.length - 1].trim();
@@ -2441,15 +2678,15 @@
     function loadWeatherForCity() {
       const cityInput = document.getElementById('weather-city-input');
       const cityName = cityInput.value.trim();
-      
+
       if (!cityName) {
         alert('Please enter a city name');
         return;
       }
-      
+
       // Save the city name immediately when user requests it
       saveWeatherCity(cityName);
-      
+
       loadWeather(cityName);
     }
 
@@ -2500,7 +2737,7 @@
 
       const newText = prompt('Edit your note:', note.text);
       if (newText === null) return; // User cancelled
-      
+
       if (newText.trim() === '') {
         if (confirm('Delete this note?')) {
           deleteNote(noteId);
@@ -2540,7 +2777,7 @@
 
     function getDynamicFontSize(text) {
       const textLength = text.length;
-      
+
       // Define font size ranges based on text length - MUCH larger sizes for short text
       if (textLength <= 2) {
         return 'text-9xl'; // Massive font for 1-2 characters (128px)
@@ -2573,7 +2810,7 @@
 
     function getDynamicLineHeight(text) {
       const textLength = text.length;
-      
+
       // Adjust line height based on text length for better readability
       if (textLength <= 2) {
         return 'leading-none'; // Very tight line height for massive text
@@ -2598,7 +2835,7 @@
 
     function getDynamicPadding(text) {
       const textLength = text.length;
-      
+
       // Adjust padding based on text length to optimize space usage
       if (textLength <= 2) {
         return 'p-8'; // Maximum padding for massive text (1-2 chars)
@@ -2675,7 +2912,7 @@
     }
 
     // Load notes on page load
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       // Load notes after other initialization
       setTimeout(() => {
         loadNotes();
@@ -2705,12 +2942,12 @@
       if (!pomodoroState.isRunning) {
         pomodoroState.isRunning = true;
         pomodoroState.isPaused = false;
-        
+
         document.getElementById('pomodoro-start').classList.add('hidden');
         document.getElementById('pomodoro-pause').classList.remove('hidden');
-        
+
         pomodoroState.timer = setInterval(updateTimer, 1000);
-        
+
         // Play start sound (optional)
         playPomodoroSound('start');
       }
@@ -2720,9 +2957,9 @@
       if (pomodoroState.isRunning) {
         pomodoroState.isRunning = false;
         pomodoroState.isPaused = true;
-        
+
         clearInterval(pomodoroState.timer);
-        
+
         document.getElementById('pomodoro-start').classList.remove('hidden');
         document.getElementById('pomodoro-pause').classList.add('hidden');
       }
@@ -2732,7 +2969,7 @@
       clearInterval(pomodoroState.timer);
       pomodoroState.isRunning = false;
       pomodoroState.isPaused = false;
-      
+
       // Reset to current mode's default time
       if (pomodoroState.mode === 'focus') {
         pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
@@ -2744,30 +2981,30 @@
         pomodoroState.currentTime = pomodoroState.settings.longBreakTime * 60;
         pomodoroState.totalTime = pomodoroState.settings.longBreakTime * 60;
       }
-      
+
       document.getElementById('pomodoro-start').classList.remove('hidden');
       document.getElementById('pomodoro-pause').classList.add('hidden');
-      
+
       updateDisplay();
     }
 
     function updateTimer() {
       pomodoroState.currentTime--;
-      
+
       if (pomodoroState.currentTime <= 0) {
         completeSession();
       }
-      
+
       updateDisplay();
     }
 
     function completeSession() {
       clearInterval(pomodoroState.timer);
       pomodoroState.isRunning = false;
-      
+
       // Play completion sound
       playPomodoroSound('complete');
-      
+
       // Show notification
       if (Notification.permission === 'granted') {
         new Notification(`${pomodoroState.mode === 'focus' ? 'Focus' : 'Break'} session completed!`, {
@@ -2775,15 +3012,15 @@
           icon: 'media/favicon.ico'
         });
       }
-      
+
       // Update stats
       if (pomodoroState.mode === 'focus') {
         updateStats();
       }
-      
+
       // Switch to next mode
       switchToNextMode();
-      
+
       document.getElementById('pomodoro-start').classList.remove('hidden');
       document.getElementById('pomodoro-pause').classList.add('hidden');
     }
@@ -2807,12 +3044,12 @@
         pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
         pomodoroState.totalTime = pomodoroState.settings.focusTime * 60;
         pomodoroState.session++;
-        
+
         if (pomodoroState.session > pomodoroState.totalSessions) {
           pomodoroState.session = 1;
         }
       }
-      
+
       updateDisplay();
     }
 
@@ -2820,9 +3057,9 @@
       // Update timer display
       const minutes = Math.floor(pomodoroState.currentTime / 60);
       const seconds = pomodoroState.currentTime % 60;
-      document.getElementById('pomodoro-timer').textContent = 
+      document.getElementById('pomodoro-timer').textContent =
         `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-      
+
       // Update mode display and message
       let modeText, messageText, emoji;
       if (pomodoroState.mode === 'focus') {
@@ -2838,21 +3075,21 @@
         messageText = 'Well deserved break<br><span class="text-2xl font-bold">Great job !</span>';
         emoji = '🎉';
       }
-      
+
       document.getElementById('pomodoro-mode').textContent = modeText;
       document.getElementById('pomodoro-message').innerHTML = messageText;
       document.getElementById('pomodoro-emoji').textContent = emoji;
-      
+
       // Update session display
-      document.getElementById('pomodoro-session').textContent = 
+      document.getElementById('pomodoro-session').textContent =
         `Session ${pomodoroState.session} of ${pomodoroState.totalSessions}`;
-      
+
       // Update progress ring
       const progress = 1 - (pomodoroState.currentTime / pomodoroState.totalTime);
       const circumference = 2 * Math.PI * 42; // radius = 42
       const offset = circumference * (1 - progress);
       document.getElementById('pomodoro-progress').style.strokeDashoffset = offset;
-      
+
       // Update progress circle color based on mode
       const progressCircle = document.getElementById('pomodoro-progress');
       if (pomodoroState.mode === 'focus') {
@@ -2860,7 +3097,7 @@
       } else {
         progressCircle.style.stroke = '#10B981'; // Green for breaks
       }
-      
+
       // Update widget background based on mode - keeping the same gradient but maybe slightly different
       const widget = document.getElementById('pomodoro-widget');
       if (pomodoroState.mode === 'focus') {
@@ -2872,11 +3109,11 @@
 
     function adjustTime(type, amount) {
       if (pomodoroState.isRunning) return; // Can't adjust while running
-      
+
       if (type === 'focus') {
         pomodoroState.settings.focusTime = Math.max(5, Math.min(60, pomodoroState.settings.focusTime + amount));
         document.getElementById('focus-time').textContent = pomodoroState.settings.focusTime + ' min';
-        
+
         if (pomodoroState.mode === 'focus') {
           pomodoroState.currentTime = pomodoroState.settings.focusTime * 60;
           pomodoroState.totalTime = pomodoroState.settings.focusTime * 60;
@@ -2884,13 +3121,13 @@
       } else if (type === 'break') {
         pomodoroState.settings.breakTime = Math.max(1, Math.min(30, pomodoroState.settings.breakTime + amount));
         document.getElementById('break-time').textContent = pomodoroState.settings.breakTime + ' min';
-        
+
         if (pomodoroState.mode === 'break') {
           pomodoroState.currentTime = pomodoroState.settings.breakTime * 60;
           pomodoroState.totalTime = pomodoroState.settings.breakTime * 60;
         }
       }
-      
+
       updateDisplay();
       savePomodoroSettings();
     }
@@ -2903,17 +3140,17 @@
     function updateStats() {
       const today = new Date().toDateString();
       let stats = JSON.parse(localStorage.getItem('pomodoroStats') || '{}');
-      
+
       if (!stats[today]) {
         stats[today] = 0;
       }
       stats[today]++;
-      
+
       // Calculate total sessions
       const totalSessions = Object.values(stats).reduce((sum, sessions) => sum + sessions, 0);
-      
+
       localStorage.setItem('pomodoroStats', JSON.stringify(stats));
-      
+
       document.getElementById('today-sessions').textContent = stats[today];
       document.getElementById('total-sessions').textContent = totalSessions;
     }
@@ -2923,10 +3160,10 @@
       const stats = JSON.parse(localStorage.getItem('pomodoroStats') || '{}');
       const todaySessions = stats[today] || 0;
       const totalSessions = Object.values(stats).reduce((sum, sessions) => sum + sessions, 0);
-      
+
       document.getElementById('today-sessions').textContent = todaySessions;
       document.getElementById('total-sessions').textContent = totalSessions;
-      
+
       // Load saved settings
       const savedSettings = JSON.parse(localStorage.getItem('pomodoroSettings') || '{}');
       if (savedSettings.focusTime) {
@@ -2937,7 +3174,7 @@
         pomodoroState.settings.breakTime = savedSettings.breakTime;
         document.getElementById('break-time').textContent = savedSettings.breakTime + ' min';
       }
-      
+
       // Initialize display
       resetPomodoro();
     }
@@ -2952,10 +3189,10 @@
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         if (type === 'complete') {
           // Three ascending beeps for completion
           [440, 554, 659].forEach((freq, i) => {
@@ -3040,16 +3277,16 @@
     function getPinnedWidgetOrder() {
       const pinData = getWidgetPinData();
       const orderedWidgets = [...widgets];
-      
+
       // Sort widgets by pin priority: primary first, then secondary, then unpinned
       orderedWidgets.sort((a, b) => {
         const aPinStatus = pinData[a.id] || 'none';
         const bPinStatus = pinData[b.id] || 'none';
-        
+
         const priority = { 'primary': 0, 'secondary': 1, 'none': 2 };
         return priority[aPinStatus] - priority[bPinStatus];
       });
-      
+
       return orderedWidgets;
     }
 
@@ -3064,29 +3301,29 @@
       console.log('📍 Current widget:', currentWidget);
       const pinData = getWidgetPinData();
       console.log('💾 Current pin data:', pinData);
-      
+
       // Update pin status
       pinData[currentWidget.id] = pinType;
       saveWidgetPinData(pinData);
       console.log('✅ Saved pin data:', pinData);
-      
+
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
-      
+
       // Update widget order and display
       const orderedWidgets = getPinnedWidgetOrder();
       console.log('🔀 New widget order:', orderedWidgets.map(w => w.id));
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
+
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
       console.log('🎯 New current index:', currentWidgetIndex);
-      
+
       // Update display
       updateWidgetDisplay();
       updateWidgetIndicators();
-      
+
       // Show notification
       const pinTypeText = pinType === 'primary' ? 'Primary' : 'Secondary';
       showNotification(`${currentWidget.name} widget pinned as ${pinTypeText}!`);
@@ -3095,26 +3332,26 @@
     function unpinWidget() {
       const currentWidget = getCurrentWidget();
       const pinData = getWidgetPinData();
-      
+
       // Remove pin status
       delete pinData[currentWidget.id];
       saveWidgetPinData(pinData);
-      
+
       // Close menu
       document.getElementById('widgetPinMenu').classList.add('hidden');
-      
+
       // Update widget order and display
       const orderedWidgets = getPinnedWidgetOrder();
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
+
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
+
       // Update display
       updateWidgetDisplay();
       updateWidgetIndicators();
-      
+
       // Show notification
       showNotification(`${currentWidget.name} widget unpinned!`);
     }
@@ -3126,14 +3363,14 @@
     function updateWidgetOrder() {
       const orderedWidgets = getPinnedWidgetOrder();
       const currentWidget = getCurrentWidget();
-      
+
       // Find the current widget's new position in the ordered array
       const newIndex = orderedWidgets.findIndex(widget => widget.id === currentWidget.id);
-      
+
       // Update the widgets array and current index
       widgets.splice(0, widgets.length, ...orderedWidgets);
       currentWidgetIndex = newIndex >= 0 ? newIndex : 0;
-      
+
       // Update display without rebuilding
       updateWidgetDisplay();
       updateWidgetIndicators();
@@ -3142,7 +3379,7 @@
     function updateWidgetIndicators() {
       const indicatorsContainer = document.querySelector('.flex.justify-center.gap-2.mt-0');
       indicatorsContainer.innerHTML = '';
-      
+
       widgets.forEach((widget, index) => {
         const indicator = document.createElement('button');
         indicator.onclick = () => goToWidget(index);
@@ -3156,18 +3393,18 @@
       const slider = document.getElementById('widgets-slider');
       const titleElement = document.getElementById('current-widget-title');
       const iconElement = document.getElementById('current-widget-icon');
-      
+
       // Reorder DOM elements to match the widgets array order
       reorderWidgetSlides();
-      
+
       // Update slider position
       const translateX = -currentWidgetIndex * 100;
       slider.style.transform = `translateX(${translateX}%)`;
-      
+
       // Update header
       titleElement.textContent = widgets[currentWidgetIndex].name;
       iconElement.innerHTML = widgets[currentWidgetIndex].icon;
-      
+
       // Update indicators
       widgets.forEach((_, index) => {
         const indicator = document.getElementById(`indicator-${index}`);
@@ -3186,21 +3423,21 @@
     function reorderWidgetSlides() {
       const slider = document.getElementById('widgets-slider');
       const slides = Array.from(slider.children);
-      
+
       // Map widget IDs to their DOM elements
       const slideMap = {
         'weather': slides.find(slide => slide.querySelector('#weather-widget')),
         'notes': slides.find(slide => slide.querySelector('#notes-widget')),
         'pomodoro': slides.find(slide => slide.querySelector('#pomodoro-widget'))
       };
-      
+
       // Remove all slides from the slider
       slides.forEach(slide => {
         if (slide.parentNode) {
           slide.parentNode.removeChild(slide);
         }
       });
-      
+
       // Re-add slides in the order defined by the widgets array
       widgets.forEach(widget => {
         const slide = slideMap[widget.id];
@@ -3238,10 +3475,10 @@
 
     function handleTouchEnd(e) {
       if (!isDragging) return;
-      
+
       const endX = e.changedTouches[0].clientX;
       const diffX = startX - endX;
-      
+
       // Minimum swipe distance to trigger navigation
       if (Math.abs(diffX) > 50) {
         if (diffX > 0) {
@@ -3250,7 +3487,7 @@
           previousWidget(); // Swipe right = previous
         }
       }
-      
+
       isDragging = false;
     }
 
@@ -3259,7 +3496,7 @@
       if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
         return; // Don't interfere with input fields
       }
-      
+
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         previousWidget();
@@ -3274,17 +3511,17 @@
       // First load widget order based on pins, then update display
       const orderedWidgets = getPinnedWidgetOrder();
       widgets.splice(0, widgets.length, ...orderedWidgets);
-      
+
       // Set initial widget index to 0 (first widget in the ordered list)
       currentWidgetIndex = 0;
-      
+
       updateWidgetDisplay();
-      
+
       // Add touch support
       const slider = document.getElementById('widgets-slider');
       slider.addEventListener('touchstart', handleTouchStart, { passive: true });
       slider.addEventListener('touchend', handleTouchEnd, { passive: true });
-      
+
       // Add keyboard support
       document.addEventListener('keydown', handleKeyNavigation);
     });
@@ -3293,7 +3530,7 @@
     document.addEventListener('click', (e) => {
       const pinMenu = document.getElementById('widgetPinMenu');
       const pinButton = document.getElementById('widgetPinButton');
-      
+
       if (pinMenu && !pinMenu.contains(e.target) && !pinButton.contains(e.target)) {
         pinMenu.classList.add('hidden');
       }
@@ -3309,7 +3546,7 @@
     }
 
   </script>
-  <script src="aurora-svelte.js"></script>
+
 </body>
 
 </html>
