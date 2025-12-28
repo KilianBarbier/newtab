@@ -1204,14 +1204,34 @@
         settingsMenu.classList.add('hidden');
       }
     });
-
-    // ...existing code...
-  </script>
-  <script src="aurora-animation.js"></script>
+</script>
+   
 </head>
 
 <body class="min-h-screen font-sf">
   <!-- Suppression du bouton hamburger pour le remplacer par une barre de navigation mobile en bas -->
+ // Google Workspace Tools
+    <div id="googleWorkspaceTools" class="absolute top-0 right-16 flex items-center space-x-4">
+      <a href="https://drive.google.com" target="_blank" class="workspace-tool">
+        <img src="../media/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
+      </a>
+      <a href="https://docs.google.com" target="_blank" class="workspace-tool">
+        <img src="../media/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
+      </a>
+      <a href="https://sheets.google.com" target="_blank" class="workspace-tool">
+        <img src="../media/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
+      </a>
+    </div>
+
+    <style>
+      .workspace-tool {
+        transition: transform 0.2s;
+      }
+
+      .workspace-tool:hover {
+        transform: scale(1.1);
+      }
+    </style>
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
@@ -1762,7 +1782,7 @@
       <div class="fixed top-4 right-4 z-50">
         <!-- Settings Button -->
         <button onclick="toggleSettingsMenu()" 
-                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
+                class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center"
                 title="Settings">
           <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -1808,6 +1828,29 @@
             </button>
           </div>
         </div>
+
+        <!-- Google Workspace Tools -->
+        <div id="googleWorkspaceTools" class="absolute top-0 right-16 flex items-center space-x-4">
+          <a href="https://drive.google.com" target="_blank" class="workspace-tool">
+            <img src="../media/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
+          </a>
+          <a href="https://docs.google.com" target="_blank" class="workspace-tool">
+            <img src="../media/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
+          </a>
+          <a href="https://sheets.google.com" target="_blank" class="workspace-tool">
+            <img src="../media/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
+          </a>
+        </div>
+
+        <style>
+          .workspace-tool {
+            transition: transform 0.2s;
+          }
+
+          .workspace-tool:hover {
+            transform: scale(1.1);
+          }
+        </style>
       </div>
 
       <!-- Input file caché pour l'import -->
