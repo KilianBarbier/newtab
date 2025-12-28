@@ -954,3 +954,11 @@ select option[value="i"] {
     flex-direction: column;
     gap: 8px;
 }
+.bg-bg:hover {
+    background-color: rgb(255 255 255 / 0.2);
+    padding-inline: 10px;
+    padding-block: 5px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
