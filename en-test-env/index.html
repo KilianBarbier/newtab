@@ -500,6 +500,59 @@
         });
       }
 
+      // Tab morphing indicator: create element and update position
+      function createTabIndicator() {
+        const sidebarEl = document.getElementById('sidebar');
+        if (!sidebarEl) return;
+        let ind = document.getElementById('tabIndicator');
+        if (!ind) {
+          ind = document.createElement('div');
+          ind.id = 'tabIndicator';
+          sidebarEl.appendChild(ind);
+        }
+        // Position initially to the active tab
+        const active = localStorage.getItem('activeTab') || 'personal';
+        updateTabIndicator(active, true);
+        window.addEventListener('resize', () => updateTabIndicator(localStorage.getItem('activeTab') || 'personal'));
+      }
+
+      function updateTabIndicator(tab, skipAnimation) {
+        const sidebarEl = document.getElementById('sidebar');
+        const ind = document.getElementById('tabIndicator');
+        const target = document.getElementById(tab + 'Tab');
+        if (!sidebarEl || !ind || !target) return;
+        const sidebarRect = sidebarEl.getBoundingClientRect();
+        const rect = target.getBoundingClientRect();
+        const left = rect.left - sidebarRect.left;
+        const top = rect.top - sidebarRect.top;
+        const radius = Math.min(24, rect.height / 2) + 'px';
+        if (skipAnimation) {
+          ind.style.transition = 'none';
+          ind.style.left = left + 'px';
+          ind.style.top = top + 'px';
+          ind.style.width = rect.width + 'px';
+          ind.style.height = rect.height + 'px';
+          ind.style.borderRadius = radius;
+          requestAnimationFrame(() => ind.style.transition = '');
+        } else {
+          ind.style.left = left + 'px';
+          ind.style.top = top + 'px';
+          ind.style.width = rect.width + 'px';
+          ind.style.height = rect.height + 'px';
+          ind.style.borderRadius = radius;
+          // subtle squash to emphasize morph
+          ind.style.transform = 'scaleX(0.995) scaleY(1.02)';
+          clearTimeout(ind._morphTimeout);
+          ind._morphTimeout = setTimeout(() => {
+            ind.style.transform = '';
+          }, 150);
+        }
+      }
+
+      // Expose globally so other functions can call it
+      window.updateTabIndicator = updateTabIndicator;
+      createTabIndicator();
+
       const searchIcon = document.querySelector(".absolute svg");
       const currentSearch = document.getElementById("currentSearch");
 
@@ -948,6 +1001,11 @@
       // Update visual interface
       document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
       document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
+
+      // Move the morphing indicator
+      if (typeof window.updateTabIndicator === 'function') {
+        window.updateTabIndicator(tab);
+      }
 
       // Save active tab
       localStorage.setItem("activeTab", tab);
