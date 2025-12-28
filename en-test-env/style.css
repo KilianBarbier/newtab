@@ -960,7 +960,6 @@ select option[value="i"] {
     flex-direction: column;
     gap: 8px;
 }
-/* Smooth transitions for .bg-bg to avoid abrupt jumps */
 .bg-bg {
     transition: background-color 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
                 transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
