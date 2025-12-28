@@ -1859,8 +1859,18 @@
               if (!btn || !panel) return;
 
               let hideTimeout;
-              const show = () => { clearTimeout(hideTimeout); panel.classList.remove('hidden'); };
-              const hide = () => { clearTimeout(hideTimeout); hideTimeout = setTimeout(() => panel.classList.add('hidden'), 150); };
+              const show = () => {
+                clearTimeout(hideTimeout);
+                panel.classList.remove('hidden');
+                btn.style.marginLeft = '54%';
+              };
+              const hide = () => {
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                  panel.classList.add('hidden');
+                  btn.style.marginLeft = '';
+                }, 150);
+              };
 
               // Hover / mouseenter support (prevents flicker when moving between btn and panel)
               btn.addEventListener('mouseenter', show);
@@ -1869,11 +1879,20 @@
               panel.addEventListener('mouseleave', hide);
 
               // Keep click toggling for accessibility / touch
-              btn.addEventListener('click', (e) => { panel.classList.toggle('hidden'); e.stopPropagation(); });
+              btn.addEventListener('click', (e) => {
+                const isVisible = !panel.classList.toggle('hidden') && !panel.classList.contains('hidden');
+                // Toggle returned value is not reliable cross-browser for our intent; use computed presence instead
+                const visible = !panel.classList.contains('hidden');
+                if (visible) btn.style.marginLeft = '54%'; else btn.style.marginLeft = '';
+                e.stopPropagation();
+              });
 
               // Close when clicking outside
               document.addEventListener('click', (e) => {
-                if (!btn.contains(e.target) && !panel.contains(e.target)) panel.classList.add('hidden');
+                if (!btn.contains(e.target) && !panel.contains(e.target)) {
+                  panel.classList.add('hidden');
+                  btn.style.marginLeft = '';
+                }
               });
             });
           </script>
