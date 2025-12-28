@@ -211,8 +211,10 @@
     } async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
-      const title = document.getElementById("shortcutTitle").value;
+      const title = document.getElementById("shortcutTitle").value.trim();
       let url = document.getElementById("shortcutUrl").value.trim();
+
+      console.debug('saveShortcut start', { position, title, url });
 
       if (!url.match(/^https?:\/\//i)) {
         url = "https://" + url;
@@ -220,11 +222,48 @@
 
       try {
         const faviconUrl = await getFaviconUrl(url);
+
+        // Determine image choice
+        const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
+        console.debug('selected imageSource:', imageSource);
+        let imageUrl = null;
+        if (imageSource === 'url') {
+          const imgVal = document.getElementById('shortcutImageUrl')?.value.trim() || '';
+          if (imgVal) {
+            // check image loads
+            const ok = await testImageUrl(imgVal).catch(() => false);
+            if (!ok) {
+              showNotification('Provided image URL failed to load. Please check the URL.');
+              console.warn('Image URL failed to load:', imgVal);
+              return; // abort save
+            }
+            imageUrl = imgVal;
+          }
+        } else if (imageSource === 'upload') {
+          const fileInput = document.getElementById('shortcutImageFile');
+          // If file was read earlier, it's stored on dataset
+          const dataUrl = fileInput?.dataset?.dataUrl;
+          console.debug('fileInput.dataset.dataUrl:', dataUrl);
+          if (dataUrl) {
+            imageUrl = dataUrl;
+          } else if (fileInput && fileInput.files && fileInput.files[0]) {
+            // fallback to read now
+            imageUrl = await readFileAsDataURL(fileInput.files[0]);
+            console.debug('read file to dataUrl length', imageUrl?.length || 0);
+          }
+        }
+
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const shortcuts = JSON.parse(
           localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
         );
-        shortcuts[position] = { title, url, faviconUrl };
+
+        const newEntry = { title, url, faviconUrl };
+        if (imageUrl) newEntry.imageUrl = imageUrl;
+
+        console.debug('saving shortcut entry', { position, newEntry });
+
+        shortcuts[position] = newEntry;
         localStorage.setItem(
           `shortcuts_${activeTab}`,
           JSON.stringify(shortcuts)
@@ -252,15 +291,47 @@
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
         const shortcutData = shortcuts[position];
+        console.debug('openConfigModal edit position:', position, 'shortcutData:', shortcutData);
 
         if (shortcutData) {
           titleInput.value = shortcutData.title || "";
           urlInput.value = shortcutData.url || "";
+
+          // Prefill image selection
+          const imageUrlInput = document.getElementById('shortcutImageUrl');
+          const fileInput = document.getElementById('shortcutImageFile');
+          const previewImg = document.getElementById('shortcutImagePreviewImg');
+
+          if (shortcutData.imageUrl) {
+            // If stored as dataURL or URL, use image option
+            document.querySelector('input[name="imageSource"][value="url"]').checked = true;
+            imageUrlInput.value = shortcutData.imageUrl;
+            previewImg.src = shortcutData.imageUrl;
+            previewImg.classList.remove('hidden');
+            document.getElementById('imageUrlContainer').classList.remove('hidden');
+            document.getElementById('imageUploadContainer').classList.add('hidden');
+          } else {
+            // default to favicon
+            document.querySelector('input[name="imageSource"][value="favicon"]').checked = true;
+            imageUrlInput.value = '';
+            previewImg.src = '';
+            previewImg.classList.add('hidden');
+            document.getElementById('imageUrlContainer').classList.add('hidden');
+            document.getElementById('imageUploadContainer').classList.add('hidden');
+          }
+
           // Enable save button if both fields have values
           document.getElementById("saveButton").disabled = !shortcutData.title || !shortcutData.url;
         } else {
           titleInput.value = "";
           urlInput.value = "";
+          document.getElementById('shortcutImageUrl').value = '';
+          document.getElementById('shortcutImageFile').value = '';
+          delete document.getElementById('shortcutImageFile').dataset.dataUrl;
+          document.getElementById('shortcutImagePreviewImg').classList.add('hidden');
+          document.querySelector('input[name="imageSource"][value="favicon"]').checked = true;
+          document.getElementById('imageUrlContainer').classList.add('hidden');
+          document.getElementById('imageUploadContainer').classList.add('hidden');
           document.getElementById("saveButton").disabled = true;
         }
       } else {
@@ -274,6 +345,8 @@
       }
 
       modal.classList.remove("hidden");
+      // Ensure image inputs visibility matches current selection
+      toggleImageInputs();
 
       // Improved focus method with multiple attempts
       // First immediate attempt
@@ -297,6 +370,17 @@
 
     function closeConfigModal() {
       document.getElementById("configModal").classList.add("hidden");
+      // Clear temporary image data and preview
+      const fileInput = document.getElementById('shortcutImageFile');
+      if (fileInput) {
+        fileInput.value = '';
+        delete fileInput.dataset.dataUrl;
+      }
+      const previewImg = document.getElementById('shortcutImagePreviewImg');
+      if (previewImg) {
+        previewImg.src = '';
+        previewImg.classList.add('hidden');
+      }
     }
 
     function editShortcut(position) {
@@ -470,9 +554,10 @@
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
           iconContainer.removeAttribute("data-empty");
+          const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
-              <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+              <img src="${imgSrc}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -953,8 +1038,10 @@
           const iconElement = shortcutElement.querySelector('.shortcut-icon');
           const titleElement = shortcutElement.querySelector('.shortcut-title');
 
-          if (shortcutData.iconURL) {
-            iconElement.innerHTML = `<img src="${shortcutData.iconURL}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded">`;
+          const src = shortcutData.imageUrl || shortcutData.iconURL || shortcutData.faviconUrl || null;
+          console.debug('reloadShortcuts applying src for position', position, src ? src.substring(0,100) : null);
+          if (src) {
+            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
             iconElement.setAttribute('data-empty', 'false');
           }
 
@@ -983,9 +1070,10 @@
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
           iconContainer.removeAttribute("data-empty");
+          const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
-              <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+              <img src="${imgSrc}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -1189,7 +1277,120 @@
       const isTitleValid = titleValue.length > 0;
       const isUrlValid = urlValue.length > 0;
 
-      saveButton.disabled = !isTitleValid || !isUrlValid;
+      // Image validation when user explicitly selects it
+      const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
+      let isImageValid = true;
+      if (imageSource === 'url') {
+        const imgUrl = document.getElementById('shortcutImageUrl')?.value.trim() || '';
+        isImageValid = imgUrl.length > 0;
+      } else if (imageSource === 'upload') {
+        const fileInput = document.getElementById('shortcutImageFile');
+        isImageValid = fileInput && fileInput.files && fileInput.files.length > 0;
+      }
+
+      saveButton.disabled = !isTitleValid || !isUrlValid || !isImageValid;
+    }
+
+    // Helpers for image inputs and preview
+    function toggleImageInputs() {
+      const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
+      document.getElementById('imageUrlContainer').classList.toggle('hidden', imageSource !== 'url');
+      document.getElementById('imageUploadContainer').classList.toggle('hidden', imageSource !== 'upload');
+      updateImagePreview();
+      validateForm();
+    }
+
+    function handleImageFileSelect(e) {
+      const file = e.target.files && e.target.files[0];
+      console.debug('handleImageFileSelect file:', file);
+      if (!file) return;
+      // Simple file size guard (500 KB)
+      const maxBytes = 500 * 1024;
+      if (file.size > maxBytes) {
+        showNotification('File too large. Please use an image smaller than 500 KB.');
+        e.target.value = '';
+        return;
+      }
+      readFileAsDataURL(file).then((dataUrl) => {
+        console.debug('file read as dataURL length:', dataUrl?.length || 0);
+        const img = document.getElementById('shortcutImagePreviewImg');
+        img.src = dataUrl;
+        img.classList.remove('hidden');
+        // store temporarily on the input element so saveShortcut can read it
+        document.getElementById('shortcutImageFile').dataset.dataUrl = dataUrl;
+        validateForm();
+      }).catch(err => console.error('Image file read error:', err));
+    }
+
+    function updateImagePreview() {
+      const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
+      const previewImg = document.getElementById('shortcutImagePreviewImg');
+      console.debug('updateImagePreview imageSource:', imageSource);
+      if (imageSource === 'url') {
+        const url = document.getElementById('shortcutImageUrl')?.value.trim() || '';
+        console.debug('preview URL:', url);
+        if (url) {
+          previewImg.src = url;
+          previewImg.classList.remove('hidden');
+        } else {
+          previewImg.src = '';
+          previewImg.classList.add('hidden');
+        }
+      } else if (imageSource === 'upload') {
+        const fileInput = document.getElementById('shortcutImageFile');
+        const dataUrl = fileInput?.dataset?.dataUrl || '';
+        console.debug('preview dataUrl present:', !!dataUrl);
+        if (dataUrl) {
+          previewImg.src = dataUrl;
+          previewImg.classList.remove('hidden');
+        } else {
+          previewImg.src = '';
+          previewImg.classList.add('hidden');
+        }
+      } else {
+        // favicon selected
+        previewImg.src = '';
+        previewImg.classList.add('hidden');
+      }
+    }
+
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Validate whether an image URL actually loads
+    function testImageUrl(url, timeout = 5000) {
+      return new Promise((resolve) => {
+        try {
+          const img = new Image();
+          let timedOut = false;
+          const t = setTimeout(() => {
+            timedOut = true;
+            img.src = '';
+            resolve(false);
+          }, timeout);
+          img.onload = () => {
+            if (!timedOut) {
+              clearTimeout(t);
+              resolve(true);
+            }
+          };
+          img.onerror = () => {
+            if (!timedOut) {
+              clearTimeout(t);
+              resolve(false);
+            }
+          };
+          img.src = url;
+        } catch (e) {
+          resolve(false);
+        }
+      });
     }
 
     // ==================== SETTINGS MENU FUNCTIONALITY ====================
@@ -1723,6 +1924,30 @@
                 Please enter a valid URL (e.g. google.com)
               </p>
             </div>
+
+            <!-- Image / Icon selection -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Icon or image</label>
+              <div class="flex items-center gap-4">
+                <label class="text-sm"><input type="radio" name="imageSource" value="favicon" checked onchange="toggleImageInputs()"> Use site icon</label>
+                <label class="text-sm"><input type="radio" name="imageSource" value="url" onchange="toggleImageInputs()"> Image URL</label>
+                <label class="text-sm"><input type="radio" name="imageSource" value="upload" onchange="toggleImageInputs()"> Upload file</label>
+              </div>
+
+              <div id="imageUrlContainer" class="mt-2 hidden">
+                <input type="url" id="shortcutImageUrl" oninput="validateForm(); updateImagePreview()" placeholder="https://example.com/my-icon.png"
+                  class="mt-1 w-full rounded-lg px-3 py-2 text-gray-900 bg-gray-50 placeholder-gray-400" />
+              </div>
+
+              <div id="imageUploadContainer" class="mt-2 hidden">
+                <input type="file" id="shortcutImageFile" accept="image/*" onchange="handleImageFileSelect(event)" />
+              </div>
+
+              <div id="shortcutImagePreview" class="mt-3">
+                <img id="shortcutImagePreviewImg" src="" alt="Preview" class="hidden w-16 h-16 object-cover rounded-md border" />
+              </div>
+            </div>
+
             <div class="flex justify-end gap-2 mt-6">
               <button onclick="closeConfigModal()" class="px-4 py-2 rounded-lg bg-gray-200 text-gray-700">
                 Cancel
