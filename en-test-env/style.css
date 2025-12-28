@@ -960,11 +960,20 @@ select option[value="i"] {
     flex-direction: column;
     gap: 8px;
 }
+/* Smooth transitions for .bg-bg to avoid abrupt jumps */
+.bg-bg {
+    transition: background-color 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                padding 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 250ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-radius 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, background-color, padding, border-color, border-radius;
+}
 .bg-bg:hover {
     background-color: rgb(255 255 255 / 0.2);
     padding-inline: 10px;
     padding-block: 5px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
+    transform: scale(1.06);
 }
