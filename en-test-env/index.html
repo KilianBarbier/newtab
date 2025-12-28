@@ -1209,29 +1209,42 @@
 </head>
 
 <body class="min-h-screen font-sf">
-  <!-- Suppression du bouton hamburger pour le remplacer par une barre de navigation mobile en bas -->
- // Google Workspace Tools
-    <div id="googleWorkspaceTools" class="absolute top-0 right-16 flex items-center space-x-4">
-      <a href="https://drive.google.com" target="_blank" class="workspace-tool">
-        <img src="../media/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
-      </a>
-      <a href="https://docs.google.com" target="_blank" class="workspace-tool">
-        <img src="../media/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
-      </a>
-      <a href="https://sheets.google.com" target="_blank" class="workspace-tool">
-        <img src="../media/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
-      </a>
-    </div>
+  <div id="googleWorkspaceTools" class="absolute top-0 right-16 flex items-center space-x-4">
+    <a href="https://drive.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
+    </a>
+    <a href="https://mail.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-gmail-icon.png" alt="Gmail" class="h-8 w-8">
+    </a>
+    <a href="maps.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-maps-icon.png" alt="Google Maps" class="h-8 w-8">
+    </a>
+    <a href="https://docs.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
+    </a>
+    <a href="https://sheets.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
+    </a>
+    <a href="https://slides.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-slides-icon.png" alt="Google Slides" class="h-8 w-8">
+    </a>
+    <a href="https://calendar.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-calendar-icon.png" alt="Google Calendar" class="h-8 w-8">
+    </a>
+    <a href="https://meet.google.com" target="_blank" class="workspace-tool">
+      <img src="google-icons/google-meet-icon.png" alt="Google Meet" class="h-8 w-8">
+  </a>
+  </div>
 
-    <style>
-      .workspace-tool {
-        transition: transform 0.2s;
-      }
+  <style>
+    .workspace-tool {
+      transition: transform 0.2s;
+    }
 
-      .workspace-tool:hover {
-        transform: scale(1.1);
-      }
-    </style>
+    .workspace-tool:hover {
+      transform: scale(1.1);
+    }
+  </style>
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
@@ -1832,13 +1845,13 @@
         <!-- Google Workspace Tools -->
         <div id="googleWorkspaceTools" class="absolute top-0 right-16 flex items-center space-x-4">
           <a href="https://drive.google.com" target="_blank" class="workspace-tool">
-            <img src="../media/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
+            <img src="google-icons/google-drive-icon.png" alt="Google Drive" class="h-8 w-8">
           </a>
           <a href="https://docs.google.com" target="_blank" class="workspace-tool">
-            <img src="../media/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
+            <img src="google-icons/google-docs-icon.png" alt="Google Docs" class="h-8 w-8">
           </a>
           <a href="https://sheets.google.com" target="_blank" class="workspace-tool">
-            <img src="../media/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
+            <img src="google-icons/google-sheets-icon.png" alt="Google Sheets" class="h-8 w-8">
           </a>
         </div>
 
@@ -3037,6 +3050,7 @@
     let currentWidgetIndex = 0;
     const widgets = [
       {
+
         id: 'weather',
         name: 'Weather',
         icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
