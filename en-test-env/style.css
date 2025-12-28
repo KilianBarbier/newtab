@@ -20,27 +20,25 @@
   background: rgba(156, 163, 175, 0.7);
 }
 
-/* Smooth transitions: apply only to interactive elements to avoid layout flashing */
-button, a, input, select, textarea, .group, .shortcut-container a, .shortcut-icon, .selected-option, .search-option, #contextMenu, .options-container {
-    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Enhanced focus styles */
 input:focus {
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   box-shadow: 
-        0 8px 32px rgba(31, 38, 135, 0.2),
-        0 0 0 3px rgba(255, 255, 255, 0.08) !important;
+    0 8px 32px rgba(31, 38, 135, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 0 3px rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Remove the custom-gradient class since we're using random gradients now */
 body {
   background: linear-gradient(to bottom right, #3b82f6, #8b5cf6);
   background-size: cover !important;
-    /* avoid fixed background to reduce rendering seams with backdrop-filter */
-    background-attachment: scroll;
+  background-attachment: fixed;
   color: white;
   transition: none;
   animation: none;
@@ -48,12 +46,12 @@ body {
 
 /* Remettre l'ancien style pour .backdrop-blur-xl */
 .backdrop-blur-xl {
-    background: rgba(255, 255, 255, 0.12) !important;
-    backdrop-filter: blur(22px) !important;
-    /* remove border to avoid hairline seam on rounded corners */
-    border: none !important;
-    background-clip: padding-box !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.16) !important;
+  backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Darker backdrop for dark mode */
@@ -82,7 +80,8 @@ input {
   backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   box-shadow: 
-        0 8px 32px rgba(31, 38, 135, 0.15);
+    0 8px 32px rgba(31, 38, 135, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
     color: white !important;
 }
 
@@ -119,18 +118,18 @@ input::placeholder {
 
 /* Boosted card effects */
 .group {
-    transform: none;
-    transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s ease;
-    will-change: transform, box-shadow;
-    backface-visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  transform: perspective(1000px) rotateX(0deg);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .group:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+  transform: perspective(1000px) rotateX(10deg) translateY(-5px);
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
 }
 
 .group > div {
@@ -156,7 +155,8 @@ button {
 button:hover {
   transform: translateY(-2px);
   box-shadow: 
-        0 10px 20px rgba(0, 0, 0, 0.2);
+    0 10px 20px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 button:active {
@@ -453,15 +453,15 @@ select option[value="i"] {
 /* Update shortcut icon styles */
 .shortcut-icon[data-empty="true"] {
     position: relative;
-    width: 48px;
-    height: 48px;
+    width: 72px;          /* Increased to 72px */
+    height: 72px;         /* Increased to 72px */
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    transition: transform 0.25s ease, background-color 0.2s ease;
-    margin: 0 auto 12px;
+    border-radius: 18px;  /* Adjusted for larger size */
+    transition: all 0.3s ease;
+    margin: 0 auto 16px;  /* Reduced from 20px to 16px */
 }
 
 /* Make the plus icon bigger */
@@ -479,22 +479,28 @@ select option[value="i"] {
     transform: translate(-50%, -50%);
 }
 
-/* Favicon image size for configured shortcuts */
+/* Update favicon image size for configured shortcuts */
 .shortcut-icon img {
-    width: 36px !important;
+    width: 36px !important;  
     height: 36px !important;
-    transition: transform 0.25s ease;
+    transform: scale(1.3); /* Added scale for saved shortcuts */
 }
 
 /* Hover effect only for saved shortcuts */
 .shortcut-icon:not([data-empty="true"]) img:hover {
-    transform: scale(1.15);
+    transform: scale(1.4);
 }
 
 /* Keep empty shortcut styles unchanged */
 .shortcut-icon[data-empty="true"]:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
+    transform: scale(1.2);
+}
+
+/* Update favicon image size for configured shortcuts */
+.shortcut-icon img {
+    width: 36px !important;  /* Increased from 32px */
+    height: 36px !important; /* Increased from 32px */
 }
 
 /* Adjust title spacing */
@@ -551,26 +557,6 @@ select option[value="i"] {
     align-items: center;
     justify-content: center;
     margin: 0 auto 12px;
-}
-
-/* Ensure container doesn't clip shadows/tooltips */
-.shortcut-container, .shortcut-container a {
-    overflow: visible !important;
-}
-
-/* Make favicons blend better with rounded cards */
-.shortcut-icon img {
-    background: transparent;
-    border-radius: 8px;
-    display: block;
-    object-fit: contain;
-}
-
-/* Ensure card links don't render an extra border that creates a hairline with backdrop-filter */
-.shortcut-container a.backdrop-blur-xl,
-.shortcut-container a {
-    border: none !important;
-    background-clip: padding-box !important;
 }
 
 /* Animations pour le chargement initial */
