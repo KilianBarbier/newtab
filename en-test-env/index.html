@@ -1852,7 +1852,15 @@
         </div>
 
         <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 20px;">
-          <button id="gSuiteToggle" onhover="document.getElementById('googleWorkspaceTools').classList.remove('hidden');" onhoverout="document.getElementById('googleWorkspaceTools').classList.add('hidden');"
+          <script>
+            document.getElementById('gSuiteToggle').addEventListener('mouseover', function() {
+              document.getElementById('googleWorkspaceTools').classList.remove('hidden');
+            });
+            document.getElementById('gSuiteToggle').addEventListener('mouseout', function() {
+              document.getElementById('googleWorkspaceTools').classList.add('hidden');
+            });
+          </script>
+          <button id="gSuiteToggle" 
             class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg">G Suite</button>
           <div id="googleWorkspaceTools" class="hidden mt-2 bg-white/20 shadow-lg rounded-lg p-4 space-y-2">
             <a href="https://drive.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
@@ -1863,7 +1871,7 @@
               <img src="google-icons/gmail.svg" alt="Gmail" class="h-8 w-8">
               <span>Gmail</span>
             </a>
-            <a href="maps.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
+            <a href="https://maps.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
               <img src="google-icons/google-maps.svg" alt="Google Maps" class="h-8 w-8">
               <span>Google Maps</span>
             </a>
