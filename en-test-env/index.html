@@ -1986,6 +1986,27 @@
                   panel.classList.add('hidden');
                 }
               });
+
+              // Increment counter when a G Suite tool is used and record the click
+              try {
+                panel.querySelectorAll('.workspace-tool').forEach((a) => {
+                  a.addEventListener('click', (e) => {
+                    // Increment and update display
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    // Record the action similar to performSearchRedirect
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                  });
+                });
+              } catch (e) {
+                // If panel or functions are not available, silently ignore
+                console.warn('Could not attach G Suite tool click handlers:', e);
+              }
             });
           </script>
   </div>
