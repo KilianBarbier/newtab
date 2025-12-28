@@ -1198,7 +1198,6 @@
       }
     }
 
-    // Close settings menu when clicking outside
     document.addEventListener('click', (e) => {
       const settingsMenu = document.getElementById('settingsMenu');
       const settingsButton = e.target.closest('[onclick*="toggleSettingsMenu"]');
@@ -1208,9 +1207,8 @@
       }
     });
 
-    // ...existing code...
   </script>
-  <script src="aurora-animation.js"></script>
+
 </head>
 
 <body class="min-h-screen font-sf">
@@ -1896,11 +1894,7 @@
   <!-- Input file caché pour l'import -->
   <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
 
-  <div class="wrapper">
-    <canvas id="aurora"></canvas>
-  </div>
-  </main>
-  </div>
+
 
   <!-- Navigation bar mobile en bas de l'écran -->
   <nav id="mobileNavBar" class="fixed bottom-0 left-0 right-0 bg-black/60 backdrop-blur-xl p-2 z-50 lg:hidden">
@@ -3396,7 +3390,7 @@
     }
 
   </script>
-  <script src="aurora-svelte.js"></script>
+
 </body>
 
 </html>
