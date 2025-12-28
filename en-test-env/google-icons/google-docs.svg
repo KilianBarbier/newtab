@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Calque_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800">
+  <!-- Generator: Adobe Illustrator 29.8.3, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #a1c2fa;
+      }
+
+      .st1 {
+        mask: url(#mask-5);
+      }
+
+      .st2 {
+        mask: url(#mask-1);
+      }
+
+      .st3 {
+        mask: url(#mask-6);
+      }
+
+      .st4, .st5, .st6 {
+        fill: #fff;
+      }
+
+      .st7 {
+        mask: url(#mask);
+      }
+
+      .st5 {
+        fill-rule: evenodd;
+      }
+
+      .st8 {
+        fill: #4285f4;
+      }
+
+      .st6, .st9 {
+        fill-opacity: .2;
+      }
+
+      .st10 {
+        fill: url(#Dégradé_sans_nom_2);
+      }
+
+      .st11 {
+        mask: url(#mask-21);
+      }
+
+      .st9, .st12 {
+        fill: #1a237e;
+      }
+
+      .st13 {
+        fill: #f1f1f1;
+      }
+
+      .st14 {
+        fill: url(#Dégradé_sans_nom_3);
+      }
+
+      .st12 {
+        fill-opacity: .1;
+      }
+
+      .st15 {
+        mask: url(#mask-3);
+      }
+
+      .st16 {
+        mask: url(#mask-41);
+      }
+    </style>
+    <mask id="mask" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-2">
+        <path id="path-1" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-1" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-4">
+        <path id="path-3" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <linearGradient id="Dégradé_sans_nom_3" data-name="Dégradé sans nom 3" x1="-1001.3" y1="1817.5" x2="-1001.3" y2="1809.8" gradientTransform="translate(16885.1 30145.7) scale(16.3 -16.4)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a237e" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#1a237e" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mask-21" data-name="mask-2" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-7">
+        <path id="path-6" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-3" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-9">
+        <path id="path-8" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-41" data-name="mask-4" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-11">
+        <path id="path-10" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-5" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-13">
+        <path id="path-12" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-6" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-15">
+        <path id="path-14" class="st5" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <radialGradient id="Dégradé_sans_nom_2" data-name="Dégradé sans nom 2" cx="-1071" cy="1874.3" fx="-1071" fy="1874.3" r="13.5" gradientTransform="translate(50554 88248.5) scale(47 -47)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g id="SVGRepo_iconCarrier">
+    <path class="st4" d="M50,298.9c0-87.1,0-130.7,17-164,14.9-29.3,38.7-53.1,68-68,33.3-17,76.8-17,164-17h202.2c87.1,0,130.7,0,164,17,29.3,14.9,53.1,38.7,68,68,17,33.3,17,76.8,17,164v202.2c0,87.1,0,130.7-17,164-14.9,29.3-38.7,53.1-68,68-33.3,17-76.8,17-164,17h-202.2c-87.1,0-130.7,0-164-17-29.3-14.9-53.1-38.7-68-68-17-33.3-17-76.8-17-164v-202.2h0Z"/>
+  </g>
+  <g id="Page-1">
+    <g id="Consumer-Apps-Docs-Large-VD-R8">
+      <g id="Hero">
+        <g id="Personal">
+          <g id="Docs-icon">
+            <g id="Group">
+              <g id="Clipped">
+                <g class="st7">
+                  <path id="Path" class="st8" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-86.1-61.9-61.5-86.6Z"/>
+                </g>
+              </g>
+              <g id="Clipped1" data-name="Clipped">
+                <g class="st2">
+                  <polygon id="Path1" data-name="Path" class="st14" points="460 277.3 596.8 414.9 596.8 288.2 460 277.3"/>
+                </g>
+              </g>
+              <g id="Clipped2" data-name="Clipped">
+                <g class="st11">
+                  <path id="Shape" class="st13" d="M301.6,535.6h196.8v-24.7h-196.8v24.7ZM301.6,585.1h147.6v-24.7h-147.6v24.7ZM301.6,411.9v24.7h196.8v-24.7h-196.8ZM301.6,486.1h196.8v-24.7h-196.8v24.7Z"/>
+                </g>
+              </g>
+              <g id="Clipped3" data-name="Clipped">
+                <g class="st15">
+                  <g id="Group1" data-name="Group">
+                    <path id="Path2" data-name="Path" class="st0" d="M449.2,139.7v111.4c0,20.5,16.5,37.1,36.9,37.1h110.7l-147.6-148.5Z"/>
+                  </g>
+                </g>
+              </g>
+              <g id="Clipped4" data-name="Clipped">
+                <g class="st16">
+                  <path id="Path3" data-name="Path" class="st6" d="M240.1,139.7c-20.3,0-36.9,16.7-36.9,37.1v3.1c0-20.4,16.6-37.1,36.9-37.1h209.1v-3.1h-209.1Z"/>
+                </g>
+              </g>
+              <g id="Clipped5" data-name="Clipped">
+                <g class="st1">
+                  <path id="Path4" data-name="Path" class="st9" d="M559.9,681H240.1c-20.3,0-36.9-16.7-36.9-37.1v3.1c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-3.1c0,20.4-16.6,37.1-36.9,37.1Z"/>
+                </g>
+              </g>
+              <g id="Clipped6" data-name="Clipped">
+                <g class="st3">
+                  <path id="Path5" data-name="Path" class="st12" d="M486.1,288.2c-20.4,0-36.9-16.6-36.9-37.1v3.1c0,20.5,16.5,37.1,36.9,37.1h110.7v-3.1h-110.7Z"/>
+                </g>
+              </g>
+            </g>
+            <path id="Path6" data-name="Path" class="st10" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
