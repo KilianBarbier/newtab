@@ -922,7 +922,7 @@
       // If a valid command was detected, use it
       if (detectedCommand) {
         document.getElementById("autocorrectionModal").querySelector("p.mt-2").textContent =
-          `The search will be performed on ${validSearchCommands[detectedCommand]}`;
+          `La recherche sera effectuée sur ${validSearchCommands[detectedCommand]}`;
         return `/${detectedCommand} ${searchTerms}`.trim();
       }
 
