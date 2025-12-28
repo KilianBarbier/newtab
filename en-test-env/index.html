@@ -2003,6 +2003,42 @@
                     }
                   });
                 });
+
+                // Also support middle-click (wheel click) on G Suite tools
+                panel.querySelectorAll('.workspace-tool').forEach((a) => {
+                  a.addEventListener('auxclick', (e) => {
+                    if (e.button !== 1) return; // only middle click
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: a.href || a.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                    // allow default behavior (open in new tab)
+                  });
+                });
+
+                // Global delegation: middle-click on any shortcut (and workspace-tool) increments counter
+                document.addEventListener('auxclick', (e) => {
+                  if (e.button !== 1) return;
+                  const anchor = e.target.closest('a[data-position], a.workspace-tool');
+                  if (!anchor) return;
+                  try {
+                    const updated = typeof incrementSearchCounterSeconds === 'function' ? incrementSearchCounterSeconds(10) : null;
+                    try {
+                      const searches = JSON.parse(localStorage.getItem('searches') || '[]');
+                      searches.push({ query: anchor.href || anchor.getAttribute('href'), time: Date.now(), counterSeconds: updated });
+                      localStorage.setItem('searches', JSON.stringify(searches));
+                    } catch (err) {
+                      localStorage.setItem('searches', JSON.stringify([{ query: anchor.href || anchor.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
+                    }
+                  } catch (err) {
+                    console.warn('Error handling middle-click for shortcuts:', err);
+                  }
+                });
+
               } catch (e) {
                 // If panel or functions are not available, silently ignore
                 console.warn('Could not attach G Suite tool click handlers:', e);
