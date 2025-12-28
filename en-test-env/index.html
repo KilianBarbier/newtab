@@ -1851,53 +1851,10 @@
           </div>
         </div>
 
-        <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 20px;">
-          <script>
-            document.addEventListener('DOMContentLoaded', function () {
-              const btn = document.getElementById('gSuiteToggle');
-              const panel = document.getElementById('googleWorkspaceTools');
-              if (!btn || !panel) return;
-
-              let hideTimeout;
-              const show = () => {
-                clearTimeout(hideTimeout);
-                panel.classList.remove('hidden');
-                btn.style.marginLeft = '54%';
-              };
-              const hide = () => {
-                clearTimeout(hideTimeout);
-                hideTimeout = setTimeout(() => {
-                  panel.classList.add('hidden');
-                  btn.style.marginLeft = '';
-                }, 150);
-              };
-
-              // Hover / mouseenter support (prevents flicker when moving between btn and panel)
-              btn.addEventListener('mouseenter', show);
-              panel.addEventListener('mouseenter', show);
-              btn.addEventListener('mouseleave', hide);
-              panel.addEventListener('mouseleave', hide);
-
-              // Keep click toggling for accessibility / touch
-              btn.addEventListener('click', (e) => {
-                const isVisible = !panel.classList.toggle('hidden') && !panel.classList.contains('hidden');
-                // Toggle returned value is not reliable cross-browser for our intent; use computed presence instead
-                const visible = !panel.classList.contains('hidden');
-                if (visible) btn.style.marginLeft = '54%'; else btn.style.marginLeft = '';
-                e.stopPropagation();
-              });
-
-              // Close when clicking outside
-              document.addEventListener('click', (e) => {
-                if (!btn.contains(e.target) && !panel.contains(e.target)) {
-                  panel.classList.add('hidden');
-                  btn.style.marginLeft = '';
-                }
-              });
-            });
-          </script>
           <button id="gSuiteToggle" 
-            class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg">G Suite</button>
+            class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg" style="position:fixed; right:80px; top:20px;">G Suite</button>
+
+        <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 20px;">
           <div id="googleWorkspaceTools" class="hidden mt-2 bg-white/20 shadow-lg rounded-lg p-4 space-y-2">
             <a href="https://drive.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
               <img src="google-icons/google-drive.svg" alt="Google Drive" class="h-8 w-8">
@@ -1932,7 +1889,51 @@
               <span>Meet</span>
             </a>
           </div>
-      </div>
+        </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const btn = document.getElementById('gSuiteToggle');
+              const panel = document.getElementById('googleWorkspaceTools');
+              if (!btn || !panel) return;
+
+              let hideTimeout;
+              const show = () => {
+                clearTimeout(hideTimeout);
+                panel.classList.remove('hidden');
+                btn.style.marginLeft = '54%';
+              };
+              const hide = () => {
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(() => {
+                  panel.classList.add('hidden');
+                  btn.style.marginLeft = '';
+                }, 150);
+              };
+
+              // Hover / mouseenter support (prevents flicker when moving between btn and panel)
+              btn.addEventListener('mouseenter', show);
+              panel.addEventListener('mouseenter', show);
+              btn.addEventListener('mouseleave', hide);
+              panel.addEventListener('mouseleave', hide);
+
+              // Keep click toggling for accessibility / touch
+              btn.addEventListener('click', (e) => {
+                const visible = !panel.classList.contains('hidden');
+                if (visible) btn.style.marginLeft = '54%'; else btn.style.marginLeft = '';
+                panel.classList.toggle('hidden');
+                e.stopPropagation();
+              });
+
+              // Close when clicking outside
+              document.addEventListener('click', (e) => {
+                if (!btn.contains(e.target) && !panel.contains(e.target)) {
+                  panel.classList.add('hidden');
+                  btn.style.marginLeft = '';
+                }
+              });
+            });
+          </script>
   </div>
 
   <!-- Input file caché pour l'import -->
