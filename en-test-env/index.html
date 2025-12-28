@@ -214,6 +214,8 @@
       const title = document.getElementById("shortcutTitle").value.trim();
       let url = document.getElementById("shortcutUrl").value.trim();
 
+      console.debug('saveShortcut start', { position, title, url });
+
       if (!url.match(/^https?:\/\//i)) {
         url = "https://" + url;
       }
@@ -223,19 +225,31 @@
 
         // Determine image choice
         const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
+        console.debug('selected imageSource:', imageSource);
         let imageUrl = null;
         if (imageSource === 'url') {
           const imgVal = document.getElementById('shortcutImageUrl')?.value.trim() || '';
-          if (imgVal) imageUrl = imgVal;
+          if (imgVal) {
+            // check image loads
+            const ok = await testImageUrl(imgVal).catch(() => false);
+            if (!ok) {
+              showNotification('Provided image URL failed to load. Please check the URL.');
+              console.warn('Image URL failed to load:', imgVal);
+              return; // abort save
+            }
+            imageUrl = imgVal;
+          }
         } else if (imageSource === 'upload') {
           const fileInput = document.getElementById('shortcutImageFile');
           // If file was read earlier, it's stored on dataset
           const dataUrl = fileInput?.dataset?.dataUrl;
+          console.debug('fileInput.dataset.dataUrl:', dataUrl);
           if (dataUrl) {
             imageUrl = dataUrl;
           } else if (fileInput && fileInput.files && fileInput.files[0]) {
             // fallback to read now
             imageUrl = await readFileAsDataURL(fileInput.files[0]);
+            console.debug('read file to dataUrl length', imageUrl?.length || 0);
           }
         }
 
@@ -246,6 +260,8 @@
 
         const newEntry = { title, url, faviconUrl };
         if (imageUrl) newEntry.imageUrl = imageUrl;
+
+        console.debug('saving shortcut entry', { position, newEntry });
 
         shortcuts[position] = newEntry;
         localStorage.setItem(
@@ -275,6 +291,7 @@
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
         const shortcutData = shortcuts[position];
+        console.debug('openConfigModal edit position:', position, 'shortcutData:', shortcutData);
 
         if (shortcutData) {
           titleInput.value = shortcutData.title || "";
@@ -1022,6 +1039,7 @@
           const titleElement = shortcutElement.querySelector('.shortcut-title');
 
           const src = shortcutData.imageUrl || shortcutData.iconURL || shortcutData.faviconUrl || null;
+          console.debug('reloadShortcuts applying src for position', position, src ? src.substring(0,100) : null);
           if (src) {
             iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
             iconElement.setAttribute('data-empty', 'false');
@@ -1052,9 +1070,10 @@
           shortcut.querySelector(".shortcut-title").textContent = data.title;
           const iconContainer = shortcut.querySelector(".shortcut-icon");
           iconContainer.removeAttribute("data-empty");
+          const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
-              <img src="${data.faviconUrl}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300" 
+              <img src="${imgSrc}" 
+                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -1283,8 +1302,17 @@
 
     function handleImageFileSelect(e) {
       const file = e.target.files && e.target.files[0];
+      console.debug('handleImageFileSelect file:', file);
       if (!file) return;
+      // Simple file size guard (500 KB)
+      const maxBytes = 500 * 1024;
+      if (file.size > maxBytes) {
+        showNotification('File too large. Please use an image smaller than 500 KB.');
+        e.target.value = '';
+        return;
+      }
       readFileAsDataURL(file).then((dataUrl) => {
+        console.debug('file read as dataURL length:', dataUrl?.length || 0);
         const img = document.getElementById('shortcutImagePreviewImg');
         img.src = dataUrl;
         img.classList.remove('hidden');
@@ -1297,8 +1325,10 @@
     function updateImagePreview() {
       const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
       const previewImg = document.getElementById('shortcutImagePreviewImg');
+      console.debug('updateImagePreview imageSource:', imageSource);
       if (imageSource === 'url') {
         const url = document.getElementById('shortcutImageUrl')?.value.trim() || '';
+        console.debug('preview URL:', url);
         if (url) {
           previewImg.src = url;
           previewImg.classList.remove('hidden');
@@ -1309,6 +1339,7 @@
       } else if (imageSource === 'upload') {
         const fileInput = document.getElementById('shortcutImageFile');
         const dataUrl = fileInput?.dataset?.dataUrl || '';
+        console.debug('preview dataUrl present:', !!dataUrl);
         if (dataUrl) {
           previewImg.src = dataUrl;
           previewImg.classList.remove('hidden');
@@ -1329,6 +1360,36 @@
         reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
         reader.readAsDataURL(file);
+      });
+    }
+
+    // Validate whether an image URL actually loads
+    function testImageUrl(url, timeout = 5000) {
+      return new Promise((resolve) => {
+        try {
+          const img = new Image();
+          let timedOut = false;
+          const t = setTimeout(() => {
+            timedOut = true;
+            img.src = '';
+            resolve(false);
+          }, timeout);
+          img.onload = () => {
+            if (!timedOut) {
+              clearTimeout(t);
+              resolve(true);
+            }
+          };
+          img.onerror = () => {
+            if (!timedOut) {
+              clearTimeout(t);
+              resolve(false);
+            }
+          };
+          img.src = url;
+        } catch (e) {
+          resolve(false);
+        }
       });
     }
 
