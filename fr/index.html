@@ -1159,11 +1159,11 @@
         document.body.removeChild(link);
 
         // Notification de succès
-        showNotification('Shortcuts and widget preferences exported successfully!');
+        showNotification('Raccourcis et préférences des widgets exportés avec succès !');
 
       } catch (error) {
         console.error('Export error:', error);
-        showNotification('Export failed. Please try again.');
+        showNotification('Échec de l\'exportation. Veuillez réessayer.');
       }
     }
 
@@ -1563,25 +1563,25 @@
                 <!-- City Input -->
                 <div id="weather-input" class="mb-4">
                   <div class="flex gap-2 hop-colonne">
-                    <input type="text" id="weather-city-input" placeholder="Enter city name..."
+                    <input type="text" id="weather-city-input" placeholder="Entrez le nom de la ville..."
                       class="flex-1 px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm"
                       onkeypress="if(event.key==='Enter') loadWeatherForCity()">
                     <button onclick="loadWeatherForCity()"
                       class="px-3 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm transition-colors">
-                      Get Weather
+                      Afficher la météo
                     </button>
                     <button onclick="saveCurrentCity()"
                       class="px-3 py-2 bg-green-500/60 hover:bg-green-500/80 rounded-lg text-white text-sm transition-colors"
-                      title="Save current city">
+                      title="Enregistrer la ville">
                       💾
                     </button>
                   </div>
-                  <div class="text-xs text-white/60 mt-1">Press Enter or click "Get Weather"</div>
+                  <div class="text-xs text-white/60 mt-1">Appuyez sur Entrée ou cliquez sur "Afficher la météo"</div>
 
-                  <!-- Saved Cities -->
+                  <!-- Villes enregistrées -->
                   <div id="saved-cities" class="mt-3" style="display: none;">
                     <div class="flex items-center justify-between mb-2">
-                      <div class="text-xs text-white/70">Saved Cities:</div>
+                      <div class="text-xs text-white/70">Villes enregistrées&nbsp;:</div>
                       <div class="text-xs text-white/50" id="cities-count"></div>
                     </div>
                     <div id="saved-cities-list" class="flex flex-wrap gap-1">
@@ -1592,13 +1592,13 @@
 
                 <div id="weather-loading" class="hidden flex items-center justify-center py-8">
                   <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                  <span class="ml-2">Loading weather...</span>
+                  <span class="ml-2">Chargement de la météo...</span>
                 </div>
 
                 <div id="weather-content" class="hidden">
                   <!-- Weather Header -->
                   <div class="text-center mb-6">
-                    <h2 class="text-2xl font-bold text-white mb-2">WEATHER IN</h2>
+                    <h2 class="text-2xl font-bold text-white mb-2">MÉTÉO À</h2>
                     <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider"
                       style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
                   </div>
@@ -1608,25 +1608,25 @@
                     <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]" style="font-size: 50px;">☀️</div>
                     <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
                     <div id="weather-location" class="text-lg text-white/90 mb-1">Paris, France</div>
-                    <div id="weather-description" class="text-md text-white/80 capitalize">Clear sky</div>
+                    <div id="weather-description" class="text-md text-white/80 capitalize">Ciel dégagé</div>
                   </div>
 
-                  <!-- Weather Forecast -->
+                  <!-- Prévisions météo -->
                   <div id="weather-forecast" class="space-y-3">
-                    <!-- Forecast items will be populated here -->
+                    <!-- Les prévisions seront affichées ici -->
                   </div>
 
                   <button onclick="showCityInput()"
                     class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white/80 text-xs transition-colors text-center">
-                    Change city
+                    Changer de ville
                   </button>
                 </div>
 
                 <div id="weather-error" class="hidden text-center py-4">
-                  <div class="text-red-300 mb-2">⚠️ Unable to load weather</div>
-                  <div class="text-xs text-white/60 mb-3">Please check the city name and try again</div>
+                  <div class="text-red-300 mb-2">⚠️ Impossible de charger la météo</div>
+                  <div class="text-xs text-white/60 mb-3">Vérifiez le nom de la ville et réessayez</div>
                   <button onclick="showCityInput()" class="text-sm text-blue-300 hover:text-blue-200 underline">
-                    Try again
+                    Réessayer
                   </button>
                 </div>
               </div>
@@ -1646,14 +1646,14 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    New note
+                    Nouvelle note
                   </button>
                 </div>
 
                 <!-- Add Note Form -->
                 <div id="add-note-form" class="hidden mb-4">
                   <div class="space-y-3">
-                    <textarea id="note-text" placeholder="Write your note..."
+                    <textarea id="note-text" placeholder="Écrivez votre note..."
                       class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-base resize-none font-patrick"
                       rows="3"></textarea>
                     <div class="flex gap-2">
@@ -1687,8 +1687,8 @@
                 <!-- Empty State -->
                 <div id="notes-empty" class="text-center py-8 text-white/60">
                   <div class="text-4xl mb-2">📝</div>
-                  <div class="text-sm">No notes yet</div>
-                  <div class="text-xs mt-1">Click "New note" to get started</div>
+                  <div class="text-sm">Aucune note pour l'instant</div>
+                  <div class="text-xs mt-1">Cliquez sur "Nouvelle note" pour commencer</div>
                 </div>
               </div>
             </div>
@@ -1714,7 +1714,7 @@
                 <div class="text-center mb-6">
                   <br>
                   <br>
-                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Focus on your work !</div>
+                  <div id="pomodoro-message" class="text-xl font-semibold text-white mb-6">Concentrez-vous sur votre travail !</div>
                 </div>
 
                 <!-- Large Timer Display -->
@@ -2682,8 +2682,8 @@
 
     function getWeatherIcon(weatherCode, isDay) {
       const iconMap = {
-        0: { day: '<img src="sunny.png" alt="Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Clear sky
-        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Mainly clear
+        0: { day: '<img src="sunny.png" alt="Ensoleillé" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Ciel dégagé
+        1: { day: '<img src="sunny.png" alt="Principalement ensoleillé" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Principalement dégagé
         2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" />' }, // Partly cloudy
         3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />' }, // Overcast
         45: { day: '🌫️', night: '🌫️' }, // Fog
@@ -2715,8 +2715,8 @@
     // Helper function to get icon for forecast cards (smaller size)
     function getWeatherIconSmall(weatherCode, isDay) {
       const iconMap = {
-        0: { day: '<img src="sunny.png" alt="Sunny" class="w-8 h-8" />', night: '🌙' }, // Clear sky
-        1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-8 h-8" />', night: '🌙' }, // Mainly clear
+        0: { day: '<img src="sunny.png" alt="Ensoleillé" class="w-8 h-8" />', night: '🌙' }, // Ciel dégagé
+        1: { day: '<img src="sunny.png" alt="Principalement ensoleillé" class="w-8 h-8" />', night: '🌙' }, // Principalement dégagé
         2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-8 h-8" />' }, // Partly cloudy
         3: { day: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />', night: '<img src="cloudy.png" alt="Overcast" class="w-8 h-8" />' }, // Overcast
         45: { day: '🌫️', night: '🌫️' }, // Fog
@@ -2747,33 +2747,33 @@
 
     function getWeatherDescription(weatherCode) {
       const descriptions = {
-        0: 'Clear sky',
-        1: 'Mainly clear',
-        2: 'Partly cloudy',
-        3: 'Overcast',
-        45: 'Fog',
-        48: 'Depositing rime fog',
-        51: 'Light drizzle',
-        53: 'Moderate drizzle',
-        55: 'Dense drizzle',
-        61: 'Slight rain',
-        63: 'Moderate rain',
-        65: 'Heavy rain',
-        71: 'Slight snow fall',
-        73: 'Moderate snow fall',
-        75: 'Heavy snow fall',
-        77: 'Snow grains',
-        80: 'Slight rain showers',
-        81: 'Moderate rain showers',
-        82: 'Violent rain showers',
-        85: 'Slight snow showers',
-        86: 'Heavy snow showers',
-        95: 'Thunderstorm',
-        96: 'Thunderstorm with slight hail',
-        99: 'Thunderstorm with heavy hail'
+        0: 'Ciel dégagé',
+        1: 'Principalement dégagé',
+        2: 'Partiellement nuageux',
+        3: 'Couvert',
+        45: 'Brouillard',
+        48: 'Brouillard givrant',
+        51: 'Bruine légère',
+        53: 'Bruine modérée',
+        55: 'Bruine dense',
+        61: 'Pluie faible',
+        63: 'Pluie modérée',
+        65: 'Pluie forte',
+        71: 'Faible chute de neige',
+        73: 'Chute de neige modérée',
+        75: 'Forte chute de neige',
+        77: 'Grains de neige',
+        80: 'Averses de pluie légères',
+        81: 'Averses de pluie modérées',
+        82: 'Averses de pluie violentes',
+        85: 'Averses de neige légères',
+        86: 'Averses de neige fortes',
+        95: 'Orage',
+        96: 'Orage avec grêle légère',
+        99: 'Orage avec grêle forte'
       };
 
-      return descriptions[weatherCode] || 'Unknown';
+      return descriptions[weatherCode] || 'Inconnu';
     }
 
     function updateWeatherForecast(daily) {
@@ -2786,7 +2786,7 @@
       // Create forecast items for the next few days (skip today, start from tomorrow)
       for (let i = 1; i < Math.min(daily.time.length, 3); i++) {
         const date = new Date(daily.time[i]);
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        const dayName = date.toLocaleDateString('fr-FR', { weekday: 'long' });
         const weatherCode = daily.weather_code[i];
         const maxTemp = Math.round(daily.temperature_2m_max[i]);
         const minTemp = Math.round(daily.temperature_2m_min[i]);
@@ -3288,16 +3288,16 @@
       // Update mode display and message
       let modeText, messageText, emoji;
       if (pomodoroState.mode === 'focus') {
-        modeText = 'FOCUS SESSION';
-        messageText = 'Focus on your work !';
+        modeText = 'SESSION DE CONCENTRATION';
+        messageText = 'Concentrez-vous sur votre travail !';
         emoji = '🧠';
       } else if (pomodoroState.mode === 'break') {
-        modeText = 'SHORT BREAK';
-        messageText = 'Take a short break<br><span class="text-2xl font-bold">Relax !</span>';
+        modeText = 'PAUSE COURTE';
+        messageText = 'Prenez une courte pause<br><span class="text-2xl font-bold">Détendez-vous !</span>';
         emoji = '☕';
       } else {
-        modeText = 'LONG BREAK';
-        messageText = 'Well deserved break<br><span class="text-2xl font-bold">Great job !</span>';
+        modeText = 'PAUSE LONGUE';
+        messageText = 'Pause bien méritée<br><span class="text-2xl font-bold">Bravo !</span>';
         emoji = '🎉';
       }
 
