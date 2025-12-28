@@ -1854,7 +1854,7 @@
         </div>
 
         <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 20px;">
-          <button id="gSuiteToggle" onclick="document.getElementById('googleWorkspaceTools').classList.remove('hidden');"
+          <button id="gSuiteToggle" onhover="document.getElementById('googleWorkspaceTools').classList.remove('hidden');" onhoverout="document.getElementById('googleWorkspaceTools').classList.add('hidden');"
             class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg">G Suite</button>
           <div id="googleWorkspaceTools" class="hidden mt-2 bg-white/20 shadow-lg rounded-lg p-4 space-y-2">
             <a href="https://drive.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
