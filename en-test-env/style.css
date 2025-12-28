@@ -976,6 +976,9 @@ select option[value="i"] {
     will-change: transform, background-color, border-color, box-shadow;
 }
 .bg-bg:hover {
+    padding-inline: 10px;
+    padding-block: 5px;
+    border-radius: 10px;
     background-color: rgba(255, 255, 255, 0.18);
     border-color: rgba(255, 255, 255, 0.3);
     transform: scale(1.04) translateZ(0);
