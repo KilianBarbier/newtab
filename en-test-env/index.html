@@ -2265,31 +2265,31 @@
       const iconMap = {
         0: { day: '<img src="sunny.png" alt="Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Clear sky
         1: { day: '<img src="sunny.png" alt="Mostly Sunny" class="w-16 h-16 mx-auto" />', night: '🌙' }, // Mainly clear
-        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" />' }, // Partly cloudy
-        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" />' }, // Overcast
-        45: { day: '🌫️', night: '🌫️' }, // Fog
-        48: { day: '🌫️', night: '🌫️' }, // Depositing rime fog
-        51: { day: '🌦️', night: '🌧️' }, // Light drizzle
-        53: { day: '🌦️', night: '🌧️' }, // Moderate drizzle
-        55: { day: '🌧️', night: '🌧️' }, // Dense drizzle
-        61: { day: '🌧️', night: '🌧️' }, // Slight rain
-        63: { day: '🌧️', night: '🌧️' }, // Moderate rain
-        65: { day: '🌧️', night: '🌧️' }, // Heavy rain
-        71: { day: '🌨️', night: '🌨️' }, // Slight snow
-        73: { day: '🌨️', night: '🌨️' }, // Moderate snow
-        75: { day: '❄️', night: '❄️' }, // Heavy snow
-        77: { day: '❄️', night: '❄️' }, // Snow grains
-        80: { day: '🌦️', night: '🌧️' }, // Slight rain showers
-        81: { day: '🌧️', night: '🌧️' }, // Moderate rain showers
-        82: { day: '⛈️', night: '⛈️' }, // Violent rain showers
-        85: { day: '🌨️', night: '🌨️' }, // Slight snow showers
-        86: { day: '❄️', night: '❄️' }, // Heavy snow showers
-        95: { day: '⛈️', night: '⛈️' }, // Thunderstorm
-        96: { day: '⛈️', night: '⛈️' }, // Thunderstorm with slight hail
-        99: { day: '⛈️', night: '⛈️' }, // Thunderstorm with heavy hail
+        2: { day: '<img src="cloudy.png" alt="Partly Cloudy" class="w-16 h-16 mx-auto" style="font-size:50px;" />', night: '<img src="cloudy.png" alt="Cloudy" class="w-16 h-16 mx-auto" style="font-size:50px;" />' }, // Partly cloudy
+        3: { day: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" style="font-size:50px;" />', night: '<img src="cloudy.png" alt="Overcast" class="w-16 h-16 mx-auto" style="font-size:50px;" />' }, // Overcast
+        45: { day: '🌫️', night: '🌫️', style: 'font-size:50px;' }, // Fog
+        48: { day: '🌫️', night: '🌫️', style: 'font-size:50px;' }, // Depositing rime fog
+        51: { day: '🌦️', night: '🌧️', style: 'font-size:50px;' }, // Light drizzle
+        53: { day: '🌦️', night: '🌧️', style: 'font-size:50px;' }, // Moderate drizzle
+        55: { day: '🌧️', night: '🌧️', style: 'font-size:50px;' }, // Dense drizzle
+        61: { day: '🌧️', night: '🌧️', style: 'font-size:50px;' }, // Slight rain
+        63: { day: '🌧️', night: '🌧️', style: 'font-size:50px;' }, // Moderate rain
+        65: { day: '🌧️', night: '🌧️', style: 'font-size:50px;' }, // Heavy rain
+        71: { day: '🌨️', night: '🌨️', style: 'font-size:50px;' }, // Slight snow
+        73: { day: '🌨️', night: '🌨️', style: 'font-size:50px;' }, // Moderate snow
+        75: { day: '❄️', night: '❄️', style: 'font-size:50px;' }, // Heavy snow
+        77: { day: '❄️', night: '❄️', style: 'font-size:50px;' }, // Snow grains
+        80: { day: '🌦️', night: '🌧️', style: 'font-size:50px;' }, // Slight rain showers
+        81: { day: '🌧️', night: '🌧️', style: 'font-size:50px;' }, // Moderate rain showers
+        82: { day: '⛈️', night: '⛈️', style: 'font-size:50px;' }, // Violent rain showers
+        85: { day: '🌨️', night: '🌨️', style: 'font-size:50px;' }, // Slight snow showers
+        86: { day: '❄️', night: '❄️', style: 'font-size:50px;' }, // Heavy snow showers
+        95: { day: '⛈️', night: '⛈️', style: 'font-size:50px;' }, // Thunderstorm
+        96: { day: '⛈️', night: '⛈️', style: 'font-size:50px;' }, // Thunderstorm with slight hail
+        99: { day: '⛈️', night: '⛈️', style: 'font-size:50px;' }, // Thunderstorm with heavy hail
       };
       
-      const icons = iconMap[weatherCode] || { day: '❓', night: '❓' };
+      const icons = iconMap[weatherCode] || { day: '❓', night: '❓', style: 'font-size:50px;' };
       return isDay ? icons.day : icons.night;
     }
 
