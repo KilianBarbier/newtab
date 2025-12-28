@@ -1853,8 +1853,9 @@
           </div>
         </div>
 
-        <div id="gSuiteBox" class="absolute top-0 right-16">
-          <button id="gSuiteToggle" class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">G Suite</button>
+        <div id="gSuiteBox" class="fixed z-50" style="right: 80px;top: 20px;">
+          <button id="gSuiteToggle"
+            class="bg-white/20 border border-white/30 text-white px-4 py-2 rounded-lg shadow-lg">G Suite</button>
           <div id="googleWorkspaceTools" class="hidden mt-2 bg-white shadow-lg rounded-lg p-4 space-y-2">
             <a href="https://drive.google.com" target="_blank" class="workspace-tool flex items-center space-x-2">
               <img src="google-icons/google-drive.svg" alt="Google Drive" class="h-8 w-8">
@@ -1889,16 +1890,16 @@
               <span>Google Meet</span>
             </a>
           </div>
-        </div>
       </div>
+  </div>
 
-      <!-- Input file caché pour l'import -->
-      <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+  <!-- Input file caché pour l'import -->
+  <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
 
-      <div class="wrapper">
-        <canvas id="aurora"></canvas>
-      </div>
-    </main>
+  <div class="wrapper">
+    <canvas id="aurora"></canvas>
+  </div>
+  </main>
   </div>
 
   <!-- Navigation bar mobile en bas de l'écran -->
