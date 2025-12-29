@@ -40,7 +40,7 @@
         // Directly use the Google Favicons API which is more reliable
         return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
       } catch (e) {
-        console.error("Error retrieving favicon:", e);
+        console.error("Erreur lors de la récupération du favicon :", e);
         // Return a default icon in case of error
         return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>';
       }
@@ -149,7 +149,7 @@
 
           reloadShortcuts(); // Instead of reloadWithTransition()
         } catch (e) {
-          console.error("Invalid URL dropped:", e);
+          console.error("URL déposée invalide :", e);
         }
         return;
       }      // If it's an internal drag (rearrangement)
@@ -273,7 +273,7 @@
         closeConfigModal();
         reloadShortcuts(); // Instead of reloadWithTransition()
       } catch (e) {
-        console.error("Error saving shortcut:", e);
+        console.error("Erreur lors de l'enregistrement du raccourci :", e);
       }
     } function openConfigModal(position, isEdit = false) {
       const modal = document.getElementById("configModal");
@@ -394,7 +394,7 @@
 
       // Vérifier que le raccourci existe dans l'onglet actuel
       if (!currentShortcuts[position]) {
-        console.error("Shortcut not found in current tab");
+        console.error("Raccourci introuvable dans l'onglet actuel");
         closeContextMenu();
         return;
       }
@@ -1119,7 +1119,7 @@
       updateWidgetIndicators();
     }
 
-    // Export/Import Functions
+    // Fonctions d'exportation et d'importation
     function exportShortcuts() {
       try {
         // Récupérer toutes les données de raccourcis
@@ -1162,7 +1162,7 @@
         showNotification('Raccourcis et préférences des widgets exportés avec succès !');
 
       } catch (error) {
-        console.error('Export error:', error);
+        console.error("Erreur d'exportation :", error);
         showNotification('Échec de l\'exportation. Veuillez réessayer.');
       }
     }
@@ -1199,7 +1199,7 @@
           }
 
         } catch (error) {
-          console.error('Import error:', error);
+          console.error("Erreur d'importation :", error);
           showNotification("Échec de l'importation. Vérifiez le format du fichier.");
         }
       };
@@ -1258,7 +1258,7 @@
         showNotification('Raccourcis et préférences des widgets importés avec succès !');
 
       } catch (error) {
-        console.error('Import processing error:', error);
+        console.error("Erreur lors du traitement de l'importation :", error);
         showNotification("Échec de l'importation lors du traitement.");
       }
     }
@@ -1415,7 +1415,7 @@
               <li>Weather widget</li>
               <li>Notes widget</li>
               <li>Pomodoro timer</li>
-              <li>Export/Import functionality</li>
+              <li>Fonctionnalité d'exportation / importation</li>
             </ul>
           </div>
           <div class="flex justify-end gap-3 mt-6">
@@ -2070,7 +2070,7 @@
         </div>
       </div>
 
-      <!-- Floating Export/Import Buttons -->
+      <!-- Boutons flottants d'exportation/importation -->
       <!-- Settings Menu -->
       <div class="fixed top-4 right-4 z-50">
         <!-- Settings Button -->
