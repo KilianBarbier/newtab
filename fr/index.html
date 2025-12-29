@@ -1319,7 +1319,7 @@
         // store temporarily on the input element so saveShortcut can read it
         document.getElementById('shortcutImageFile').dataset.dataUrl = dataUrl;
         validateForm();
-      }).catch(err => console.error('Image file read error:', err));
+      }).catch(err => console.error('Erreur de lecture du fichier image :', err));
     }
 
     function updateImagePreview() {
@@ -1495,9 +1495,9 @@
         <a id="pro" class="block w-full">Professional</a>
       </div>
 
-      <!-- Widgets Slider -->
+      <!-- Carrousel de widgets -->
       <div class="mt-6">
-        <!-- Slider Header with Navigation -->
+        <!-- En-tête du carrousel avec navigation -->
         <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
           <div class="flex items-center gap-2">
             <div id="current-widget-icon" class="w-6 h-6 text-white">
@@ -1510,9 +1510,9 @@
             <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
           </div>
 
-          <!-- Navigation Controls -->
+          <!-- Contrôles de navigation -->
           <div class="flex items-center gap-2">
-            <!-- Pin Menu Button -->
+            <!-- Bouton du menu d'épinglage -->
             <div class="relative">
               <button onclick="toggleWidgetPinMenu()" id="widgetPinButton"
                 class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
@@ -1549,18 +1549,18 @@
           </div>
         </div>
 
-        <!-- Slider Container -->
+        <!-- Conteneur du carrousel -->
         <div class="relative overflow-hidden rounded-xl">
           <div id="widgets-slider" class="flex transition-transform duration-500 ease-in-out"
             style="transform: translateX(0%);">
 
-            <!-- Weather Widget Slide -->
+            <!-- Diapositive météo -->
             <div class="w-full flex-shrink-0">
               <div id="weather-widget"
                 class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 height-[300px] flex flex-col justify-between"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
 
-                <!-- City Input -->
+                <!-- Saisie de la ville -->
                 <div id="weather-input" class="mb-4">
                   <div class="flex gap-2 hop-colonne">
                     <input type="text" id="weather-city-input" placeholder="Entrez le nom de la ville..."
@@ -1585,7 +1585,7 @@
                       <div class="text-xs text-white/50" id="cities-count"></div>
                     </div>
                     <div id="saved-cities-list" class="flex flex-wrap gap-1">
-                      <!-- Saved cities will be populated here -->
+                      <!-- Les villes enregistrées seront affichées ici -->
                     </div>
                   </div>
                 </div>
@@ -1596,14 +1596,14 @@
                 </div>
 
                 <div id="weather-content" class="hidden">
-                  <!-- Weather Header -->
+                  <!-- En-tête météo -->
                   <div class="text-center mb-6">
                     <h2 class="text-2xl font-bold text-white mb-2">MÉTÉO À</h2>
                     <h1 id="weather-city-name" class="text-4xl font-bold text-white tracking-wider"
                       style="font-weight: 800; letter-spacing: 0.15em;">PARIS</h1>
                   </div>
 
-                  <!-- Current Weather Icon and Temperature -->
+                  <!-- Icône et température actuelles -->
                   <div class="text-center mb-6">
                     <div id="weather-icon" class="flex justify-center items-center mb-4 min-h-[4rem]" style="font-size: 50px;">☀️</div>
                     <div id="weather-temp" class="text-5xl font-bold text-white mb-2">26°C</div>
@@ -1632,13 +1632,13 @@
               </div>
             </div>
 
-            <!-- Notes Widget Slide -->
+            <!-- Diapositive Notes -->
             <div class="w-full flex-shrink-0">
               <div id="notes-widget"
                 class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
                 style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
 
-                <!-- Add Note Button -->
+                <!-- Bouton Nouvelle note -->
                 <div class="mb-4">
                   <button onclick="showAddNoteForm()"
                     class="w-full px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors flex items-center justify-center gap-2">
@@ -1650,7 +1650,7 @@
                   </button>
                 </div>
 
-                <!-- Add Note Form -->
+                <!-- Formulaire d'ajout de note -->
                 <div id="add-note-form" class="hidden mb-4">
                   <div class="space-y-3">
                     <textarea id="note-text" placeholder="Écrivez votre note..."
@@ -1679,12 +1679,12 @@
                   </div>
                 </div>
 
-                <!-- Notes Container -->
+                <!-- Conteneur des notes -->
                 <div id="notes-container" class="space-y-3">
-                  <!-- Notes will be populated here -->
+                  <!-- Les notes seront affichées ici -->
                 </div>
 
-                <!-- Empty State -->
+                <!-- État vide -->
                 <div id="notes-empty" class="text-center py-8 text-white/60">
                   <div class="text-4xl mb-2">📝</div>
                   <div class="text-sm">Aucune note pour l'instant</div>
@@ -1693,7 +1693,7 @@
               </div>
             </div>
 
-            <!-- Pomodoro Widget Slide -->
+            <!-- Diapositive Pomodoro -->
             <div class="w-full flex-shrink-0">
               <div id="pomodoro-widget"
                 class="pr-4 pt-3 pb-3 mb-6 pl-4 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60 relative overflow-hidden"
@@ -2401,7 +2401,7 @@
           }
         }
       } catch (error) {
-        console.error('localStorage is not available or corrupted:', error);
+        console.error("localStorage non disponible ou corrompu :", error);
         storageAvailable = false;
 
         // Try cookies as fallback
@@ -2414,7 +2414,7 @@
             document.cookie = 'test_weather_cookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
           }
         } catch (cookieError) {
-          console.error('Cookies are also not available:', cookieError);
+          console.error('Les cookies ne sont pas non plus disponibles :', cookieError);
         }
       }
 
@@ -2481,13 +2481,13 @@
         localStorage.setItem('lastWeatherCity', cityName.trim());
         return true;
       } catch (error) {
-        console.error('Error saving city to localStorage, trying cookies fallback:', error);
+        console.error('Erreur lors de l\'enregistrement de la ville dans localStorage, tentative via cookies :', error);
         // Fallback to cookies if localStorage is not available
         try {
           document.cookie = `lastWeatherCity=${encodeURIComponent(cityName.trim())}; max-age=2592000; path=/`; // 30 days
           return true;
         } catch (cookieError) {
-          console.error('Error saving city to cookies:', cookieError);
+          console.error('Erreur lors de l\'enregistrement de la ville dans les cookies :', cookieError);
           return false;
         }
       }
@@ -2501,7 +2501,7 @@
           return savedCity.trim();
         }
       } catch (error) {
-        console.error('Error reading city from localStorage, trying cookies fallback:', error);
+        console.error('Erreur lors de la lecture de la ville depuis localStorage, tentative via cookies :', error);
       }
 
       // Fallback to cookies
@@ -2515,7 +2515,7 @@
           }
         }
       } catch (cookieError) {
-        console.error('Error reading city from cookies:', cookieError);
+        console.error('Erreur lors de la lecture de la ville depuis les cookies :', cookieError);
       }
 
       return null;
@@ -2529,7 +2529,7 @@
           return JSON.parse(savedCities);
         }
       } catch (error) {
-        console.error('Error reading saved cities from localStorage, trying cookies:', error);
+        console.error('Erreur lors de la lecture des villes enregistrées depuis localStorage, tentative via cookies :', error);
         try {
           const cookieValue = document.cookie.split('; ')
             .find(row => row.startsWith('savedWeatherCities='));
@@ -2537,7 +2537,7 @@
             return JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
           }
         } catch (cookieError) {
-          console.error('Error reading saved cities from cookies:', cookieError);
+          console.error('Erreur lors de la lecture des villes enregistrées depuis les cookies :', cookieError);
         }
       }
       return [];
@@ -2548,12 +2548,12 @@
         localStorage.setItem('savedWeatherCities', JSON.stringify(cities));
         return true;
       } catch (error) {
-        console.error('Error saving cities to localStorage, trying cookies:', error);
+        console.error('Erreur lors de l\'enregistrement des villes dans localStorage, tentative via cookies :', error);
         try {
           document.cookie = `savedWeatherCities=${encodeURIComponent(JSON.stringify(cities))}; max-age=2592000; path=/`;
           return true;
         } catch (cookieError) {
-          console.error('Error saving cities to cookies:', cookieError);
+          console.error('Erreur lors de l\'enregistrement des villes dans les cookies :', cookieError);
           return false;
         }
       }
@@ -2885,7 +2885,7 @@
         weatherContent.classList.remove('hidden');
 
       } catch (error) {
-        console.error('Error loading weather:', error);
+        console.error('Erreur lors du chargement de la météo :', error);
         weatherLoading.classList.add('hidden');
         weatherError.classList.remove('hidden');
       }
