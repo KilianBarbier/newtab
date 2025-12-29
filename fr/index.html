@@ -1449,8 +1449,8 @@
 
         keysToRemove.forEach(key => localStorage.removeItem(key));
 
-        // Refresh the page to show clean state
-        showNotification('All data cleared successfully!', 'success');
+        // Rafraîchir la page pour afficher l'état propre
+        showNotification("Toutes les données ont été supprimées avec succès !", "success");
         setTimeout(() => {
           location.reload();
         }, 1500);
@@ -1507,7 +1507,7 @@
                   d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
-            <h3 id="current-widget-title" class="text-white font-medium text-lg">Weather</h3>
+            <h3 id="current-widget-title" class="text-white font-medium text-lg">Météo</h3>
           </div>
 
           <!-- Contrôles de navigation -->
@@ -1516,21 +1516,21 @@
             <div class="relative">
               <button onclick="toggleWidgetPinMenu()" id="widgetPinButton"
                 class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
-                <img src="../media/pin.svg" alt="Pin" class="w-4 h-4" />
+                <img src="../media/pin.svg" alt="Épingler" class="w-4 h-4" />
               </button>
               <div id="widgetPinMenu"
                 class="hidden absolute top-full right-0 mt-2 bg-black/60 backdrop-blur-xl rounded-lg shadow-lg min-w-[140px] z-50 border border-white/10">
                 <button onclick="pinWidget('primary')"
                   class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-t-lg text-sm">
-                  📌 Pin as Primary
+                  📌 Épingler comme principal
                 </button>
                 <button onclick="pinWidget('secondary')"
                   class="w-full px-3 py-2 text-left text-white hover:bg-white/10 text-sm">
-                  📎 Pin as Secondary
+                  📎 Épingler comme secondaire
                 </button>
                 <button onclick="unpinWidget()"
                   class="w-full px-3 py-2 text-left text-white hover:bg-white/10 rounded-b-lg text-sm">
-                  ❌ Unpin Widget
+                  ❌ Détacher le widget
                 </button>
               </div>
             </div>
@@ -2076,7 +2076,7 @@
         <!-- Settings Button -->
         <button onclick="toggleSettingsMenu()"
           class="group bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 text-white w-12 h-12 min-w-[3rem] min-h-[3rem] rounded-full transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-xl flex items-center justify-center flex-shrink-0"
-          title="Settings">
+          title="Paramètres">
           <svg class="w-5 h-5 transition-transform group-hover:rotate-90" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2259,13 +2259,13 @@
                       localStorage.setItem('searches', JSON.stringify([{ query: anchor.href || anchor.getAttribute('href'), time: Date.now(), counterSeconds: updated }]));
                     }
                   } catch (err) {
-                    console.warn('Error handling middle-click for shortcuts:', err);
+                    console.warn("Erreur lors du traitement du clic du milieu pour les raccourcis :", err);
                   }
                 });
 
               } catch (e) {
-                // If panel or functions are not available, silently ignore
-                console.warn('Could not attach G Suite tool click handlers:', e);
+                // Si le panneau ou les fonctions ne sont pas disponibles, ignorer silencieusement
+                console.warn("Impossible d'attacher les gestionnaires de clic pour l'outil G Suite :", e);
               }
             });
           </script>
@@ -2292,7 +2292,7 @@
         <button onclick="showSearchHelp()"
           class="mr-2 flex flex-col items-center py-1 px-3 text-white/80 hover:text-white transition-colors rounded-xl">
           <span class="text-xl font-medium w-6 h-6 flex items-center justify-center">?</span>
-          <span class="text-xs">Help Center</span>
+          <span class="text-xs">Centre d'aide</span>
         </button>
       </div>
     </div>
@@ -2564,7 +2564,7 @@
       const cityName = cityInput.value.trim();
 
       if (!cityName) {
-        alert('Please enter a city name first');
+        alert("Veuillez d'abord entrer le nom d'une ville");
         return;
       }
 
@@ -2576,13 +2576,13 @@
       );
 
       if (cityExists) {
-        alert('This city is already saved');
+        alert("Cette ville est déjà enregistrée");
         return;
       }
 
       // Limit to 5 saved cities
       if (savedCities.length >= 5) {
-        alert('Maximum 5 cities can be saved. Please remove one first.');
+        alert("Vous pouvez sauvegarder au maximum 5 villes. Supprimez-en une d'abord.");
         return;
       }
 
@@ -2669,12 +2669,12 @@
       const saveButton = document.querySelector('button[onclick="saveCurrentCity()"]');
       if (saveButton) {
         saveButton.style.animation = 'pulse 2s infinite';
-        saveButton.title = `Save "${cityName}" to favorites`;
+        saveButton.title = `Enregistrer "${cityName}" dans les favoris`;
 
         // Remove animation after 5 seconds
         setTimeout(() => {
           saveButton.style.animation = '';
-          saveButton.title = 'Save current city';
+          saveButton.title = 'Enregistrer la ville actuelle';
         }, 5000);
       }
     }
@@ -2904,7 +2904,7 @@
       const cityName = cityInput.value.trim();
 
       if (!cityName) {
-        alert('Please enter a city name');
+        alert("Veuillez entrer le nom d'une ville");
         return;
       }
 
@@ -2928,7 +2928,7 @@
     function addNote(color) {
       const noteText = document.getElementById('note-text').value.trim();
       if (!noteText) {
-        alert('Please enter some text for your note');
+        alert("Veuillez entrer du texte pour votre note");
         return;
       }
 
