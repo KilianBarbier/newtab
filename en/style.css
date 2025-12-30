@@ -147,8 +147,7 @@ svg {
 }
 
 button {
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
 }
 
@@ -161,6 +160,12 @@ button:hover {
 
 button:active {
   transform: translateY(1px);
+}
+
+/* Smooth transform for G Suite button */
+#gSuiteToggle {
+  transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1) !important;
+  will-change: transform;
 }
 
 /* Context Menu Styles */
@@ -773,20 +778,23 @@ select option[value="i"] {
 .hidden {
     display: none;
 }
+#searchEngineDropdown {
+    z-index: 9999 !important;
+}
 
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
-    background: #41a0e4;
+    background-color: rgb(255 255 255 / 0);
 }
 
 #searchEngineDropdown .search-option:hover {
-    background: #009EE3;
+    background-color: rgb(255 255 255 / 0);
     transform: translateZ(10px);
 }
 
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
-    background: #41a0e4;;
+    background-color: rgb(255 255 255 / 0);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -921,18 +929,15 @@ select option[value="i"] {
 
 /* Correction des styles pour le dropdown des moteurs de recherche */
 #searchEngineDropdown {
-    backdrop-filter: blur(15px);
+    background-color: rgb(255 255 255 / 0.2);
+    backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     z-index: 9999 !important;
-}
-
-#googleWorkspaceTools {
-    backdrop-filter: blur(10px);
 }
 
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
-    background: #41a0e4;;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -948,11 +953,39 @@ select option[value="i"] {
 }
 
 #searchEngineDropdown .search-option:hover {
-    background: #009EE3;
     transform: translateZ(10px) scale(1.05);
 }
 .hop-colonne {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+/* Stable base sizing to avoid layout jumps on hover */
+.bg-bg {
+    padding-inline: 10px;
+    padding-block: 5px;
+    border-radius: 10px;
+    border: 1px solid transparent; /* keep box size stable */
+    box-sizing: border-box;
+    transform-origin: center center;
+    backface-visibility: hidden;
+    transition: background-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, background-color, border-color, box-shadow;
+}
+.bg-bg:hover {
+    padding-inline: 10px;
+    padding-block: 5px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.04) translateZ(0);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18), inset 0 0 0 1px rgba(255,255,255,0.02);
+    transition: background-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: transform, background-color, border-color, box-shadow;
 }

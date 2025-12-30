@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Calque_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800">
+  <!-- Generator: Adobe Illustrator 29.8.3, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #a1c2fa;
+      }
+
+      .st1 {
+        mask: url(#mask-5);
+      }
+
+      .st2 {
+        mask: url(#mask-1);
+      }
+
+      .st3 {
+        mask: url(#mask-111);
+      }
+
+      .st4 {
+        mask: url(#mask-10);
+      }
+
+      .st5 {
+        mask: url(#mask-6);
+      }
+
+      .st6, .st7, .st8, .st9 {
+        fill: #fff;
+      }
+
+      .st10 {
+        mask: url(#mask);
+      }
+
+      .st7 {
+        fill-rule: evenodd;
+      }
+
+      .st11 {
+        fill: #4285f4;
+      }
+
+      .st12, .st8, .st13 {
+        fill-opacity: .2;
+      }
+
+      .st12, .st14 {
+        fill: #bf360c;
+      }
+
+      .st15 {
+        mask: url(#mask-8);
+      }
+
+      .st16 {
+        fill: url(#Dégradé_sans_nom_2);
+      }
+
+      .st17 {
+        fill: #f4b400;
+      }
+
+      .st18 {
+        mask: url(#mask-21);
+      }
+
+      .st13, .st19 {
+        fill: #1a237e;
+      }
+
+      .st20 {
+        fill: #f1f1f1;
+      }
+
+      .st21 {
+        fill: url(#Dégradé_sans_nom_3);
+      }
+
+      .st22 {
+        display: none;
+      }
+
+      .st23 {
+        fill: url(#Dégradé_sans_nom_21);
+      }
+
+      .st19, .st14, .st9 {
+        fill-opacity: .1;
+      }
+
+      .st24 {
+        fill: #fada80;
+      }
+
+      .st25 {
+        fill: url(#Dégradé_sans_nom_5);
+      }
+
+      .st26 {
+        mask: url(#mask-12);
+      }
+
+      .st27 {
+        mask: url(#mask-132);
+      }
+
+      .st28 {
+        mask: url(#mask-14);
+      }
+
+      .st29 {
+        mask: url(#mask-91);
+      }
+
+      .st30 {
+        mask: url(#mask-71);
+      }
+
+      .st31 {
+        mask: url(#mask-3);
+      }
+
+      .st32 {
+        mask: url(#mask-41);
+      }
+    </style>
+    <mask id="mask" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-2">
+        <path id="path-1" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-1" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-4">
+        <path id="path-3" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <linearGradient id="Dégradé_sans_nom_3" data-name="Dégradé sans nom 3" x1="-1001.3" y1="1817.5" x2="-1001.3" y2="1809.8" gradientTransform="translate(16885.1 30145.7) scale(16.3 -16.4)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a237e" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#1a237e" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mask-21" data-name="mask-2" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-7">
+        <path id="path-6" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-3" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-9">
+        <path id="path-8" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-41" data-name="mask-4" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-11">
+        <path id="path-10" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-5" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-13">
+        <path id="path-12" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-6" x="203.2" y="139.7" width="393.7" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-15">
+        <path id="path-14" class="st7" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+      </g>
+    </mask>
+    <radialGradient id="Dégradé_sans_nom_2" data-name="Dégradé sans nom 2" cx="-1071" cy="1874.3" fx="-1071" fy="1874.3" r="13.5" gradientTransform="translate(50554 88248.5) scale(47 -47)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="mask-71" data-name="mask-7" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-22" data-name="mask-2">
+        <path id="path-11" data-name="path-1" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-8" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-42" data-name="mask-4">
+        <path id="path-31" data-name="path-3" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-91" data-name="mask-9" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-61" data-name="mask-6">
+        <path id="path-5" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <linearGradient id="Dégradé_sans_nom_5" data-name="Dégradé sans nom 5" x1="-1001.9" y1="1817.6" x2="-1001.9" y2="1810" gradientTransform="translate(17012.7 30185.7) scale(16.5 -16.4)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#bf360c" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#bf360c" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mask-10" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-92" data-name="mask-9">
+        <path id="path-81" data-name="path-8" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-111" data-name="mask-11" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-112" data-name="mask-11">
+        <path id="path-101" data-name="path-10" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-12" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-131" data-name="mask-13">
+        <path id="path-121" data-name="path-12" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-132" data-name="mask-13" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-151" data-name="mask-15">
+        <path id="path-141" data-name="path-14" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <mask id="mask-14" x="202.1" y="139.7" width="396" height="544.5" maskUnits="userSpaceOnUse">
+      <g id="mask-17">
+        <path id="path-16" class="st7" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+      </g>
+    </mask>
+    <radialGradient id="Dégradé_sans_nom_21" data-name="Dégradé sans nom 2" cx="-1071.2" cy="1874.5" fx="-1071.2" fy="1874.5" r="13.5" gradientTransform="translate(50920.3 88882.2) scale(47.3 -47.3)" xlink:href="#Dégradé_sans_nom_2"/>
+  </defs>
+  <g id="SVGRepo_iconCarrier">
+    <path class="st6" d="M50,298.9c0-87.1,0-130.7,17-164,14.9-29.3,38.7-53.1,68-68,33.3-17,76.8-17,164-17h202.2c87.1,0,130.7,0,164,17,29.3,14.9,53.1,38.7,68,68,17,33.3,17,76.8,17,164v202.2c0,87.1,0,130.7-17,164-14.9,29.3-38.7,53.1-68,68-33.3,17-76.8,17-164,17h-202.2c-87.1,0-130.7,0-164-17-29.3-14.9-53.1-38.7-68-68-17-33.3-17-76.8-17-164v-202.2h0Z"/>
+  </g>
+  <g id="Page-1" class="st22">
+    <g id="Consumer-Apps-Docs-Large-VD-R8">
+      <g id="Hero">
+        <g id="Personal">
+          <g id="Docs-icon">
+            <g id="Group">
+              <g id="Clipped">
+                <g class="st10">
+                  <path id="Path" class="st11" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-86.1-61.9-61.5-86.6Z"/>
+                </g>
+              </g>
+              <g id="Clipped1" data-name="Clipped">
+                <g class="st2">
+                  <polygon id="Path1" data-name="Path" class="st21" points="460 277.3 596.8 414.9 596.8 288.2 460 277.3"/>
+                </g>
+              </g>
+              <g id="Clipped2" data-name="Clipped">
+                <g class="st18">
+                  <path id="Shape" class="st20" d="M301.6,535.6h196.8v-24.7h-196.8v24.7ZM301.6,585.1h147.6v-24.7h-147.6v24.7ZM301.6,411.9v24.7h196.8v-24.7h-196.8ZM301.6,486.1h196.8v-24.7h-196.8v24.7Z"/>
+                </g>
+              </g>
+              <g id="Clipped3" data-name="Clipped">
+                <g class="st31">
+                  <g id="Group1" data-name="Group">
+                    <path id="Path2" data-name="Path" class="st0" d="M449.2,139.7v111.4c0,20.5,16.5,37.1,36.9,37.1h110.7l-147.6-148.5Z"/>
+                  </g>
+                </g>
+              </g>
+              <g id="Clipped4" data-name="Clipped">
+                <g class="st32">
+                  <path id="Path3" data-name="Path" class="st8" d="M240.1,139.7c-20.3,0-36.9,16.7-36.9,37.1v3.1c0-20.4,16.6-37.1,36.9-37.1h209.1v-3.1h-209.1Z"/>
+                </g>
+              </g>
+              <g id="Clipped5" data-name="Clipped">
+                <g class="st1">
+                  <path id="Path4" data-name="Path" class="st13" d="M559.9,681H240.1c-20.3,0-36.9-16.7-36.9-37.1v3.1c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-3.1c0,20.4-16.6,37.1-36.9,37.1Z"/>
+                </g>
+              </g>
+              <g id="Clipped6" data-name="Clipped">
+                <g class="st5">
+                  <path id="Path5" data-name="Path" class="st19" d="M486.1,288.2c-20.4,0-36.9-16.6-36.9-37.1v3.1c0,20.5,16.5,37.1,36.9,37.1h110.7v-3.1h-110.7Z"/>
+                </g>
+              </g>
+            </g>
+            <path id="Path6" data-name="Path" class="st16" d="M449.2,139.7h-209.1c-20.3,0-36.9,16.7-36.9,37.1v470.2c0,20.4,16.6,37.1,36.9,37.1h319.9c20.3,0,36.9-16.7,36.9-37.1v-358.8l-147.6-148.5Z"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g id="Page-11" data-name="Page-1">
+    <g id="Consumer-Apps-Slides-Large-VD-R8">
+      <g id="Hero1" data-name="Hero">
+        <g id="Personal1" data-name="Personal">
+          <g id="Slides-icon">
+            <g id="Group2" data-name="Group">
+              <g id="Clipped7" data-name="Clipped">
+                <g class="st30">
+                  <path id="Path7" data-name="Path" class="st17" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-86.6-61.9-61.9-86.6Z"/>
+                </g>
+              </g>
+              <g id="Clipped8" data-name="Clipped">
+                <g class="st15">
+                  <path id="Shape1" data-name="Shape" class="st20" d="M480.6,387.1h-160.9c-10.2,0-18.6,8.4-18.6,18.6v160.9c0,10.2,8.4,18.6,18.6,18.6h160.9c10.2,0,18.6-8.4,18.6-18.6v-160.9c0-10.2-8.4-18.6-18.6-18.6ZM474.4,529.4h-148.5v-86.6h148.5v86.6Z"/>
+                </g>
+              </g>
+              <g id="Clipped9" data-name="Clipped">
+                <g class="st29">
+                  <polygon id="Path8" data-name="Path" class="st25" points="460.5 277.3 598.1 414.9 598.1 288.2 460.5 277.3"/>
+                </g>
+              </g>
+              <g id="Clipped10" data-name="Clipped">
+                <g class="st4">
+                  <g id="Group3" data-name="Group">
+                    <path id="Path9" data-name="Path" class="st24" d="M449.6,139.7v111.4c0,20.5,16.6,37.1,37.1,37.1h111.4l-148.5-148.5Z"/>
+                  </g>
+                </g>
+              </g>
+              <g id="Clipped11" data-name="Clipped">
+                <g class="st3">
+                  <polygon id="Path10" data-name="Path" class="st9" points="449.6 139.7 449.6 142.8 595 288.2 598.1 288.2 449.6 139.7"/>
+                </g>
+              </g>
+              <g id="Clipped12" data-name="Clipped">
+                <g class="st26">
+                  <path id="Path11" data-name="Path" class="st8" d="M239.3,139.7c-20.4,0-37.1,16.7-37.1,37.1v3.1c0-20.4,16.7-37.1,37.1-37.1h210.4v-3.1h-210.4Z"/>
+                </g>
+              </g>
+              <g id="Clipped13" data-name="Clipped">
+                <g class="st27">
+                  <path id="Path12" data-name="Path" class="st12" d="M561,681H239.3c-20.4,0-37.1-16.7-37.1-37.1v3.1c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-3.1c0,20.4-16.7,37.1-37.1,37.1Z"/>
+                </g>
+              </g>
+              <g id="Clipped14" data-name="Clipped">
+                <g class="st28">
+                  <path id="Path13" data-name="Path" class="st14" d="M486.7,288.2c-20.5,0-37.1-16.6-37.1-37.1v3.1c0,20.5,16.6,37.1,37.1,37.1h111.4v-3.1h-111.4Z"/>
+                </g>
+              </g>
+            </g>
+            <path id="Path14" data-name="Path" class="st23" d="M449.6,139.7h-210.4c-20.4,0-37.1,16.7-37.1,37.1v470.2c0,20.4,16.7,37.1,37.1,37.1h321.7c20.4,0,37.1-16.7,37.1-37.1v-358.8l-148.5-148.5Z"/>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
