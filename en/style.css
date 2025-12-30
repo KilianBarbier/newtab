@@ -778,9 +778,6 @@ select option[value="i"] {
 .hidden {
     display: none;
 }
-#searchEngineDropdown {
-    z-index: 9999 !important;
-}
 
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
@@ -788,7 +785,6 @@ select option[value="i"] {
 }
 
 #searchEngineDropdown .search-option:hover {
-    background-color: rgb(255 255 255 / 0);
     transform: translateZ(10px);
 }
 
@@ -920,17 +916,14 @@ select option[value="i"] {
     text-decoration: underline;
 }
 
-/* Effet hover amélioré pour le bouton avec image */
 .sidebar div.bg-white\/30:hover {
     background-color: rgba(255, 255, 255, 0.4) !important;
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Correction des styles pour le dropdown des moteurs de recherche */
 #searchEngineDropdown {
-    background-color: rgb(255 255 255 / 0.2);
-    backdrop-filter: blur(16px);
+    backdrop-filter: blur(3px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     z-index: 9999 !important;
