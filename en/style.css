@@ -985,7 +985,6 @@ select option[value="i"] {
 
 #googleWorkspaceTools {
     width: max-content;
-    backdrop-filter: blur(4px);
     background-image: url('/nnnoise.svg');
     padding: 20px;
 }
