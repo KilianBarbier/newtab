@@ -644,11 +644,58 @@
       if (searchInput && searchIcon && currentSearch) {
         searchInput.addEventListener("keydown", handleSearch);
         searchIcon.addEventListener("click", handleSearch);
-        currentSearch.addEventListener("click", () => {
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.toggle("hidden");
+
+        // Portal the dropdown to document.body to escape ancestor stacking contexts
+        const dropdown = document.getElementById("searchEngineDropdown");
+        const portalState = { moved: false, originalParent: null, nextSibling: null };
+
+        function positionDropdown() {
+          if (!dropdown) return;
+          const btn = document.getElementById('currentSearch');
+          const rect = btn.getBoundingClientRect();
+          dropdown.style.position = 'absolute';
+          dropdown.style.left = (rect.left + window.scrollX) + 'px';
+          dropdown.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+          // ensure dropdown appears above other content
+          dropdown.style.zIndex = 2147483647;
+        }
+
+        function openSearchDropdown() {
+          if (!dropdown) return;
+          if (!portalState.moved) {
+            portalState.originalParent = dropdown.parentElement;
+            portalState.nextSibling = dropdown.nextSibling;
+            document.body.appendChild(dropdown);
+            portalState.moved = true;
           }
+          positionDropdown();
+          dropdown.classList.remove('hidden');
+          window.addEventListener('resize', positionDropdown);
+          window.addEventListener('scroll', positionDropdown, true);
+        }
+
+        function closeSearchDropdown() {
+          if (!dropdown) return;
+          dropdown.classList.add('hidden');
+          window.removeEventListener('resize', positionDropdown);
+          window.removeEventListener('scroll', positionDropdown, true);
+          if (portalState.moved) {
+            // move back into original container to preserve DOM order
+            if (portalState.nextSibling) portalState.originalParent.insertBefore(dropdown, portalState.nextSibling);
+            else portalState.originalParent.appendChild(dropdown);
+            portalState.moved = false;
+            dropdown.style.position = '';
+            dropdown.style.left = '';
+            dropdown.style.top = '';
+            dropdown.style.zIndex = '';
+          }
+        }
+
+        currentSearch.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!dropdown) return;
+          if (dropdown.classList.contains('hidden')) openSearchDropdown();
+          else closeSearchDropdown();
         });
       }
 
@@ -709,14 +756,14 @@
         });
       });
 
-      // Close dropdown if clicked elsewhere
+      // Close dropdown if clicked elsewhere (ignore clicks inside dropdown or trigger)
       document.addEventListener("click", (e) => {
-        if (!e.target.closest(".relative")) {
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.add("hidden");
-          }
-        }
+        const dropdown = document.getElementById("searchEngineDropdown");
+        const trigger = document.getElementById('currentSearch');
+        if (!dropdown) return;
+        if (e.target.closest('#searchEngineDropdown')) return;
+        if (e.target.closest('#currentSearch')) return;
+        dropdown.classList.add('hidden');
       });
 
       // Initialiser l'onglet actif
