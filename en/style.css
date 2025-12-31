@@ -782,12 +782,6 @@ select option[value="i"] {
     background-color: rgb(255 255 255 / 0);
 }
 
-/* Avoid using translateZ which can produce rendering artifacts (glow) on some GPUs.
-   Use a subtle scale instead and remove any image box-shadow/outline. */
-#searchEngineDropdown .search-option:hover {
-    transform: scale(1.03);
-}
-
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
     background-color: rgb(255 255 255 / 0);
@@ -799,18 +793,14 @@ select option[value="i"] {
     padding: 8px;
 }
 
-#searchEngineDropdown .search-option {
-    border-radius: 8px;
-}
-
 #searchEngineDropdown .search-option img {
     width: 24px;
     height: 24px;
     object-fit: contain;
-    box-shadow: none !important;
-    filter: none !important;
-    outline: none !important;
-    -webkit-filter: none !important;
+}
+
+#searchEngineDropdown .search-option:hover {
+    transform: translateZ(10px) scale(1.05);
 }
 
 .popup-wrapper {
@@ -997,52 +987,4 @@ select option[value="i"] {
     width: max-content;
     backdrop-filter: blur(4px);
     padding: 20px;
-}
-
-/* Final overrides to remove icon glow and ensure backdrop blur works */
-#searchEngineDropdown {
-    position: relative !important;
-    overflow: hidden !important;
-    border-radius: 12px !important;
-}
-
-#searchEngineDropdown::before {
-    content: "" !important;
-    position: absolute !important;
-    inset: 0 !important;
-    border-radius: 12px !important;
-    -webkit-backdrop-filter: blur(10px) !important;
-    backdrop-filter: blur(10px) !important;
-    background: rgba(255,255,255,0.06) !important;
-    pointer-events: none !important;
-    z-index: 0 !important;
-}
-
-/* Ensure dropdown content sits above the pseudo-element */
-#searchEngineDropdown > * {
-    position: relative !important;
-    z-index: 1 !important;
-}
-
-/* Remove any glow created by shadows/filters on options and images */
-#searchEngineDropdown .search-option,
-#searchEngineDropdown .search-option:hover {
-    box-shadow: none !important;
-    filter: none !important;
-    -webkit-filter: none !important;
-    outline: none !important;
-    transform: scale(1.03) !important; /* subtle scale on hover */
-}
-
-#searchEngineDropdown .search-option img {
-    box-shadow: none !important;
-    filter: none !important;
-    -webkit-filter: none !important;
-    outline: none !important;
-}
-
-/* If a popup backdrop element exists, keep it subtle */
-.popup-backdrop {
-    filter: none !important;
-    backdrop-filter: none !important;
 }

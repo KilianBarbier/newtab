@@ -1824,32 +1824,7 @@
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
           </button>
-          <style>
-            /* Use a pseudo-element for backdrop-filter so Chrome can composite the blur correctly.
-               Do NOT force icon sizes here — keep sizes from main stylesheet to avoid layout regressions. */
-            #searchEngineDropdown {
-              position: absolute;
-              overflow: hidden; /* clip the pseudo-element */
-              z-index: 99999;
-              width: 325px; /* match main stylesheet */
-              border-radius: 12px; /* restore rounded-xl corners */
-              background: transparent;
-              box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-              will-change: opacity;
-              -webkit-transform: translate3d(0,0,0);
-            }
-
-            #searchEngineDropdown::before {
-              content: "";
-              position: absolute;
-              inset: 0;
-              border-radius: 12px; /* ensure pseudo-element follows rounding */
-              -webkit-backdrop-filter: blur(10px);
-              backdrop-filter: blur(10px);
-              background: rgba(255,255,255,0.06);
-              pointer-events: none;
-            }
-          </style>
+          
           <div id="searchEngineDropdown" class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
             <button class="search-option rounded-lg" data-value="g">
               <img src="https://favicone.com/www.google.com?s=128" alt="Google" />
