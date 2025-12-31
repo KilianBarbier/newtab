@@ -998,3 +998,51 @@ select option[value="i"] {
     backdrop-filter: blur(4px);
     padding: 20px;
 }
+
+/* Final overrides to remove icon glow and ensure backdrop blur works */
+#searchEngineDropdown {
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+}
+
+#searchEngineDropdown::before {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: 12px !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255,255,255,0.06) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+/* Ensure dropdown content sits above the pseudo-element */
+#searchEngineDropdown > * {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Remove any glow created by shadows/filters on options and images */
+#searchEngineDropdown .search-option,
+#searchEngineDropdown .search-option:hover {
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    outline: none !important;
+    transform: scale(1.03) !important; /* subtle scale on hover */
+}
+
+#searchEngineDropdown .search-option img {
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    outline: none !important;
+}
+
+/* If a popup backdrop element exists, keep it subtle */
+.popup-backdrop {
+    filter: none !important;
+    backdrop-filter: none !important;
+}
