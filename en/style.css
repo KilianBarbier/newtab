@@ -927,7 +927,9 @@ select option[value="i"] {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(4px);
     z-index: 9999 !important;
-    
+    backdrop-filter: blur(4px);
+    margin-top: 17px;
+    width: 325px;
 }
 
 #searchEngineDropdown .search-option {
