@@ -1825,25 +1825,28 @@
               alt="Google" />
           </button>
           <style>
-            /* Forcer rendu du flou et promouvoir en layer pour Chrome */
+            /* Use a pseudo-element for backdrop-filter so Chrome can composite the blur correctly.
+               Do NOT force icon sizes here — keep sizes from main stylesheet to avoid layout regressions. */
             #searchEngineDropdown {
-              -webkit-backdrop-filter: blur(3px);
-              backdrop-filter: blur(3px);
-              background: rgba(255,255,255,0.20);
-              -webkit-transform: translate3d(0,0,0);
-              transform: translate3d(0,0,0);
-              will-change: transform, opacity;
-              backface-visibility: hidden;
-              -webkit-backface-visibility: hidden;
-              box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+              position: absolute;
+              overflow: hidden; /* clip the pseudo-element */
               z-index: 99999;
+              width: 325px; /* match main stylesheet */
+              border-radius: inherit;
+              background: transparent;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+              will-change: opacity;
+              -webkit-transform: translate3d(0,0,0);
             }
-            /* Ensure icons render with consistent size inside the dropdown */
-            #searchEngineDropdown .search-option img {
-              display: block;
-              width: 38px;
-              height: 38px;
-              object-fit: contain;
+
+            #searchEngineDropdown::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              -webkit-backdrop-filter: blur(10px);
+              backdrop-filter: blur(10px);
+              background: rgba(255,255,255,0.06);
+              pointer-events: none;
             }
           </style>
           <div id="searchEngineDropdown" class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
