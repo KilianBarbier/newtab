@@ -1824,7 +1824,29 @@
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
           </button>
-          <div id="searchEngineDropdown" class="hidden absolute backdrop-blur-xs top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
+          <style>
+            /* Forcer rendu du flou et promouvoir en layer pour Chrome */
+            #searchEngineDropdown {
+              -webkit-backdrop-filter: blur(3px);
+              backdrop-filter: blur(3px);
+              background: rgba(255,255,255,0.20);
+              -webkit-transform: translate3d(0,0,0);
+              transform: translate3d(0,0,0);
+              will-change: transform, opacity;
+              backface-visibility: hidden;
+              -webkit-backface-visibility: hidden;
+              box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+              z-index: 99999;
+            }
+            /* Ensure icons render with consistent size inside the dropdown */
+            #searchEngineDropdown .search-option img {
+              display: block;
+              width: 38px;
+              height: 38px;
+              object-fit: contain;
+            }
+          </style>
+          <div id="searchEngineDropdown" class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
             <button class="search-option rounded-lg" data-value="g">
               <img src="https://favicone.com/www.google.com?s=128" alt="Google" />
             </button>
