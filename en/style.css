@@ -782,8 +782,10 @@ select option[value="i"] {
     background-color: rgb(255 255 255 / 0);
 }
 
+/* Avoid using translateZ which can produce rendering artifacts (glow) on some GPUs.
+   Use a subtle scale instead and remove any image box-shadow/outline. */
 #searchEngineDropdown .search-option:hover {
-    transform: translateZ(10px);
+    transform: scale(1.03);
 }
 
 #searchEngineDropdown .search-option {
@@ -797,10 +799,18 @@ select option[value="i"] {
     padding: 8px;
 }
 
+#searchEngineDropdown .search-option {
+    border-radius: 8px;
+}
+
 #searchEngineDropdown .search-option img {
     width: 24px;
     height: 24px;
     object-fit: contain;
+    box-shadow: none !important;
+    filter: none !important;
+    outline: none !important;
+    -webkit-filter: none !important;
 }
 
 .popup-wrapper {

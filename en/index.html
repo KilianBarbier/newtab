@@ -1832,7 +1832,7 @@
               overflow: hidden; /* clip the pseudo-element */
               z-index: 99999;
               width: 325px; /* match main stylesheet */
-              border-radius: inherit;
+              border-radius: 12px; /* restore rounded-xl corners */
               background: transparent;
               box-shadow: 0 8px 30px rgba(0,0,0,0.25);
               will-change: opacity;
@@ -1843,6 +1843,7 @@
               content: "";
               position: absolute;
               inset: 0;
+              border-radius: 12px; /* ensure pseudo-element follows rounding */
               -webkit-backdrop-filter: blur(10px);
               backdrop-filter: blur(10px);
               background: rgba(255,255,255,0.06);
