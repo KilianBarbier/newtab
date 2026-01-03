@@ -87,13 +87,14 @@
              ondragover="handleDragOver(event)" 
              ondrop="handleDrop(event, '${i}')"
              ondragenter="handleDragEnter(event)"
-             ondragleave="handleDragLeave(event)">            <a href="#" 
+             ondragleave="handleDragLeave(event)">
+             <a href="#" 
              draggable="true"
              ondragstart="handleDragStart(event, '${i}')"
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="group p-6 bg-white/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+             class="group p-6 bg-white/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block backdrop-blur-xl">
               <div class="text-center">
                 <div class="shortcut-icon" data-empty="true">
                 </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
@@ -1483,6 +1484,341 @@
       });
     }
 
+    /* Background customization functions */
+    function openBackgroundModal() {
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.remove('hidden');
+      // Load current settings into modal
+      loadBackgroundSettings();
+    }
+
+    function closeBackgroundModal() {
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function ensureBackgroundElement() {
+      let el = document.getElementById('customBackground');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'customBackground';
+        document.body.insertBefore(el, document.body.firstChild);
+      }
+      return el;
+    }
+
+    function applyBackgroundToPage(settings) {
+      const el = ensureBackgroundElement();
+      if (!settings) {
+        el.style.backgroundImage = '';
+        el.style.backgroundColor = '';
+        el.style.filter = '';
+        el.style.opacity = '';
+        return;
+      }
+
+      el.style.filter = `blur(${parseInt(settings.blur || 0, 10)}px)`;
+      const zoom = parseInt(settings.zoom || 100, 10);
+
+      if (settings.type === 'image' && settings.imageUrl) {
+        el.style.backgroundImage = `url("${settings.imageUrl}")`;
+        el.style.backgroundSize = `calc(${zoom}% + 10px)`;
+        el.style.backgroundRepeat = 'no-repeat';
+        el.style.backgroundPosition = 'center center';
+        el.style.backgroundColor = '';
+      } else if (settings.type === 'color' && settings.color) {
+        el.style.backgroundImage = '';
+        el.style.backgroundColor = settings.color;
+        el.style.backgroundSize = 'cover';
+      } else if (settings.type === 'gradient' && settings.gradientFrom && settings.gradientTo) {
+        el.style.backgroundImage = `linear-gradient(${settings.gradientDir || 'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
+        el.style.backgroundColor = '';
+        el.style.backgroundSize = 'cover';
+      } else {
+        // clear
+        el.style.backgroundImage = '';
+        el.style.backgroundColor = '';
+      }
+    }
+
+    function updatePreviewBox(settings) {
+      const preview = document.getElementById('bgPreview');
+      if (!preview) return;
+      if (!settings) {
+        preview.style.backgroundImage = '';
+        preview.style.backgroundColor = '';
+        preview.style.filter = '';
+        return;
+      }
+
+      preview.style.filter = `blur(${parseInt(settings.blur || 0, 10)}px)`;
+      const zoom = parseInt(settings.zoom || 100, 10);
+
+      if (settings.type === 'image' && settings.imageUrl) {
+        preview.style.backgroundImage = `url("${settings.imageUrl}")`;
+        preview.style.backgroundSize = `calc(${zoom}% + 10px)`;
+        preview.style.backgroundRepeat = 'no-repeat';
+        preview.style.backgroundPosition = 'center center';
+        preview.style.backgroundColor = '';
+      } else if (settings.type === 'color' && settings.color) {
+        preview.style.backgroundImage = '';
+        preview.style.backgroundColor = settings.color;
+      } else if (settings.type === 'gradient' && settings.gradientFrom && settings.gradientTo) {
+        preview.style.backgroundImage = `linear-gradient(${settings.gradientDir || 'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
+        preview.style.backgroundColor = '';
+      } else {
+        preview.style.backgroundImage = '';
+        preview.style.backgroundColor = '';
+      }
+    }
+
+    function saveBackgroundSettings() {
+      let type = document.querySelector('input[name="bgType"]:checked')?.value || 'image';
+      const zoom = document.getElementById('bgZoom')?.value || 100;
+      const blur = document.getElementById('bgBlur')?.value || 0;
+      const color = document.getElementById('bgColor')?.value;
+      const gradientFrom = document.getElementById('bgGradientFrom')?.value;
+      const gradientTo = document.getElementById('bgGradientTo')?.value;
+      const gradientDir = document.getElementById('bgGradientDir')?.value || 'to right';
+
+      const settings = { type, zoom: parseInt(zoom, 10), blur: parseInt(blur, 10) };
+
+      // Handle uploads: save the data URL as an image so it persists and is applied reliably
+      if (type === 'upload') {
+        const uploaded = document.getElementById('bgUploadFile')?.dataset?.dataUrl;
+        if (uploaded) {
+          settings.type = 'image';
+          settings.imageUrl = uploaded;
+        } else {
+          // nothing uploaded; fallback
+          settings.type = 'image';
+          settings.imageUrl = document.getElementById('bgImageUrl')?.value || '';
+        }
+      } else if (type === 'image') {
+        settings.imageUrl = document.getElementById('bgImageUrl')?.value || document.getElementById('bgUploadFile')?.dataset?.dataUrl || '';
+      }
+
+      if (type === 'color') settings.color = color || '';
+      if (type === 'gradient') { settings.gradientFrom = gradientFrom || '#ffffff'; settings.gradientTo = gradientTo || '#000000'; settings.gradientDir = gradientDir; }
+
+      localStorage.setItem('backgroundSettings', JSON.stringify(settings));
+      applyBackgroundToPage(settings);
+      closeBackgroundModal();
+    }
+
+    function resetBackgroundSettings() {
+      localStorage.removeItem('backgroundSettings');
+      const el = document.getElementById('customBackground');
+      if (el) { el.style.backgroundImage = ''; el.style.backgroundColor = ''; el.style.filter = ''; }
+      updatePreviewBox(null);
+      closeBackgroundModal();
+    }
+
+    function loadBackgroundSettings() {
+      const raw = localStorage.getItem('backgroundSettings');
+      const settings = raw ? JSON.parse(raw) : null;
+      // Populate modal fields
+      if (settings) {
+        // Handle uploaded data URLs: map them to upload UI for clarity
+        if (settings.type === 'image' && settings.imageUrl && settings.imageUrl.startsWith('data:')) {
+          document.querySelector('input[name="bgType"][value="upload"]')?.click();
+          const uploadInput = document.getElementById('bgUploadFile');
+          if (uploadInput) uploadInput.dataset.dataUrl = settings.imageUrl;
+        } else if (settings.type) {
+          document.querySelector(`input[name=\"bgType\"][value=\"${settings.type}\"]`)?.click();
+        }
+
+        if (settings.zoom) document.getElementById('bgZoom').value = settings.zoom;
+        if (settings.blur) document.getElementById('bgBlur').value = settings.blur;
+        if (settings.type === 'image' && settings.imageUrl && !settings.imageUrl.startsWith('data:')) document.getElementById('bgImageUrl').value = settings.imageUrl;
+        if (settings.type === 'color' && settings.color) document.getElementById('bgColor').value = settings.color;
+        if (settings.type === 'gradient') {
+          if (settings.gradientFrom) document.getElementById('bgGradientFrom').value = settings.gradientFrom;
+          if (settings.gradientTo) document.getElementById('bgGradientTo').value = settings.gradientTo;
+          if (settings.gradientDir) setGradientDir(settings.gradientDir);
+        }
+        updatePreviewBox(settings);
+      } else {
+        // defaults
+        document.getElementById('bgZoom').value = 100;
+        document.getElementById('bgBlur').value = 0;
+        setGradientDir('to right');
+        updatePreviewBox(null);
+      }
+
+      // Toggle visible containers based on selected type
+      toggleBgTypeContainers();
+    }
+
+    function toggleBgTypeContainers() {
+      const type = document.querySelector('input[name="bgType"]:checked')?.value || 'image';
+      document.getElementById('bgImageUrlContainer').classList.toggle('hidden', type !== 'image');
+      document.getElementById('bgUploadContainer').classList.toggle('hidden', type !== 'upload');
+      document.getElementById('bgColorContainer').classList.toggle('hidden', type !== 'color');
+      document.getElementById('bgGradientContainer').classList.toggle('hidden', type !== 'gradient');
+    }
+
+    function handleBgUploadFile(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const maxBytes = 2 * 1024 * 1024; // 2 MB
+      if (file.size > maxBytes) { alert('File too large (max 2MB).'); return; }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const dataUrl = ev.target.result;
+        const input = document.getElementById('bgUploadFile');
+        input.dataset.dataUrl = dataUrl;
+        document.getElementById('bgImageUrl').value = '';
+        document.querySelector('input[name="bgType"][value="upload"]').checked = true;
+        toggleBgTypeContainers();
+        const settings = { type: 'image', imageUrl: dataUrl, zoom: document.getElementById('bgZoom').value, blur: document.getElementById('bgBlur').value };
+        updatePreviewBox(settings);
+        applyBackgroundToPage(settings);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Add listeners for modal controls
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('input[name="bgType"]').forEach(el => el.addEventListener('change', () => { toggleBgTypeContainers(); const s = getModalSettings(); updatePreviewBox(s); }));
+      document.querySelectorAll('.gradient-dir-btn').forEach(btn => btn.addEventListener('click', () => setGradientDir(btn.dataset.dir)));
+      document.getElementById('bgUploadFile')?.addEventListener('change', handleBgUploadFile);
+      document.getElementById('testBgUrl')?.addEventListener('click', () => {
+        const url = document.getElementById('bgImageUrl').value.trim();
+        if (!url) return alert('Please enter an image URL to test.');
+        const img = new Image();
+        img.onload = () => { alert('Image loaded successfully. Click Apply to preview.'); };
+        img.onerror = () => { alert('Could not load image. Please check the URL.'); };
+        img.src = url;
+      });
+      document.getElementById('applyBgUrl')?.addEventListener('click', () => {
+        const url = document.getElementById('bgImageUrl').value.trim();
+        if (!url) return alert('Enter an image URL first.');
+        document.querySelector('input[name="bgType"][value="image"]').checked = true;
+        toggleBgTypeContainers();
+        const settings = { type: 'image', imageUrl: url, zoom: document.getElementById('bgZoom').value, blur: document.getElementById('bgBlur').value };
+        updatePreviewBox(settings);
+        // Apply as temporary preview to the page (non-persistent until save)
+        applyBackgroundToPage(settings);
+      });
+      document.getElementById('bgZoom')?.addEventListener('input', () => { const s = getModalSettings(); updatePreviewBox(s); });
+      document.getElementById('bgBlur')?.addEventListener('input', () => { const s = getModalSettings(); updatePreviewBox(s); });
+        document.getElementById('bgPreviewBtn')?.addEventListener('click', () => { openBackgroundPreview(getModalSettings()); });
+      document.getElementById('bgSave')?.addEventListener('click', saveBackgroundSettings);
+      document.getElementById('bgCancel')?.addEventListener('click', closeBackgroundModal);
+      document.getElementById('bgReset')?.addEventListener('click', () => { if (confirm('Reset background to default?')) resetBackgroundSettings(); });
+
+      // Apply saved background on load
+      const saved = localStorage.getItem('backgroundSettings');
+      if (saved) applyBackgroundToPage(JSON.parse(saved));
+    });
+
+    function getModalSettings() {
+      const type = document.querySelector('input[name="bgType"]:checked')?.value || 'image';
+      const zoom = document.getElementById('bgZoom')?.value || 100;
+      const blur = document.getElementById('bgBlur')?.value || 0;
+      const color = document.getElementById('bgColor')?.value;
+      const gradientFrom = document.getElementById('bgGradientFrom')?.value;
+      const gradientTo = document.getElementById('bgGradientTo')?.value;
+      const gradientDir = document.getElementById('bgGradientDir')?.value;
+      const imageUrl = document.getElementById('bgImageUrl')?.value || document.getElementById('bgUploadFile')?.dataset?.dataUrl;
+      const settings = { type, zoom: parseInt(zoom,10), blur: parseInt(blur,10) };
+      if (type === 'image') settings.imageUrl = imageUrl;
+      if (type === 'color') settings.color = color;
+      if (type === 'gradient') { settings.gradientFrom = gradientFrom; settings.gradientTo = gradientTo; settings.gradientDir = gradientDir; }
+      return settings;
+    }
+
+    function setGradientDir(dir) {
+      const hidden = document.getElementById('bgGradientDir');
+      if (hidden) hidden.value = dir;
+      document.querySelectorAll('.gradient-dir-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.dir === dir);
+      });
+    }
+
+    // Open a full-page preview using current modal settings. Esc restores the modal.
+    function openBackgroundPreview(settings) {
+      // hide modal
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.add('hidden');
+
+      // apply preview settings temporarily
+      applyBackgroundToPage(settings);
+
+      // normalize upload type to image for preview
+      if (settings && settings.type === 'upload') {
+        const uploaded = document.getElementById('bgUploadFile')?.dataset?.dataUrl;
+        settings = { ...settings, type: 'image', imageUrl: uploaded || settings.imageUrl || '' };
+      }
+
+      // create overlay and render the background directly on it (ensures preview shows image)
+      let overlay = document.getElementById('backgroundPreviewOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'backgroundPreviewOverlay';
+        overlay.innerHTML = '<div class="preview-bg"></div><div class="preview-border"></div><div class="preview-hint">Preview mode — press Esc to return to settings</div>';
+        document.body.appendChild(overlay);
+      }
+
+      // Apply the background onto the overlay so it is visible in preview regardless of page layers
+      const bgDiv = overlay.querySelector('.preview-bg');
+      if (settings && bgDiv) {
+        if (settings.type === 'image' && settings.imageUrl) {
+          bgDiv.style.backgroundImage = `url("${settings.imageUrl}")`;
+          bgDiv.style.backgroundSize = `calc(${settings.zoom}% + 10px)`;
+          bgDiv.style.backgroundRepeat = 'no-repeat';
+          bgDiv.style.backgroundPosition = 'center center';
+          bgDiv.style.filter = `blur(${parseInt(settings.blur||0,10)}px)`;
+        } else if (settings.type === 'color' && settings.color) {
+          bgDiv.style.backgroundImage = '';
+          bgDiv.style.backgroundColor = settings.color;
+          bgDiv.style.filter = '';
+        } else if (settings.type === 'gradient' && settings.gradientFrom && settings.gradientTo) {
+          bgDiv.style.backgroundImage = `linear-gradient(${settings.gradientDir||'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
+          bgDiv.style.backgroundColor = '';
+          bgDiv.style.filter = '';
+        } else {
+          bgDiv.style.backgroundImage = '';
+          bgDiv.style.backgroundColor = '';
+          bgDiv.style.filter = '';
+        }
+      } else if (bgDiv) {
+        bgDiv.style.backgroundImage = '';
+        bgDiv.style.backgroundColor = '';
+        bgDiv.style.filter = '';
+      }
+
+      // esc handler
+      function escHandler(e) {
+        if (e.key === 'Escape') {
+          closeBackgroundPreview();
+        }
+      }
+
+      // store handler so we can remove it later
+      overlay._escHandler = escHandler;
+      document.addEventListener('keydown', escHandler);
+    }
+
+    function closeBackgroundPreview() {
+      const overlay = document.getElementById('backgroundPreviewOverlay');
+      if (overlay) {
+        document.removeEventListener('keydown', overlay._escHandler);
+        overlay.remove();
+      }
+      // re-open modal
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.remove('hidden');
+      // restore modal preview box to current modal settings
+      const s = getModalSettings();
+      updatePreviewBox(s);
+      // reapply saved background (if any) to ensure we don't leave an unsaved preview
+      const saved = localStorage.getItem('backgroundSettings');
+      if (saved) applyBackgroundToPage(JSON.parse(saved));
+      else applyBackgroundToPage(null);
+    }
+
     function clearAllData() {
       if (confirm('Are you sure you want to clear all data? This will remove all shortcuts, notes, widget preferences, and settings. This action cannot be undone.')) {
         // Clear all localStorage
@@ -2077,6 +2413,100 @@
         </div>
       </div>
 
+      <!-- Background customization modal -->
+      <div id="backgroundCustomizationModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="bg-white/95 rounded-2xl p-6 w-[560px] shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-900">Customize Background</h2>
+          <div class="text-gray-700 mb-4 space-y-3">
+            <div class="flex gap-3 items-center">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bgType" value="image" class="bg-type" checked>
+                Image URL
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bgType" value="upload" class="bg-type">
+                Upload
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bgType" value="color" class="bg-type">
+                Color
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="bgType" value="gradient" class="bg-type">
+                Gradient
+              </label>
+            </div>
+
+            <div id="bgImageUrlContainer" class="space-y-2">
+              <input id="bgImageUrl" type="text" placeholder="https://example.com/image.jpg" class="w-full rounded border px-3 py-2 text-gray-800">
+              <div class="flex gap-2">
+                <button id="testBgUrl" class="px-3 py-2 bg-blue-500 text-white rounded">Test</button>
+                <button id="applyBgUrl" class="px-3 py-2 bg-green-500 text-white rounded">Apply</button>
+              </div>
+            </div>
+
+            <div id="bgUploadContainer" class="hidden">
+              <input id="bgUploadFile" type="file" accept="image/*" class="w-full">
+            </div>
+
+            <div id="bgColorContainer" class="hidden">
+              <input id="bgColor" type="color" class="w-12 h-12 p-0 border rounded">
+            </div>
+
+            <div id="bgGradientContainer" class="hidden space-y-2">
+              <div class="flex gap-2 items-center">
+                <input id="bgGradientFrom" type="color" class="w-12 h-12 p-0 border rounded">
+                <input id="bgGradientTo" type="color" class="w-12 h-12 p-0 border rounded">
+                <input type="hidden" id="bgGradientDir" value="to right">
+                <div class="flex gap-2 flex-wrap" id="bgGradientDirGroup">
+                  <button type="button" class="gradient-dir-btn" data-dir="to left" aria-label="Right to Left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to right" aria-label="Left to Right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top" aria-label="Bottom to Top">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="M18 11l-6-6-6 6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom" aria-label="Top to Bottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M6 13l6 6 6-6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top left" aria-label="Bottom-right to Top-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18L6 6"></path><path d="M6 12V6h6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top right" aria-label="Bottom-left to Top-right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18l12-12"></path><path d="M12 6h6v6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom left" aria-label="Top-right to Bottom-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 12v6h6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom right" aria-label="Top-left to Bottom-right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"></path><path d="M9 18h9v-9"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm">Zoom</label>
+              <input id="bgZoom" type="range" min="50" max="200" value="100" class="w-full">
+              <label class="text-sm">Blur</label>
+              <input id="bgBlur" type="range" min="0" max="20" value="0" class="w-full">
+            </div>
+
+            <div class="flex gap-3 items-center">
+              <div id="bgPreview" class="w-32 h-20 rounded bg-gray-100 border overflow-hidden"></div>
+              <div class="flex flex-col gap-2">
+                <button id="bgPreviewBtn" class="px-3 py-2 bg-indigo-500 text-white rounded">Preview</button>
+                <button id="bgSave" class="px-3 py-2 bg-blue-500 text-white rounded">Save</button>
+                <button id="bgCancel" class="px-3 py-2 bg-gray-200 rounded">Cancel</button>
+                <button id="bgReset" class="px-3 py-2 bg-red-100 text-red-600 rounded">Reset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Add search help modal -->
       <div id="searchHelpModal"
         class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
@@ -2152,6 +2582,14 @@
                   d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
               </svg>
               Import Shortcuts
+            </button>
+
+            <button onclick="openBackgroundModal(); toggleSettingsMenu();"
+              class="w-full px-4 py-3 text-left hover:bg-white/60 transition-colors flex items-center gap-3">
+              <svg class="w-4 h-4 text-white/100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6m-6 6l-4 4v3h3l4-4"></path>
+              </svg>
+              Customize Background
             </button>
 
             <div class="border-t border-gray-200 my-2"></div>
@@ -2404,6 +2842,111 @@
 
     .shortcut-container:hover::before {
       opacity: 1;
+    }
+
+    /* Preview overlay styles */
+    #backgroundPreviewOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      background: rgba(0,0,0,0.08);
+    }
+
+    #backgroundPreviewOverlay .preview-border {
+      position: absolute;
+      inset: 0;
+      box-sizing: border-box;
+      border: 12px solid rgba(0,0,0,0.45);
+      border-radius: 8px;
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+
+    #backgroundPreviewOverlay .preview-hint {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 100000;
+    }
+
+    #backgroundPreviewOverlay .preview-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 99998;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: filter 160ms ease, background-size 160ms ease;
+    }
+
+    /* Gradient direction buttons */
+    .gradient-dir-btn {
+      --dir-bg: #f8fafc;
+      --dir-hover-bg: #e2e8f0;
+      --dir-active-bg: #e0f2fe;
+      --dir-ring: rgba(96,165,250,0.32);
+      --dir-color: #1d4ed8;
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: var(--dir-bg);
+      color: var(--dir-color);
+      transition: all 120ms ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .gradient-dir-btn:hover {
+      border-color: #cbd5e1;
+      background: var(--dir-hover-bg);
+    }
+
+    .gradient-dir-btn.active {
+      border-color: var(--dir-color);
+      background: var(--dir-active-bg);
+      color: var(--dir-color);
+      box-shadow: 0 0 0 2px var(--dir-ring);
+    }
+
+    .gradient-dir-btn[data-dir="to right"] { --dir-bg: #e0f2fe; --dir-hover-bg: #dbeafe; --dir-active-bg: #bfdbfe; --dir-ring: rgba(59,130,246,0.28); --dir-color: #1d4ed8; }
+    .gradient-dir-btn[data-dir="to left"] { --dir-bg: #e0f7ff; --dir-hover-bg: #bae6fd; --dir-active-bg: #7dd3fc; --dir-ring: rgba(14,165,233,0.28); --dir-color: #0369a1; }
+    .gradient-dir-btn[data-dir="to top"] { --dir-bg: #fef9c3; --dir-hover-bg: #fef08a; --dir-active-bg: #fde047; --dir-ring: rgba(234,179,8,0.28); --dir-color: #b45309; }
+    .gradient-dir-btn[data-dir="to bottom"] { --dir-bg: #dcfce7; --dir-hover-bg: #bbf7d0; --dir-active-bg: #86efac; --dir-ring: rgba(34,197,94,0.28); --dir-color: #15803d; }
+    .gradient-dir-btn[data-dir="to top left"] { --dir-bg: #ede9fe; --dir-hover-bg: #ddd6fe; --dir-active-bg: #c4b5fd; --dir-ring: rgba(124,58,237,0.28); --dir-color: #6d28d9; }
+    .gradient-dir-btn[data-dir="to top right"] { --dir-bg: #fee2e2; --dir-hover-bg: #fecdd3; --dir-active-bg: #fda4af; --dir-ring: rgba(248,113,113,0.28); --dir-color: #b91c1c; }
+    .gradient-dir-btn[data-dir="to bottom left"] { --dir-bg: #cffafe; --dir-hover-bg: #a5f3fc; --dir-active-bg: #67e8f9; --dir-ring: rgba(14,165,233,0.28); --dir-color: #0f766e; }
+    .gradient-dir-btn[data-dir="to bottom right"] { --dir-bg: #fce7f3; --dir-hover-bg: #fbcfe8; --dir-active-bg: #f9a8d4; --dir-ring: rgba(236,72,153,0.28); --dir-color: #be185d; }
+
+    /* Styles for custom background and preview */
+    #customBackground {
+      position: fixed;
+      inset: 0;
+      z-index: -10;
+      pointer-events: none;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: filter 180ms ease, background-size 180ms ease, opacity 200ms ease;
+      filter: blur(0px);
+      opacity: 1;
+    }
+
+    #bgPreview {
+      background-position: center center;
+      background-size: cover;
     }
 
     /* Animation for save city button suggestion */
