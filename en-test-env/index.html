@@ -1635,13 +1635,14 @@
         if (settings.type === 'gradient') {
           if (settings.gradientFrom) document.getElementById('bgGradientFrom').value = settings.gradientFrom;
           if (settings.gradientTo) document.getElementById('bgGradientTo').value = settings.gradientTo;
-          if (settings.gradientDir) document.getElementById('bgGradientDir').value = settings.gradientDir;
+          if (settings.gradientDir) setGradientDir(settings.gradientDir);
         }
         updatePreviewBox(settings);
       } else {
         // defaults
         document.getElementById('bgZoom').value = 100;
         document.getElementById('bgBlur').value = 0;
+        setGradientDir('to right');
         updatePreviewBox(null);
       }
 
@@ -1680,6 +1681,7 @@
     // Add listeners for modal controls
     document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('input[name="bgType"]').forEach(el => el.addEventListener('change', () => { toggleBgTypeContainers(); const s = getModalSettings(); updatePreviewBox(s); }));
+      document.querySelectorAll('.gradient-dir-btn').forEach(btn => btn.addEventListener('click', () => setGradientDir(btn.dataset.dir)));
       document.getElementById('bgUploadFile')?.addEventListener('change', handleBgUploadFile);
       document.getElementById('testBgUrl')?.addEventListener('click', () => {
         const url = document.getElementById('bgImageUrl').value.trim();
@@ -1725,6 +1727,14 @@
       if (type === 'color') settings.color = color;
       if (type === 'gradient') { settings.gradientFrom = gradientFrom; settings.gradientTo = gradientTo; settings.gradientDir = gradientDir; }
       return settings;
+    }
+
+    function setGradientDir(dir) {
+      const hidden = document.getElementById('bgGradientDir');
+      if (hidden) hidden.value = dir;
+      document.querySelectorAll('.gradient-dir-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.dir === dir);
+      });
     }
 
     // Open a full-page preview using current modal settings. Esc restores the modal.
@@ -2444,14 +2454,21 @@
             </div>
 
             <div id="bgGradientContainer" class="hidden space-y-2">
-              <div class="flex gap-2">
+              <div class="flex gap-2 items-center">
                 <input id="bgGradientFrom" type="color" class="w-12 h-12 p-0 border rounded">
                 <input id="bgGradientTo" type="color" class="w-12 h-12 p-0 border rounded">
-                <select id="bgGradientDir" class="rounded border px-2">
-                  <option value="to right">→</option>
-                  <option value="to bottom">↓</option>
-                  <option value="to bottom right">↘</option>
-                </select>
+                <input type="hidden" id="bgGradientDir" value="to right">
+                <div class="flex gap-2" id="bgGradientDirGroup">
+                  <button type="button" class="gradient-dir-btn" data-dir="to right" aria-label="Left to Right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom" aria-label="Top to Bottom">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M6 13l6 6 6-6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom right" aria-label="Top-left to Bottom-right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"></path><path d="M9 18h9v-9"></path></svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2855,6 +2872,33 @@
       background-repeat: no-repeat;
       background-size: cover;
       transition: filter 160ms ease, background-size 160ms ease;
+    }
+
+    /* Gradient direction buttons */
+    .gradient-dir-btn {
+      width: 38px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: white;
+      color: #334155;
+      transition: all 120ms ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .gradient-dir-btn:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .gradient-dir-btn.active {
+      border-color: #60a5fa;
+      background: #e0f2fe;
+      color: #1d4ed8;
+      box-shadow: 0 0 0 2px rgba(96,165,250,0.35);
     }
 
     /* Styles for custom background and preview */
