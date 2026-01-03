@@ -725,7 +725,6 @@ select option[value="i"] {
     width: 100%;
     height: 100%;
     background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
     border-radius: 12px;
     cursor: pointer;
     display: flex;
@@ -750,7 +749,6 @@ select option[value="i"] {
     left: 0;
     margin-top: 8px;
     background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 8px;
     width: 200px;
@@ -778,18 +776,10 @@ select option[value="i"] {
 .hidden {
     display: none;
 }
-#searchEngineDropdown {
-    z-index: 9999 !important;
-}
 
 #searchEngineDropdown .search-option {
     transition: transform 0.2s;
     background-color: rgb(255 255 255 / 0);
-}
-
-#searchEngineDropdown .search-option:hover {
-    background-color: rgb(255 255 255 / 0);
-    transform: translateZ(10px);
 }
 
 #searchEngineDropdown .search-option {
@@ -807,6 +797,10 @@ select option[value="i"] {
     width: 24px;
     height: 24px;
     object-fit: contain;
+}
+
+#searchEngineDropdown .search-option:hover {
+    transform: translateZ(10px) scale(1.05);
 }
 
 .popup-wrapper {
@@ -920,20 +914,22 @@ select option[value="i"] {
     text-decoration: underline;
 }
 
-/* Effet hover amélioré pour le bouton avec image */
 .sidebar div.bg-white\/30:hover {
     background-color: rgba(255, 255, 255, 0.4) !important;
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Correction des styles pour le dropdown des moteurs de recherche */
 #searchEngineDropdown {
-    background-color: rgb(255 255 255 / 0.2);
-    backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     z-index: 9999 !important;
+    margin-top: 17px;
+    width: 325px;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.06);
+    background-clip: padding-box;
 }
 
 #searchEngineDropdown .search-option {
@@ -988,4 +984,10 @@ select option[value="i"] {
                 border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
                 box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
     will-change: transform, background-color, border-color, box-shadow;
+}
+
+#googleWorkspaceTools {
+    width: max-content;
+    backdrop-filter: blur(4px);
+    padding: 20px;
 }

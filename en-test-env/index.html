@@ -93,7 +93,7 @@
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="group p-6 backdrop-blur-xl bg-white/90 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+             class="group p-6 bg-white/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
               <div class="text-center">
                 <div class="shortcut-icon" data-empty="true">
                 </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
@@ -644,11 +644,58 @@
       if (searchInput && searchIcon && currentSearch) {
         searchInput.addEventListener("keydown", handleSearch);
         searchIcon.addEventListener("click", handleSearch);
-        currentSearch.addEventListener("click", () => {
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.toggle("hidden");
+
+        // Portal the dropdown to document.body to escape ancestor stacking contexts
+        const dropdown = document.getElementById("searchEngineDropdown");
+        const portalState = { moved: false, originalParent: null, nextSibling: null };
+
+        function positionDropdown() {
+          if (!dropdown) return;
+          const btn = document.getElementById('currentSearch');
+          const rect = btn.getBoundingClientRect();
+          dropdown.style.position = 'absolute';
+          dropdown.style.left = (rect.left + window.scrollX) + 'px';
+          dropdown.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+          // ensure dropdown appears above other content
+          dropdown.style.zIndex = 2147483647;
+        }
+
+        function openSearchDropdown() {
+          if (!dropdown) return;
+          if (!portalState.moved) {
+            portalState.originalParent = dropdown.parentElement;
+            portalState.nextSibling = dropdown.nextSibling;
+            document.body.appendChild(dropdown);
+            portalState.moved = true;
           }
+          positionDropdown();
+          dropdown.classList.remove('hidden');
+          window.addEventListener('resize', positionDropdown);
+          window.addEventListener('scroll', positionDropdown, true);
+        }
+
+        function closeSearchDropdown() {
+          if (!dropdown) return;
+          dropdown.classList.add('hidden');
+          window.removeEventListener('resize', positionDropdown);
+          window.removeEventListener('scroll', positionDropdown, true);
+          if (portalState.moved) {
+            // move back into original container to preserve DOM order
+            if (portalState.nextSibling) portalState.originalParent.insertBefore(dropdown, portalState.nextSibling);
+            else portalState.originalParent.appendChild(dropdown);
+            portalState.moved = false;
+            dropdown.style.position = '';
+            dropdown.style.left = '';
+            dropdown.style.top = '';
+            dropdown.style.zIndex = '';
+          }
+        }
+
+        currentSearch.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!dropdown) return;
+          if (dropdown.classList.contains('hidden')) openSearchDropdown();
+          else closeSearchDropdown();
         });
       }
 
@@ -709,14 +756,14 @@
         });
       });
 
-      // Close dropdown if clicked elsewhere
+      // Close dropdown if clicked elsewhere (ignore clicks inside dropdown or trigger)
       document.addEventListener("click", (e) => {
-        if (!e.target.closest(".relative")) {
-          const dropdown = document.getElementById("searchEngineDropdown");
-          if (dropdown) {
-            dropdown.classList.add("hidden");
-          }
-        }
+        const dropdown = document.getElementById("searchEngineDropdown");
+        const trigger = document.getElementById('currentSearch');
+        if (!dropdown) return;
+        if (e.target.closest('#searchEngineDropdown')) return;
+        if (e.target.closest('#currentSearch')) return;
+        dropdown.classList.add('hidden');
       });
 
       // Initialiser l'onglet actif
@@ -1819,60 +1866,56 @@
       
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
         <div class="relative"> <button id="currentSearch"
-            class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
+            class="relative z-[999999] px-5 h-12 bg-white/20  rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
               alt="Google" />
           </button>
-          <div id="searchEngineDropdown" style="
-                background-color: rgb(255 255 255 / 0.2);
-                border: 1px solid #6897e2;
-                margin-top: 17px;
-                width: 325px;
-              " class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
+          
+          <div id="searchEngineDropdown" class="hidden absolute top-full left-0 mt-2 rounded-xl p-3 grid grid-cols-4 gap-3">
             <button class="search-option rounded-lg" data-value="g">
               <img src="https://favicone.com/www.google.com?s=128" alt="Google" />
             </button>
             <button class="search-option rounded-lg" data-value="yt">
               <img src="https://dev.kilianbarbier.fr/media/img/youtube_logo.svg" alt="YouTube" />
             </button>
-            <button class="search-option p-2 rounded-lg flex items-center justify-center" data-value="gh">
+            <button class="search-option p-2 rounded-lg" data-value="gh">
               <img src="https://favicone.com/github.com?s=128" class="w-6 h-6" alt="GitHub" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="w">
+            <button class="search-option p-2 rounded-lg" data-value="w">
               <img src="https://favicone.com/wikipedia.org?s=128" class="w-6 h-6" alt="Wikipedia" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="r">
+            <button class="search-option p-2 rounded-lg" data-value="r">
               <img src="https://favicone.com/www.reddit.com?s=128" class="w-6 h-6" alt="Reddit" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="so">
+            <button class="search-option p-2 rounded-lg" data-value="so">
               <img src="https://favicone.com/stackoverflow.com?s=128" class="w-6 h-6" alt="Stack" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="a">
+            <button class="search-option p-2 rounded-lg" data-value="a">
               <img src="https://favicone.com/www.amazon.com?s=128" class="w-6 h-6" alt="Amazon" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="n">
+            <button class="search-option p-2 rounded-lg" data-value="n">
               <img src="https://favicone.com/www.netflix.com?s=128" class="w-6 h-6" alt="Netflix" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="sp">
+            <button class="search-option p-2 rounded-lg" data-value="sp">
               <img src="https://favicone.com/open.spotify.com?s=128" class="w-6 h-6" alt="Spotify" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="tw">
+            <button class="search-option p-2 rounded-lg" data-value="tw">
               <img src="https://favicone.com/twitter.com?s=128" class="w-6 h-6" alt="Twitter" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="ig">
+            <button class="search-option p-2 rounded-lg" data-value="ig">
               <img src="https://favicone.com/www.instagram.com?s=128" class="w-6 h-6" alt="Instagram" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="maps">
+            <button class="search-option p-2 rounded-lg" data-value="maps">
               <img src="https://favicone.com/maps.google.com?s=128" class="w-6 h-6" alt="Maps" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="i">
+            <button class="search-option p-2 rounded-lg" data-value="i">
               <img src="https://dev.kilianbarbier.fr/media/img/google_img_logo.svg" class="w-6 h-6" alt="Images" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="ddg">
+            <button class="search-option p-2 rounded-lg" data-value="ddg">
               <img src="https://favicone.com/duckduckgo.com?s=128" class="w-6 h-6" alt="DuckDuckGo" />
             </button>
-            <button class="search-option p-2 rounded-lg backdrop-blur-3xl" data-value="px">
+            <button class="search-option p-2 rounded-lg" data-value="px">
               <img src="https://favicone.com/www.perplexity.ai?s=128" class="w-6 h-6" alt="Perplexity" />
             </button>
           </div>
@@ -1886,7 +1929,7 @@
 
         <div class="relative flex-1">
           <input type="text" placeholder="Search..." id="searchInput"
-            class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-xl text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
+            class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
           <svg class="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-white" viewBox="0 0 24 24"
             fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="{2}"
@@ -1894,9 +1937,9 @@
           </svg>
         </div>
         <div id="searchCounter"
-          class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
+          class="relative z-[999999] px-5 h-12 bg-white/20 rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
           0s</div>
-        <button onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
+        <button onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 flex items-center justify-center
            transition-all duration-300">
           ?
         </button>
