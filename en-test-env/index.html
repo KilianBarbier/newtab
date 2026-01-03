@@ -1736,36 +1736,47 @@
       // apply preview settings temporarily
       applyBackgroundToPage(settings);
 
+      // normalize upload type to image for preview
+      if (settings && settings.type === 'upload') {
+        const uploaded = document.getElementById('bgUploadFile')?.dataset?.dataUrl;
+        settings = { ...settings, type: 'image', imageUrl: uploaded || settings.imageUrl || '' };
+      }
+
       // create overlay and render the background directly on it (ensures preview shows image)
       let overlay = document.getElementById('backgroundPreviewOverlay');
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'backgroundPreviewOverlay';
-        overlay.innerHTML = '<div class="preview-border"></div><div class="preview-hint">Preview mode — press Esc to return to settings</div>';
+        overlay.innerHTML = '<div class="preview-bg"></div><div class="preview-border"></div><div class="preview-hint">Preview mode — press Esc to return to settings</div>';
         document.body.appendChild(overlay);
       }
 
       // Apply the background onto the overlay so it is visible in preview regardless of page layers
-      if (settings) {
+      const bgDiv = overlay.querySelector('.preview-bg');
+      if (settings && bgDiv) {
         if (settings.type === 'image' && settings.imageUrl) {
-          overlay.style.backgroundImage = `url("${settings.imageUrl}")`;
-          overlay.style.backgroundSize = `calc(${settings.zoom}% + 10px)`;
-          overlay.style.backgroundRepeat = 'no-repeat';
-          overlay.style.backgroundPosition = 'center center';
-          overlay.style.filter = `blur(${parseInt(settings.blur||0,10)}px)`;
+          bgDiv.style.backgroundImage = `url("${settings.imageUrl}")`;
+          bgDiv.style.backgroundSize = `calc(${settings.zoom}% + 10px)`;
+          bgDiv.style.backgroundRepeat = 'no-repeat';
+          bgDiv.style.backgroundPosition = 'center center';
+          bgDiv.style.filter = `blur(${parseInt(settings.blur||0,10)}px)`;
         } else if (settings.type === 'color' && settings.color) {
-          overlay.style.backgroundImage = '';
-          overlay.style.backgroundColor = settings.color;
-          overlay.style.filter = '';
+          bgDiv.style.backgroundImage = '';
+          bgDiv.style.backgroundColor = settings.color;
+          bgDiv.style.filter = '';
         } else if (settings.type === 'gradient' && settings.gradientFrom && settings.gradientTo) {
-          overlay.style.backgroundImage = `linear-gradient(${settings.gradientDir||'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
-          overlay.style.backgroundColor = '';
-          overlay.style.filter = '';
+          bgDiv.style.backgroundImage = `linear-gradient(${settings.gradientDir||'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
+          bgDiv.style.backgroundColor = '';
+          bgDiv.style.filter = '';
         } else {
-          overlay.style.backgroundImage = '';
-          overlay.style.backgroundColor = '';
-          overlay.style.filter = '';
+          bgDiv.style.backgroundImage = '';
+          bgDiv.style.backgroundColor = '';
+          bgDiv.style.filter = '';
         }
+      } else if (bgDiv) {
+        bgDiv.style.backgroundImage = '';
+        bgDiv.style.backgroundColor = '';
+        bgDiv.style.filter = '';
       }
 
       // esc handler
@@ -2810,6 +2821,7 @@
       align-items: center;
       justify-content: center;
       pointer-events: auto;
+      background: rgba(0,0,0,0.08);
     }
 
     #backgroundPreviewOverlay .preview-border {
@@ -2833,6 +2845,16 @@
       border-radius: 8px;
       font-weight: 600;
       z-index: 100000;
+    }
+
+    #backgroundPreviewOverlay .preview-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 99998;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: filter 160ms ease, background-size 160ms ease;
     }
 
     /* Styles for custom background and preview */
