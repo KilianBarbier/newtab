@@ -1700,6 +1700,7 @@
       });
       document.getElementById('bgZoom')?.addEventListener('input', () => { const s = getModalSettings(); updatePreviewBox(s); });
       document.getElementById('bgBlur')?.addEventListener('input', () => { const s = getModalSettings(); updatePreviewBox(s); });
+        document.getElementById('bgPreviewBtn')?.addEventListener('click', () => { openBackgroundPreview(getModalSettings()); });
       document.getElementById('bgSave')?.addEventListener('click', saveBackgroundSettings);
       document.getElementById('bgCancel')?.addEventListener('click', closeBackgroundModal);
       document.getElementById('bgReset')?.addEventListener('click', () => { if (confirm('Reset background to default?')) resetBackgroundSettings(); });
@@ -1723,6 +1724,54 @@
       if (type === 'color') settings.color = color;
       if (type === 'gradient') { settings.gradientFrom = gradientFrom; settings.gradientTo = gradientTo; settings.gradientDir = gradientDir; }
       return settings;
+    }
+
+    // Open a full-page preview using current modal settings. Esc restores the modal.
+    function openBackgroundPreview(settings) {
+      // hide modal
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.add('hidden');
+
+      // apply preview settings temporarily
+      applyBackgroundToPage(settings);
+
+      // create overlay
+      let overlay = document.getElementById('backgroundPreviewOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'backgroundPreviewOverlay';
+        overlay.innerHTML = '<div class="preview-border"></div><div class="preview-hint">Preview mode — press Esc to return to settings</div>';
+        document.body.appendChild(overlay);
+      }
+
+      // esc handler
+      function escHandler(e) {
+        if (e.key === 'Escape') {
+          closeBackgroundPreview();
+        }
+      }
+
+      // store handler so we can remove it later
+      overlay._escHandler = escHandler;
+      document.addEventListener('keydown', escHandler);
+    }
+
+    function closeBackgroundPreview() {
+      const overlay = document.getElementById('backgroundPreviewOverlay');
+      if (overlay) {
+        document.removeEventListener('keydown', overlay._escHandler);
+        overlay.remove();
+      }
+      // re-open modal
+      const modal = document.getElementById('backgroundCustomizationModal');
+      if (modal) modal.classList.remove('hidden');
+      // restore modal preview box to current modal settings
+      const s = getModalSettings();
+      updatePreviewBox(s);
+      // reapply saved background (if any) to ensure we don't leave an unsaved preview
+      const saved = localStorage.getItem('backgroundSettings');
+      if (saved) applyBackgroundToPage(JSON.parse(saved));
+      else applyBackgroundToPage(null);
     }
 
     function clearAllData() {
@@ -2381,6 +2430,7 @@
             <div class="flex gap-3 items-center">
               <div id="bgPreview" class="w-32 h-20 rounded bg-gray-100 border overflow-hidden"></div>
               <div class="flex flex-col gap-2">
+                <button id="bgPreviewBtn" class="px-3 py-2 bg-indigo-500 text-white rounded">Preview</button>
                 <button id="bgSave" class="px-3 py-2 bg-blue-500 text-white rounded">Save</button>
                 <button id="bgCancel" class="px-3 py-2 bg-gray-200 rounded">Cancel</button>
                 <button id="bgReset" class="px-3 py-2 bg-red-100 text-red-600 rounded">Reset</button>
@@ -2725,6 +2775,40 @@
 
     .shortcut-container:hover::before {
       opacity: 1;
+    }
+
+    /* Preview overlay styles */
+    #backgroundPreviewOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    #backgroundPreviewOverlay .preview-border {
+      position: absolute;
+      inset: 0;
+      box-sizing: border-box;
+      border: 12px solid rgba(0,0,0,0.45);
+      border-radius: 8px;
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+
+    #backgroundPreviewOverlay .preview-hint {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      z-index: 100000;
     }
 
     /* Styles for custom background and preview */
