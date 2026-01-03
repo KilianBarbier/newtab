@@ -1521,7 +1521,7 @@
 
       if (settings.type === 'image' && settings.imageUrl) {
         el.style.backgroundImage = `url("${settings.imageUrl}")`;
-        el.style.backgroundSize = `${zoom}%`;
+        el.style.backgroundSize = `calc(${zoom}% + 10px)`;
         el.style.backgroundRepeat = 'no-repeat';
         el.style.backgroundPosition = 'center center';
         el.style.backgroundColor = '';
@@ -1555,7 +1555,7 @@
 
       if (settings.type === 'image' && settings.imageUrl) {
         preview.style.backgroundImage = `url("${settings.imageUrl}")`;
-        preview.style.backgroundSize = `${zoom}%`;
+        preview.style.backgroundSize = `calc(${zoom}% + 10px)`;
         preview.style.backgroundRepeat = 'no-repeat';
         preview.style.backgroundPosition = 'center center';
         preview.style.backgroundColor = '';
