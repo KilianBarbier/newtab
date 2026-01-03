@@ -2458,12 +2458,27 @@
                 <input id="bgGradientFrom" type="color" class="w-12 h-12 p-0 border rounded">
                 <input id="bgGradientTo" type="color" class="w-12 h-12 p-0 border rounded">
                 <input type="hidden" id="bgGradientDir" value="to right">
-                <div class="flex gap-2" id="bgGradientDirGroup">
+                <div class="flex gap-2 flex-wrap" id="bgGradientDirGroup">
+                  <button type="button" class="gradient-dir-btn" data-dir="to left" aria-label="Right to Left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="M11 6l-6 6 6 6"></path></svg>
+                  </button>
                   <button type="button" class="gradient-dir-btn" data-dir="to right" aria-label="Left to Right">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
                   </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top" aria-label="Bottom to Top">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="M18 11l-6-6-6 6"></path></svg>
+                  </button>
                   <button type="button" class="gradient-dir-btn" data-dir="to bottom" aria-label="Top to Bottom">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M6 13l6 6 6-6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top left" aria-label="Bottom-right to Top-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 18L6 6"></path><path d="M6 12V6h6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to top right" aria-label="Bottom-left to Top-right">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18l12-12"></path><path d="M12 6h6v6"></path></svg>
+                  </button>
+                  <button type="button" class="gradient-dir-btn" data-dir="to bottom left" aria-label="Top-right to Bottom-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"></path><path d="M6 12v6h6"></path></svg>
                   </button>
                   <button type="button" class="gradient-dir-btn" data-dir="to bottom right" aria-label="Top-left to Bottom-right">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"></path><path d="M9 18h9v-9"></path></svg>
@@ -2876,6 +2891,11 @@
 
     /* Gradient direction buttons */
     .gradient-dir-btn {
+      --dir-bg: #f8fafc;
+      --dir-hover-bg: #e2e8f0;
+      --dir-active-bg: #e0f2fe;
+      --dir-ring: rgba(96,165,250,0.32);
+      --dir-color: #1d4ed8;
       width: 38px;
       height: 38px;
       display: inline-flex;
@@ -2883,23 +2903,32 @@
       justify-content: center;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
-      background: white;
-      color: #334155;
+      background: var(--dir-bg);
+      color: var(--dir-color);
       transition: all 120ms ease;
       box-shadow: 0 1px 2px rgba(0,0,0,0.06);
     }
 
     .gradient-dir-btn:hover {
       border-color: #cbd5e1;
-      background: #f8fafc;
+      background: var(--dir-hover-bg);
     }
 
     .gradient-dir-btn.active {
-      border-color: #60a5fa;
-      background: #e0f2fe;
-      color: #1d4ed8;
-      box-shadow: 0 0 0 2px rgba(96,165,250,0.35);
+      border-color: var(--dir-color);
+      background: var(--dir-active-bg);
+      color: var(--dir-color);
+      box-shadow: 0 0 0 2px var(--dir-ring);
     }
+
+    .gradient-dir-btn[data-dir="to right"] { --dir-bg: #e0f2fe; --dir-hover-bg: #dbeafe; --dir-active-bg: #bfdbfe; --dir-ring: rgba(59,130,246,0.28); --dir-color: #1d4ed8; }
+    .gradient-dir-btn[data-dir="to left"] { --dir-bg: #e0f7ff; --dir-hover-bg: #bae6fd; --dir-active-bg: #7dd3fc; --dir-ring: rgba(14,165,233,0.28); --dir-color: #0369a1; }
+    .gradient-dir-btn[data-dir="to top"] { --dir-bg: #fef9c3; --dir-hover-bg: #fef08a; --dir-active-bg: #fde047; --dir-ring: rgba(234,179,8,0.28); --dir-color: #b45309; }
+    .gradient-dir-btn[data-dir="to bottom"] { --dir-bg: #dcfce7; --dir-hover-bg: #bbf7d0; --dir-active-bg: #86efac; --dir-ring: rgba(34,197,94,0.28); --dir-color: #15803d; }
+    .gradient-dir-btn[data-dir="to top left"] { --dir-bg: #ede9fe; --dir-hover-bg: #ddd6fe; --dir-active-bg: #c4b5fd; --dir-ring: rgba(124,58,237,0.28); --dir-color: #6d28d9; }
+    .gradient-dir-btn[data-dir="to top right"] { --dir-bg: #fee2e2; --dir-hover-bg: #fecdd3; --dir-active-bg: #fda4af; --dir-ring: rgba(248,113,113,0.28); --dir-color: #b91c1c; }
+    .gradient-dir-btn[data-dir="to bottom left"] { --dir-bg: #cffafe; --dir-hover-bg: #a5f3fc; --dir-active-bg: #67e8f9; --dir-ring: rgba(14,165,233,0.28); --dir-color: #0f766e; }
+    .gradient-dir-btn[data-dir="to bottom right"] { --dir-bg: #fce7f3; --dir-hover-bg: #fbcfe8; --dir-active-bg: #f9a8d4; --dir-ring: rgba(236,72,153,0.28); --dir-color: #be185d; }
 
     /* Styles for custom background and preview */
     #customBackground {
