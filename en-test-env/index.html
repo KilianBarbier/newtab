@@ -87,13 +87,14 @@
              ondragover="handleDragOver(event)" 
              ondrop="handleDrop(event, '${i}')"
              ondragenter="handleDragEnter(event)"
-             ondragleave="handleDragLeave(event)">            <a href="#" 
+             ondragleave="handleDragLeave(event)">
+             <a href="#" 
              draggable="true"
              ondragstart="handleDragStart(event, '${i}')"
              onclick="handleShortcutClick(event, '${i}')" 
              oncontextmenu="handleShortcutClick(event, '${i}')"
              data-position="${i}"
-             class="group p-6 bg-white/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block">
+             class="group p-6 bg-white/10 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 block backdrop-blur-xl">
               <div class="text-center">
                 <div class="shortcut-icon" data-empty="true">
                 </div>                <div class="text-white font-medium shortcut-title">Add a shortcut</div>
@@ -1735,13 +1736,36 @@
       // apply preview settings temporarily
       applyBackgroundToPage(settings);
 
-      // create overlay
+      // create overlay and render the background directly on it (ensures preview shows image)
       let overlay = document.getElementById('backgroundPreviewOverlay');
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'backgroundPreviewOverlay';
         overlay.innerHTML = '<div class="preview-border"></div><div class="preview-hint">Preview mode — press Esc to return to settings</div>';
         document.body.appendChild(overlay);
+      }
+
+      // Apply the background onto the overlay so it is visible in preview regardless of page layers
+      if (settings) {
+        if (settings.type === 'image' && settings.imageUrl) {
+          overlay.style.backgroundImage = `url("${settings.imageUrl}")`;
+          overlay.style.backgroundSize = `calc(${settings.zoom}% + 10px)`;
+          overlay.style.backgroundRepeat = 'no-repeat';
+          overlay.style.backgroundPosition = 'center center';
+          overlay.style.filter = `blur(${parseInt(settings.blur||0,10)}px)`;
+        } else if (settings.type === 'color' && settings.color) {
+          overlay.style.backgroundImage = '';
+          overlay.style.backgroundColor = settings.color;
+          overlay.style.filter = '';
+        } else if (settings.type === 'gradient' && settings.gradientFrom && settings.gradientTo) {
+          overlay.style.backgroundImage = `linear-gradient(${settings.gradientDir||'to right'}, ${settings.gradientFrom}, ${settings.gradientTo})`;
+          overlay.style.backgroundColor = '';
+          overlay.style.filter = '';
+        } else {
+          overlay.style.backgroundImage = '';
+          overlay.style.backgroundColor = '';
+          overlay.style.filter = '';
+        }
       }
 
       // esc handler
