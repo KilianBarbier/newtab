@@ -766,8 +766,7 @@
       });
 
       // Initialiser l'onglet actif
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      switchTab(activeTab);
+      switchTab(localStorage.getItem("activeTab") || "personal");
     });
 
     // Search counter helpers: stored in seconds
