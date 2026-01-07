@@ -555,9 +555,6 @@
         grid.innerHTML += generateShortcut(i);
       }
 
-      grid.innerHTML += generateAddRowButton();
-      grid.innerHTML += generateCreateFolderButton();
-
       Object.entries(shortcuts).forEach(([position, data]) => {
         const shortcut = document.querySelector(
           `[data-position="${position}"]`
@@ -574,7 +571,7 @@
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
               <img src="${imgSrc}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -582,8 +579,11 @@
 
       // Load and display folders
       Object.values(folders).forEach(folder => {
-        grid.insertAdjacentHTML('beforeend', generateFolderShortcut(folder));
+        grid.innerHTML += generateFolderShortcut(folder);
       });
+
+      grid.innerHTML += generateAddRowButton();
+      grid.innerHTML += generateCreateFolderButton();
 
       const searchInput = document.getElementById("searchInput");
       const searchButton = document.querySelector(".absolute svg");
@@ -1124,7 +1124,7 @@
           const src = shortcutData.imageUrl || shortcutData.iconURL || shortcutData.faviconUrl || null;
           console.debug('reloadShortcuts applying src for position', position, src ? src.substring(0,100) : null);
           if (src) {
-            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
+            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 aspect-square rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
             iconElement.setAttribute('data-empty', 'false');
           }
 
@@ -1140,14 +1140,14 @@
       
       // Add folders to grid
       Object.values(folders).forEach(folder => {
-        grid.insertAdjacentHTML('beforeend', generateFolderShortcut(folder));
+        grid.innerHTML += generateFolderShortcut(folder);
       });
 
       // Remettre le bouton d'ajout
-      grid.appendChild(addRowButton);
+      grid.innerHTML += generateAddRowButton();
       
       // Add create folder button
-      grid.insertAdjacentHTML('beforeend', generateCreateFolderButton());
+      grid.innerHTML += generateCreateFolderButton();
 
       // Mettre à jour les raccourcis avec leurs données
       Object.entries(shortcuts).forEach(([position, data]) => {
@@ -1164,7 +1164,7 @@
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
               <img src="${imgSrc}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -2058,7 +2058,7 @@
         if (shortcut) {
           const iconContainer = shortcut.querySelector('.shortcut-icon');
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
-          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded"/>`;
+          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded"/>`;
           iconContainer.setAttribute('data-empty', 'false');
           shortcut.querySelector('.shortcut-title').textContent = data.title;
           shortcut.href = data.url;
