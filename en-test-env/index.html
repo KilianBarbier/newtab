@@ -222,6 +222,10 @@
       }
 
       try {
+        const activeTab = localStorage.getItem("activeTab") || "personal";
+        const currentView = localStorage.getItem('currentView');
+        const currentFolderId = localStorage.getItem('currentFolderId');
+        
         const faviconUrl = await getFaviconUrl(url);
 
         // Determine image choice
@@ -254,22 +258,31 @@
           }
         }
 
-        const activeTab = localStorage.getItem("activeTab") || "personal";
-        const shortcuts = JSON.parse(
-          localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
-        );
-
         const newEntry = { title, url, faviconUrl };
         if (imageUrl) newEntry.imageUrl = imageUrl;
 
         console.debug('saving shortcut entry', { position, newEntry });
 
-        shortcuts[position] = newEntry;
-        localStorage.setItem(
-          `shortcuts_${activeTab}`,
-          JSON.stringify(shortcuts)
-        );
-        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+        // Save to folder or main shortcuts
+        if (currentView === 'folder' && currentFolderId) {
+          const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+          const folder = folders[currentFolderId];
+          if (folder) {
+            if (!folder.shortcuts) folder.shortcuts = {};
+            folder.shortcuts[position] = newEntry;
+            localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+          }
+        } else {
+          const shortcuts = JSON.parse(
+            localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
+          );
+          shortcuts[position] = newEntry;
+          localStorage.setItem(
+            `shortcuts_${activeTab}`,
+            JSON.stringify(shortcuts)
+          );
+          localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+        }
 
         closeConfigModal();
         reloadShortcuts(); // Instead of reloadWithTransition()
@@ -1062,7 +1075,23 @@
     function reloadShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
+      
+      // Check if we're in a folder view
+      const currentView = localStorage.getItem('currentView');
+      const currentFolderId = localStorage.getItem('currentFolderId');
+      
+      if (currentView === 'folder' && currentFolderId) {
+        const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+        const folder = folders[currentFolderId];
+        if (folder) {
+          displayFolderView(folder);
+          return;
+        }
+      }
+      
+      // Normal view
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
 
       // Supprimer tous les raccourcis existants mais garder le bouton d'ajout
       const addRowButton = document.getElementById("addRowButton");
@@ -1102,9 +1131,17 @@
           }
         }
       }
+      
+      // Add folders to grid
+      Object.values(folders).forEach(folder => {
+        grid.insertAdjacentHTML('beforeend', generateFolderShortcut(folder));
+      });
 
       // Remettre le bouton d'ajout
       grid.appendChild(addRowButton);
+      
+      // Add create folder button
+      grid.insertAdjacentHTML('beforeend', generateCreateFolderButton());
 
       // Mettre à jour les raccourcis avec leurs données
       Object.entries(shortcuts).forEach(([position, data]) => {
@@ -1840,6 +1877,263 @@
       }
     }
 
+    // ==================== FOLDER SYSTEM ====================
+
+    // Function to generate the "Create Folder" button
+    function generateCreateFolderButton() {
+      return `
+        <button onclick="openCreateFolderModal()"
+          class="group p-6 backdrop-blur-xl bg-gradient-to-br from-purple-400/30 to-pink-400/30 rounded-2xl shadow-lg hover:shadow-xl hover:from-purple-400/40 hover:to-pink-400/40 transition-all duration-300 border-2 border-dashed border-white/30 w-full">
+          <div class="text-center">
+            <div class="flex justify-center mb-2">
+              <svg class="w-8 h-8 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m-3-3h6"></path>
+              </svg>
+            </div>
+            <div class="text-white/70 font-medium">Create Folder</div>
+          </div>
+        </button>`;
+    }
+
+    // Open modal to create a new folder
+    function openCreateFolderModal() {
+      const modal = document.getElementById('createFolderModal');
+      const input = document.getElementById('folderNameInput');
+      modal.classList.remove('hidden');
+      input.value = '';
+      setTimeout(() => input.focus(), 100);
+    }
+
+    // Close folder creation modal
+    function closeCreateFolderModal() {
+      document.getElementById('createFolderModal').classList.add('hidden');
+    }
+
+    // Create a new folder
+    function createFolder() {
+      const input = document.getElementById('folderNameInput');
+      const folderName = input.value.trim();
+      
+      if (!folderName) {
+        alert('Please enter a folder name');
+        return;
+      }
+
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+      
+      // Generate unique folder ID
+      const folderId = 'folder_' + Date.now();
+      
+      // Create folder data
+      folders[folderId] = {
+        id: folderId,
+        name: folderName,
+        position: Object.keys(JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}")).length,
+        shortcuts: {},
+        createdAt: new Date().toISOString()
+      };
+      
+      // Save folder
+      localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+      
+      closeCreateFolderModal();
+      reloadShortcuts();
+      
+      showNotification(`Folder "${folderName}" created!`);
+    }
+
+    // Generate folder HTML (displays as a shortcut with mini icons)
+    function generateFolderShortcut(folder) {
+      const shortcuts = folder.shortcuts || {};
+      const shortcutEntries = Object.values(shortcuts).slice(0, 9); // Max 9 icons like iOS
+      
+      // Generate mini icons grid
+      let miniIconsHTML = '';
+      for (let i = 0; i < 9; i++) {
+        if (shortcutEntries[i]) {
+          const shortcut = shortcutEntries[i];
+          const iconSrc = shortcut.imageUrl || shortcut.iconURL || shortcut.faviconUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>';
+          miniIconsHTML += `
+            <div class="w-full h-full bg-white/20 rounded-md flex items-center justify-center overflow-hidden">
+              <img src="${iconSrc}" alt="" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>'"/>
+            </div>`;
+        } else {
+          miniIconsHTML += `<div class="w-full h-full bg-white/10 rounded-md"></div>`;
+        }
+      }
+      
+      return `
+        <div class="shortcut-container">
+          <a href="#" onclick="openFolder('${folder.id}'); return false;" 
+             oncontextmenu="showFolderContextMenu(event, '${folder.id}'); return false;"
+             data-folder-id="${folder.id}"
+             class="group block p-4 backdrop-blur-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 relative">
+            
+            <!-- Mini icons grid (3x3) -->
+            <div class="grid grid-cols-3 gap-1 w-20 h-20 mx-auto mb-2">
+              ${miniIconsHTML}
+            </div>
+            
+            <div class="text-center">
+              <div class="text-sm font-medium text-white truncate">${folder.name}</div>
+              <div class="text-xs text-white/60 mt-1">${Object.keys(shortcuts).length} items</div>
+            </div>
+          </a>
+        </div>`;
+    }
+
+    // Open folder view
+    function openFolder(folderId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+      const folder = folders[folderId];
+      
+      if (!folder) {
+        console.error('Folder not found:', folderId);
+        return;
+      }
+      
+      // Save current view state
+      localStorage.setItem('currentView', 'folder');
+      localStorage.setItem('currentFolderId', folderId);
+      
+      // Update UI to show folder view
+      displayFolderView(folder);
+    }
+
+    // Display folder view (like a separate layout)
+    function displayFolderView(folder) {
+      const grid = document.getElementById('shortcutGrid');
+      const shortcuts = folder.shortcuts || {};
+      
+      // Clear grid
+      grid.innerHTML = '';
+      
+      // Add back button
+      const backButton = document.createElement('div');
+      backButton.className = 'col-span-full mb-4';
+      backButton.innerHTML = `
+        <button onclick="exitFolderView()" 
+                class="flex items-center gap-2 px-4 py-2 backdrop-blur-xl bg-white/30 rounded-xl hover:bg-white/40 transition-all">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <span class="text-white font-medium">${folder.name}</span>
+        </button>`;
+      grid.appendChild(backButton);
+      
+      // Get shortcut count for this folder
+      const shortcutCount = parseInt(localStorage.getItem(`folderShortcutCount_${folder.id}`) || "8");
+      
+      // Generate shortcuts for folder
+      for (let i = 0; i < shortcutCount; i++) {
+        const shortcutHTML = generateShortcut(i);
+        grid.insertAdjacentHTML('beforeend', shortcutHTML);
+      }
+      
+      // Update shortcuts with saved data
+      Object.entries(shortcuts).forEach(([position, data]) => {
+        const shortcut = document.querySelector(`a[data-position="${position}"]`);
+        if (shortcut) {
+          const iconContainer = shortcut.querySelector('.shortcut-icon');
+          const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
+          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded"/>`;
+          iconContainer.setAttribute('data-empty', 'false');
+          shortcut.querySelector('.shortcut-title').textContent = data.title;
+          shortcut.href = data.url;
+        }
+      });
+      
+      // Add "Add more shortcuts" button for folder
+      grid.insertAdjacentHTML('beforeend', generateAddRowButton());
+      
+      // Update the add row button to work within folder context
+      const addButton = document.getElementById('addRowButton');
+      if (addButton) {
+        addButton.onclick = () => addMoreShortcutsToFolder(folder.id);
+      }
+    }
+
+    // Exit folder view and return to main view
+    function exitFolderView() {
+      localStorage.removeItem('currentView');
+      localStorage.removeItem('currentFolderId');
+      reloadShortcuts();
+    }
+
+    // Add more shortcuts to a folder
+    function addMoreShortcutsToFolder(folderId) {
+      const currentCount = document.querySelectorAll("[data-position]").length;
+      localStorage.setItem(`folderShortcutCount_${folderId}`, currentCount + 4);
+      
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+      const folder = folders[folderId];
+      
+      displayFolderView(folder);
+    }
+
+    // Show context menu for folder
+    function showFolderContextMenu(event, folderId) {
+      event.preventDefault();
+      const contextMenu = document.getElementById("folderContextMenu");
+      contextMenu.style.left = `${event.pageX}px`;
+      contextMenu.style.top = `${event.pageY}px`;
+      contextMenu.setAttribute("data-folder-id", folderId);
+      contextMenu.classList.remove("hidden");
+      
+      document.addEventListener("click", closeFolderContextMenu);
+    }
+
+    // Close folder context menu
+    function closeFolderContextMenu() {
+      document.getElementById("folderContextMenu").classList.add("hidden");
+      document.removeEventListener("click", closeFolderContextMenu);
+    }
+
+    // Rename folder
+    function renameFolder(folderId) {
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+      const folder = folders[folderId];
+      
+      if (!folder) return;
+      
+      const newName = prompt('Enter new folder name:', folder.name);
+      if (newName && newName.trim()) {
+        folder.name = newName.trim();
+        localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+        closeFolderContextMenu();
+        reloadShortcuts();
+        showNotification(`Folder renamed to "${newName}"`);
+      }
+    }
+
+    // Delete folder
+    function deleteFolder(folderId) {
+      if (!confirm('Delete this folder and all its contents?')) return;
+      
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+      
+      delete folders[folderId];
+      localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+      localStorage.removeItem(`folderShortcutCount_${folderId}`);
+      
+      closeFolderContextMenu();
+      
+      // If we're currently in this folder, exit
+      if (localStorage.getItem('currentFolderId') === folderId) {
+        exitFolderView();
+      } else {
+        reloadShortcuts();
+      }
+      
+      showNotification('Folder deleted');
+    }
+
     document.addEventListener('click', (e) => {
       const settingsMenu = document.getElementById('settingsMenu');
       const settingsButton = e.target.closest('[onclick*="toggleSettingsMenu"]');
@@ -2540,6 +2834,86 @@
           </div>
           <button onclick="closeSearchHelp()" class="mt-6 px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white">
             Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Create Folder Modal -->
+      <div id="createFolderModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="modal-content bg-white/95 rounded-2xl p-6 w-96 shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-800">Create New Folder</h2>
+          <input type="text" id="folderNameInput" placeholder="Folder name" 
+                 class="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none mb-4"
+                 onkeypress="if(event.key==='Enter') createFolder()"/>
+          <div class="flex gap-3">
+            <button onclick="createFolder()" 
+                    class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl hover:shadow-lg transition-all font-medium">
+              Create
+            </button>
+            <button onclick="closeCreateFolderModal()" 
+                    class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-300 transition-all font-medium">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Folder Context Menu -->
+      <div id="folderContextMenu" class="hidden fixed z-50">
+        <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden min-w-[200px]">
+          <button onclick="renameFolder(document.getElementById('folderContextMenu').getAttribute('data-folder-id'))" 
+                  class="w-full px-4 py-3 hover:bg-blue-50 transition-colors text-left flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Rename
+          </button>
+          <button onclick="deleteFolder(document.getElementById('folderContextMenu').getAttribute('data-folder-id'))" 
+                  class="w-full px-4 py-3 hover:bg-red-50 transition-colors text-left text-red-600 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Delete Folder
+          </button>
+        </div>
+      </div>
+
+      <!-- Create Folder Modal -->
+      <div id="createFolderModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xl flex items-center justify-center z-50">
+        <div class="modal-content bg-white/95 rounded-2xl p-6 w-96 shadow-2xl backdrop-blur-xl">
+          <h2 class="text-2xl font-bold mb-4 text-gray-800">Create New Folder</h2>
+          <input type="text" id="folderNameInput" placeholder="Folder name" 
+                 class="w-full p-3 rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none mb-4"
+                 onkeypress="if(event.key==='Enter') createFolder()"/>
+          <div class="flex gap-3">
+            <button onclick="createFolder()" 
+                    class="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl hover:shadow-lg transition-all font-medium">
+              Create
+            </button>
+            <button onclick="closeCreateFolderModal()" 
+                    class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl hover:bg-gray-300 transition-all font-medium">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Folder Context Menu -->
+      <div id="folderContextMenu" class="hidden fixed z-50">
+        <div class="bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden min-w-[200px]">
+          <button onclick="renameFolder(document.getElementById('folderContextMenu').getAttribute('data-folder-id'))" 
+                  class="w-full px-4 py-3 hover:bg-blue-50 transition-colors text-left flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Rename
+          </button>
+          <button onclick="deleteFolder(document.getElementById('folderContextMenu').getAttribute('data-folder-id'))" 
+                  class="w-full px-4 py-3 hover:bg-red-50 transition-colors text-left text-red-600 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Delete Folder
           </button>
         </div>
       </div>
