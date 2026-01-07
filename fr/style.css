@@ -564,6 +564,12 @@ select option[value="i"] {
     align-items: center;
     justify-content: center;
     margin: 0 auto 12px;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    max-width: 48px;
+    max-height: 48px;
 }
 
 /* Animations pour le chargement initial */
