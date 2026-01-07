@@ -1124,7 +1124,7 @@
           const src = shortcutData.imageUrl || shortcutData.iconURL || shortcutData.faviconUrl || null;
           console.debug('reloadShortcuts applying src for position', position, src ? src.substring(0,100) : null);
           if (src) {
-            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 aspect-square rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
+            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 min-w-[3rem] min-h-[3rem] max-w-[3rem] max-h-[3rem] rounded object-cover" style="aspect-ratio: 1/1;" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
             iconElement.setAttribute('data-empty', 'false');
           }
 
@@ -1164,7 +1164,8 @@
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
               <img src="${imgSrc}" 
-                 class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 class="w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 style="aspect-ratio: 1/1;"
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -2058,7 +2059,7 @@
         if (shortcut) {
           const iconContainer = shortcut.querySelector('.shortcut-icon');
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
-          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded"/>`;
+          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" style="aspect-ratio: 1/1;"/>`;
           iconContainer.setAttribute('data-empty', 'false');
           shortcut.querySelector('.shortcut-title').textContent = data.title;
           shortcut.href = data.url;
