@@ -554,6 +554,7 @@
       }
 
       grid.innerHTML += generateAddRowButton();
+      grid.innerHTML += generateCreateFolderButton();
 
       Object.entries(shortcuts).forEach(([position, data]) => {
         const shortcut = document.querySelector(
