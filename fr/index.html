@@ -162,7 +162,7 @@
       shortcuts[newPosition] = temp;
 
       // Save changes
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem(`shortcuts_${currentActiveTab}`, JSON.stringify(shortcuts));
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
@@ -256,13 +256,6 @@
         const activeTab = localStorage.getItem("activeTab") || "personal";
         const currentView = localStorage.getItem('currentView');
         const currentFolderId = localStorage.getItem('currentFolderId');
-        
-        const faviconUrl = await getFaviconUrl(url);
-
-        // Determine image choice
-        const imageSource = document.querySelector('input[name="imageSource"]:checked')?.value || 'favicon';
-        console.debug('selected imageSource:', imageSource);
-        let imageUrl = null;
         if (imageSource === 'url') {
           const imgVal = document.getElementById('shortcutImageUrl')?.value.trim() || '';
           if (imgVal) {
