@@ -72,7 +72,7 @@ body {
 /* Show sidebar button */
 #showSidebarBtn {
   position: fixed;
-  left: 21.5rem;
+  left: 22rem;
   top: 1.5rem;
   width: 3rem;
   height: 3rem;
@@ -551,7 +551,7 @@ select option[value="i"] {
 }
 
 /* Keep empty shortcut styles unchanged */
-.shortcut-icon[data-empty="true"]):hover {
+.shortcut-icon[data-empty="true"]:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.2);
 }
