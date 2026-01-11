@@ -59,6 +59,52 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
+/* Sidebar collapsed state */
+#sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  margin-right: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Show sidebar button */
+#showSidebarBtn {
+  position: fixed;
+  left: 21.5rem;
+  top: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(25px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 45;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#showSidebarBtn.collapsed {
+  left: 1.5rem;
+}
+
+#showSidebarBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+#showSidebarBtn svg {
+  transition: transform 0.3s ease;
+}
+
+#showSidebarBtn.collapsed svg {
+  transform: rotate(180deg);
+}
+
 /* Adjust text colors for better visibility */
 .text-gray-600 {
     color: white !important;

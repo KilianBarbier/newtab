@@ -852,6 +852,7 @@
           i: "https://www.google.com/images?q=",
           ddg: "https://duckduckgo.com/?q=",
           px: "https://www.perplexity.ai/search?q=",
+          ph: "https://fr.pornhub.com/video/search?search=",
         };      // Check if we should suggest an autocorrection
         // If the query ends with a question mark, perform the search directly on Perplexity
         if (query.endsWith('?')) {
@@ -1022,6 +1023,7 @@
         i: "https://www.google.com/images?q=",
         ddg: "https://duckduckgo.com/?q=",
         px: "https://www.perplexity.ai/search?q=",
+        ph: "https://fr.pornhub.com/video/search?search=",
       };
 
       // Check if the query starts with a specific command
@@ -2168,6 +2170,13 @@
 </head>
 
 <body class="min-h-screen font-sf">
+
+  <!-- Button to show sidebar when collapsed -->
+  <button id="showSidebarBtn" onclick="toggleSidebar()" title="Show sidebar">
+    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
 
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
@@ -4749,6 +4758,39 @@
     function closeSearchHelp() {
       document.getElementById("searchHelpModal").classList.add("hidden");
     }
+
+    // Sidebar toggle function
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const showBtn = document.getElementById('showSidebarBtn');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        // Show sidebar
+        sidebar.classList.remove('collapsed');
+        showBtn.classList.remove('collapsed');
+        showBtn.title = 'Hide sidebar';
+        localStorage.setItem('sidebarCollapsed', 'false');
+      } else {
+        // Hide sidebar
+        sidebar.classList.add('collapsed');
+        showBtn.classList.add('collapsed');
+        showBtn.title = 'Show sidebar';
+        localStorage.setItem('sidebarCollapsed', 'true');
+      }
+    }
+    
+    // Initialize sidebar state on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      const sidebar = document.getElementById('sidebar');
+      const showBtn = document.getElementById('showSidebarBtn');
+      
+      if (sidebarCollapsed && sidebar && showBtn) {
+        sidebar.classList.add('collapsed');
+        showBtn.classList.add('collapsed');
+      }
+    });
 
   </script>
 
