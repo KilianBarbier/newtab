@@ -2169,9 +2169,25 @@
 
 <body class="min-h-screen font-sf">
 
+  <!-- Button to show sidebar when collapsed -->
+  <button id="showSidebarBtn" onclick="toggleSidebar()" title="Show sidebar">
+    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
+
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
       class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
+
+      <!-- Toggle button for collapsing sidebar -->
+      <button id="sidebarToggle" onclick="toggleSidebar()" 
+        class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all duration-300 z-50" 
+        title="Hide sidebar">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
 
       <div
         class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
@@ -4749,6 +4765,62 @@
     function closeSearchHelp() {
       document.getElementById("searchHelpModal").classList.add("hidden");
     }
+
+    // Sidebar toggle function
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const showBtn = document.getElementById('showSidebarBtn');
+      const toggleBtn = document.getElementById('sidebarToggle');
+      const isCollapsed = sidebar.classList.contains('collapsed');
+      
+      if (isCollapsed) {
+        // Show sidebar
+        sidebar.classList.remove('collapsed');
+        showBtn.classList.remove('visible');
+        
+        // Update toggle button icon to point left
+        if (toggleBtn) {
+          toggleBtn.innerHTML = `
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          `;
+          toggleBtn.title = 'Hide sidebar';
+        }
+        
+        // Save state
+        localStorage.setItem('sidebarCollapsed', 'false');
+      } else {
+        // Hide sidebar
+        sidebar.classList.add('collapsed');
+        showBtn.classList.add('visible');
+        
+        // Update toggle button icon to point right
+        if (toggleBtn) {
+          toggleBtn.innerHTML = `
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          `;
+          toggleBtn.title = 'Show sidebar';
+        }
+        
+        // Save state
+        localStorage.setItem('sidebarCollapsed', 'true');
+      }
+    }
+    
+    // Initialize sidebar state on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+      const sidebar = document.getElementById('sidebar');
+      const showBtn = document.getElementById('showSidebarBtn');
+      
+      if (sidebarCollapsed && sidebar && showBtn) {
+        sidebar.classList.add('collapsed');
+        showBtn.classList.add('visible');
+      }
+    });
 
   </script>
 

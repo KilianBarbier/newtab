@@ -59,6 +59,44 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
+/* Sidebar collapsed state */
+#sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  margin-right: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Show sidebar button */
+#showSidebarBtn {
+  position: fixed;
+  left: 1.5rem;
+  top: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(25px);
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 45;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#showSidebarBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+#showSidebarBtn.visible {
+  display: flex;
+}
+
 /* Adjust text colors for better visibility */
 .text-gray-600 {
     color: white !important;
