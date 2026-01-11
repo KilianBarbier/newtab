@@ -79,7 +79,7 @@ body {
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(25px);
   border-radius: 50%;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -93,8 +93,12 @@ body {
   transform: scale(1.05);
 }
 
-#showSidebarBtn.visible {
-  display: flex;
+#showSidebarBtn svg {
+  transition: transform 0.3s ease;
+}
+
+#showSidebarBtn.collapsed svg {
+  transform: rotate(180deg);
 }
 
 /* Adjust text colors for better visibility */
