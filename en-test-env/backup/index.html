@@ -163,7 +163,7 @@
       shortcuts[newPosition] = temp;
 
       // Save changes
-      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem(`shortcuts_${currentActiveTab}`, JSON.stringify(shortcuts));
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
@@ -545,6 +545,8 @@
 
       const grid = document.getElementById("shortcutGrid");
       const shortcuts = JSON.parse(localStorage.getItem("shortcuts") || "{}");
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
       const shortcutCount = parseInt(
         localStorage.getItem("shortcutCount") || "8"
       );
@@ -552,9 +554,6 @@
       for (let i = 0; i < shortcutCount; i++) {
         grid.innerHTML += generateShortcut(i);
       }
-
-      grid.innerHTML += generateAddRowButton();
-      grid.innerHTML += generateCreateFolderButton();
 
       Object.entries(shortcuts).forEach(([position, data]) => {
         const shortcut = document.querySelector(
@@ -572,11 +571,19 @@
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
               <img src="${imgSrc}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 class="w-8 h-8 aspect-square mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
       });
+
+      // Load and display folders
+      Object.values(folders).forEach(folder => {
+        grid.innerHTML += generateFolderShortcut(folder);
+      });
+
+      grid.innerHTML += generateAddRowButton();
+      grid.innerHTML += generateCreateFolderButton();
 
       const searchInput = document.getElementById("searchInput");
       const searchButton = document.querySelector(".absolute svg");
@@ -781,8 +788,6 @@
         dropdown.classList.add('hidden');
       });
 
-      // Initialiser l'onglet actif
-      const activeTab = localStorage.getItem("activeTab") || "personal";
       switchTab(activeTab);
     });
 
@@ -1119,7 +1124,7 @@
           const src = shortcutData.imageUrl || shortcutData.iconURL || shortcutData.faviconUrl || null;
           console.debug('reloadShortcuts applying src for position', position, src ? src.substring(0,100) : null);
           if (src) {
-            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 rounded object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
+            iconElement.innerHTML = `<img src="${src}" alt="${shortcutData.title}" class="mx-auto h-12 w-12 min-w-[3rem] min-h-[3rem] max-w-[3rem] max-h-[3rem] rounded object-cover" style="aspect-ratio: 1/1;" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>'">`;
             iconElement.setAttribute('data-empty', 'false');
           }
 
@@ -1135,14 +1140,14 @@
       
       // Add folders to grid
       Object.values(folders).forEach(folder => {
-        grid.insertAdjacentHTML('beforeend', generateFolderShortcut(folder));
+        grid.innerHTML += generateFolderShortcut(folder);
       });
 
       // Remettre le bouton d'ajout
-      grid.appendChild(addRowButton);
+      grid.innerHTML += generateAddRowButton();
       
       // Add create folder button
-      grid.insertAdjacentHTML('beforeend', generateCreateFolderButton());
+      grid.innerHTML += generateCreateFolderButton();
 
       // Mettre à jour les raccourcis avec leurs données
       Object.entries(shortcuts).forEach(([position, data]) => {
@@ -1159,7 +1164,8 @@
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
           iconContainer.innerHTML = `
               <img src="${imgSrc}" 
-                 class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 class="w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" 
+                 style="aspect-ratio: 1/1;"
                  alt="${data.title}" 
                  onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>🌐</text></svg>\'">`;
         }
@@ -1948,21 +1954,36 @@
     // Generate folder HTML (displays as a shortcut with mini icons)
     function generateFolderShortcut(folder) {
       const shortcuts = folder.shortcuts || {};
-      const shortcutEntries = Object.values(shortcuts).slice(0, 9); // Max 9 icons like iOS
+      const shortcutEntries = Object.values(shortcuts).slice(0, 4); // Max 4 icons (2x2)
+      const hasShortcuts = shortcutEntries.length > 0;
       
-      // Generate mini icons grid
-      let miniIconsHTML = '';
-      for (let i = 0; i < 9; i++) {
-        if (shortcutEntries[i]) {
-          const shortcut = shortcutEntries[i];
-          const iconSrc = shortcut.imageUrl || shortcut.iconURL || shortcut.faviconUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>';
-          miniIconsHTML += `
-            <div class="w-full h-full bg-white/20 rounded-md flex items-center justify-center overflow-hidden">
-              <img src="${iconSrc}" alt="" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>'"/>
-            </div>`;
-        } else {
-          miniIconsHTML += `<div class="w-full h-full bg-white/10 rounded-md"></div>`;
+      // Generate folder icon content
+      let folderIconHTML = '';
+      
+      if (hasShortcuts) {
+        // Generate mini icons grid when folder has shortcuts (2x2)
+        let miniIconsHTML = '';
+        for (let i = 0; i < 4; i++) {
+          if (shortcutEntries[i]) {
+            const shortcut = shortcutEntries[i];
+            const iconSrc = shortcut.imageUrl || shortcut.iconURL || shortcut.faviconUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>';
+            miniIconsHTML += `
+              <div class="w-full h-full bg-white/20 rounded-md flex items-center justify-center overflow-hidden">
+                <img src="${iconSrc}" alt="" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><text y=%2218%22 font-size=%2218%22>📁</text></svg>'"/>
+              </div>`;
+          } else {
+            miniIconsHTML += `<div class="w-full h-full bg-white/10 rounded-md"></div>`;
+          }
         }
+        folderIconHTML = `<div class="grid grid-cols-2 grid-rows-2 gap-1 w-20 h-20 mx-auto mb-2" style="display: grid !important;">${miniIconsHTML}</div>`;
+      } else {
+        // Show simple folder icon when empty
+        folderIconHTML = `
+          <div class="w-20 h-20 mx-auto mb-2 flex items-center justify-center">
+            <svg class="w-16 h-16 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+            </svg>
+          </div>`;
       }
       
       return `
@@ -1972,10 +1993,8 @@
              data-folder-id="${folder.id}"
              class="group block p-4 backdrop-blur-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 relative">
             
-            <!-- Mini icons grid (3x3) -->
-            <div class="grid grid-cols-3 gap-1 w-20 h-20 mx-auto mb-2">
-              ${miniIconsHTML}
-            </div>
+            <!-- Folder icon (grid of shortcuts or simple folder icon) -->
+            ${folderIconHTML}
             
             <div class="text-center">
               <div class="text-sm font-medium text-white truncate">${folder.name}</div>
@@ -2040,7 +2059,7 @@
         if (shortcut) {
           const iconContainer = shortcut.querySelector('.shortcut-icon');
           const imgSrc = data.imageUrl || data.iconURL || data.faviconUrl || '';
-          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded"/>`;
+          iconContainer.innerHTML = `<img src="${imgSrc}" alt="${data.title}" class="w-8 h-8 min-w-[2rem] min-h-[2rem] max-w-[2rem] max-h-[2rem] mt-2 mb-2 group-hover:scale-120 transition-transform duration-300 object-cover rounded" style="aspect-ratio: 1/1;"/>`;
           iconContainer.setAttribute('data-empty', 'false');
           shortcut.querySelector('.shortcut-title').textContent = data.title;
           shortcut.href = data.url;
