@@ -561,8 +561,31 @@
             document.body.appendChild(el);
           }
         }
-        el.textContent = service ? `Recherches pour "${service}" : ${count}` : '';
-        el.style.display = service ? 'inline-block' : 'none';
+        el.textContent = service ? `Recherches pour "${service}" : ${count}` : '(Aucun service détecté)';
+        el.style.display = 'inline-block';
+            // Bouton de reset des raccourcis pour debug (à placer sous la barre de recherche)
+            document.addEventListener("DOMContentLoaded", () => {
+              let resetBtn = document.getElementById('resetShortcutsBtn');
+              if (!resetBtn) {
+                resetBtn = document.createElement('button');
+                resetBtn.id = 'resetShortcutsBtn';
+                resetBtn.textContent = 'Reset raccourcis (debug)';
+                resetBtn.style = 'margin:8px 0 16px 0;padding:6px 18px;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:15px;z-index:99999;display:block;';
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                  searchInput.insertAdjacentElement('afterend', resetBtn);
+                } else {
+                  document.body.appendChild(resetBtn);
+                }
+                resetBtn.onclick = () => {
+                  localStorage.removeItem('shortcuts');
+                  localStorage.removeItem('shortcuts_personal');
+                  localStorage.removeItem('shortcuts_professional');
+                  localStorage.setItem('shortcutCount', '8');
+                  location.reload();
+                };
+              }
+            });
       }
 
       document.addEventListener("DOMContentLoaded", () => {
