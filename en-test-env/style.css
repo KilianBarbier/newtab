@@ -72,7 +72,7 @@ body {
 /* Show sidebar button */
 #showSidebarBtn {
   position: fixed;
-  left: 23.5rem;
+  left: 22rem;
   top: 1.5rem;
   width: 3rem;
   height: 3rem;
@@ -532,17 +532,9 @@ select option[value="i"] {
 
 /* Update favicon image size for configured shortcuts */
 .shortcut-icon img {
-    display: block !important;
     width: 36px !important;  
     height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    max-width: 36px !important;
-    max-height: 36px !important;
-    aspect-ratio: 1/1 !important;
-    object-fit: cover !important;
-    object-position: center !important;
-    transform: scale(1.3);
+    transform: scale(1.3); /* Added scale for saved shortcuts */
 }
 
 /* Hover effect only for saved shortcuts */
@@ -554,6 +546,12 @@ select option[value="i"] {
 .shortcut-icon[data-empty="true"]:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.2);
+}
+
+/* Update favicon image size for configured shortcuts */
+.shortcut-icon img {
+    width: 36px !important;  /* Increased from 32px */
+    height: 36px !important; /* Increased from 32px */
 }
 
 /* Adjust title spacing */
@@ -610,12 +608,6 @@ select option[value="i"] {
     align-items: center;
     justify-content: center;
     margin: 0 auto 12px;
-    width: 48px;
-    height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    max-width: 48px;
-    max-height: 48px;
 }
 
 /* Animations pour le chargement initial */
@@ -905,10 +897,6 @@ select option[value="i"] {
   .shortcut-icon {
     width: 48px;
     height: 48px;
-    min-width: 48px;
-    min-height: 48px;
-    max-width: 48px;
-    max-height: 48px;
     margin: 0 auto 8px;
   }
 
@@ -939,10 +927,6 @@ select option[value="i"] {
   .shortcut-icon {
     width: 36px;
     height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-    max-width: 36px;
-    max-height: 36px;
     margin: 0 auto 4px;
   }
 
