@@ -815,14 +815,12 @@
 
     function performSearchRedirect(url, query) {
       const updated = incrementSearchCounterSeconds(10);
-      // --- Ajout du comptage de requêtes par service ---
+      // --- Ajout du comptage de requêtes par service et blocage à la 5e ---
       let service = '';
-      // Si la requête commence par un /, c'est une commande personnalisée
       if (query && query.startsWith('/')) {
         const parts = query.split(' ');
         service = parts[0].replace('/', '').toLowerCase();
       } else {
-        // Sinon, essaie d'extraire le domaine du lien
         try {
           const u = new URL(url);
           service = u.hostname.replace('www.', '').split('.')[0];
@@ -830,7 +828,16 @@
           service = '';
         }
       }
-      if (service) incrementRequestCount(service);
+      if (service) {
+        const counts = JSON.parse(localStorage.getItem('requestCounts') || '{}');
+        counts[service] = (counts[service] || 0) + 1;
+        localStorage.setItem('requestCounts', JSON.stringify(counts));
+        // Blocage à la 5e recherche : propose l'ajout et ne lance pas la recherche
+        if (counts[service] === 5 && !localStorage.getItem('ignoredSuggest_' + service) && !shortcutExists(service)) {
+          showAddShortcutSuggestion(service);
+          return; // Bloque la recherche
+        }
+      }
       // --- Fin ajout ---
       try {
         const searches = JSON.parse(localStorage.getItem('searches') || '[]');
