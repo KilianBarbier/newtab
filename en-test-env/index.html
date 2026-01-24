@@ -43,7 +43,6 @@
         console.error("Error retrieving favicon:", e);
         // Return a default icon in case of error
         return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌐</text></svg>';
-      }
     }
 
     function handleShortcutClick(event, position) {
@@ -816,6 +815,23 @@
 
     function performSearchRedirect(url, query) {
       const updated = incrementSearchCounterSeconds(10);
+      // --- Ajout du comptage de requêtes par service ---
+      let service = '';
+      // Si la requête commence par un /, c'est une commande personnalisée
+      if (query && query.startsWith('/')) {
+        const parts = query.split(' ');
+        service = parts[0].replace('/', '').toLowerCase();
+      } else {
+        // Sinon, essaie d'extraire le domaine du lien
+        try {
+          const u = new URL(url);
+          service = u.hostname.replace('www.', '').split('.')[0];
+        } catch (e) {
+          service = '';
+        }
+      }
+      if (service) incrementRequestCount(service);
+      // --- Fin ajout ---
       try {
         const searches = JSON.parse(localStorage.getItem('searches') || '[]');
         searches.push({ query: query || '', time: Date.now(), counterSeconds: updated });
@@ -824,6 +840,91 @@
         localStorage.setItem('searches', JSON.stringify([{ query: query || '', time: Date.now(), counterSeconds: updated }]));
       }
       setTimeout(() => { window.location.href = url; }, 60);
+    }
+
+    // Incrémente le compteur d'utilisation d'un service et propose l'ajout si besoin
+    function incrementRequestCount(service) {
+      const counts = JSON.parse(localStorage.getItem('requestCounts') || '{}');
+      counts[service] = (counts[service] || 0) + 1;
+      localStorage.setItem('requestCounts', JSON.stringify(counts));
+      // Seuillage à 5 utilisations, suggestion si non ignoré et raccourci non existant
+      if (counts[service] === 5 && !localStorage.getItem('ignoredSuggest_' + service) && !shortcutExists(service)) {
+        showAddShortcutSuggestion(service);
+      }
+    }
+
+    // Vérifie si un raccourci existe déjà pour ce service (par nom ou url)
+    function shortcutExists(service) {
+      const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '{}');
+      return Object.values(shortcuts).some(s => {
+        if (!s || !s.url) return false;
+        try {
+          const u = new URL(s.url);
+          return u.hostname.toLowerCase().includes(service);
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // Affiche une suggestion d'ajout de raccourci pour le service
+    function showAddShortcutSuggestion(service) {
+      // Crée le toast/modal
+      const suggestion = document.createElement('div');
+      suggestion.className = 'fixed bottom-8 right-8 bg-blue-600 text-white px-6 py-4 rounded-lg shadow-lg z-[9999] flex items-center gap-4';
+      suggestion.innerHTML = `Vous utilisez souvent <b>${service}</b>. Ajouter comme raccourci ?
+        <button id="addShortcutBtn" class="ml-4 bg-green-500 hover:bg-green-600 px-3 py-1 rounded">Ajouter</button>
+        <button id="ignoreShortcutBtn" class="ml-2 bg-gray-400 hover:bg-gray-500 px-3 py-1 rounded">Ignorer</button>`;
+      document.body.appendChild(suggestion);
+
+      // Action Ajouter
+      document.getElementById('addShortcutBtn').onclick = () => {
+        // Préremplir le modal de config avec le nom du service
+        openConfigModalForService(service);
+        suggestion.remove();
+      };
+      // Action Ignorer
+      document.getElementById('ignoreShortcutBtn').onclick = () => {
+        localStorage.setItem('ignoredSuggest_' + service, '1');
+        suggestion.remove();
+      };
+      // Auto-disparition après 10s
+      setTimeout(() => suggestion.remove(), 10000);
+    }
+
+    // Ouvre le modal de config avec le nom du service prérempli et recherche l'URL via une API
+    async function openConfigModalForService(service) {
+      const modal = document.getElementById("configModal");
+      const titleInput = document.getElementById("shortcutTitle");
+      const urlInput = document.getElementById("shortcutUrl");
+      // Préremplir le titre
+      titleInput.value = service.charAt(0).toUpperCase() + service.slice(1);
+      // Recherche d'URL via une API publique (DuckDuckGo Instant Answer)
+      let url = '';
+      try {
+        const resp = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(service)}&format=json&no_redirect=1&no_html=1`);
+        const data = await resp.json();
+        // Prend l'URL du premier résultat pertinent
+        if (data && data.AbstractURL) {
+          url = data.AbstractURL;
+        } else if (data && data.RelatedTopics && data.RelatedTopics.length > 0) {
+          // Cherche dans les sujets liés
+          const topic = data.RelatedTopics.find(t => t.FirstURL);
+          if (topic) url = topic.FirstURL;
+        }
+      } catch (e) {
+        url = '';
+      }
+      // Fallbacks manuels si l'API ne trouve rien
+      if (!url) {
+        if (service === 'spotify') url = 'https://open.spotify.com/';
+        else if (service === 'mybank') url = 'https://www.mybank.com/';
+        else if (service === 'valo' || service === 'valotracker') url = 'https://tracker.gg/valorant';
+      }
+      urlInput.value = url;
+      // Ouvre le modal (position 0 par défaut)
+      openConfigModal('0', false);
+    }
     }
 
     function handleSearch(event) {
