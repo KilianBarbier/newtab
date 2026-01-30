@@ -361,6 +361,13 @@ select option[value="google"] {
     background-size: 20px 20px;
     padding-left: 36px;
 }
+    select option[value="gpt"] {
+        background-image: url('https://img.icons8.com/color/48/000000/chatgpt.png');
+        background-repeat: no-repeat;
+        background-position: 8px center;
+        background-size: 20px 20px;
+        padding-left: 36px;
+    }
 
 select option[value="bing"] {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300897B' d='M4.721 4.001l4.827 1.704v12.785l5.175-2.99-2.993-1.421-2.182-4.44 8.37 2.993v4.994L9.548 21 4.721 18.719V4.001z'/%3E%3C/svg%3E");
@@ -482,6 +489,14 @@ select option[value="maps"] {
     background-size: 20px 20px;
     padding-left: 36px;
 }
+
+    #searchEngine option[value="gpt"] {
+        background-image: url('https://img.icons8.com/color/48/000000/chatgpt.png');
+        background-repeat: no-repeat;
+        background-position: 8px center;
+        background-size: 20px 20px;
+        padding-left: 36px;
+    }
 
 select option[value="i"] {
     background-image: url('https://img.icons8.com/color/48/000000/google-images.png');
