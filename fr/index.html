@@ -735,6 +735,7 @@
                 "ig",
                 "maps",
                 "i",
+                "gpt"
               ];
               if (validCommands.includes(possibleCommand)) {
                 newText = parts.slice(1).join(" ");
@@ -815,6 +816,7 @@
         let selectedEngine = document.getElementById("searchEngine").value;
 
         const searchEngines = {
+          gpt: "https://chatgpt.com/?q=",
           g: "https://www.google.com/search?q=",
           yt: "https://www.youtube.com/results?search_query=",
           gh: "https://github.com/search?q=",
@@ -831,7 +833,7 @@
           ddg: "https://duckduckgo.com/?q=",
           px: "https://www.perplexity.ai/search?q=",
           ph: "https://fr.pornhub.com/video/search?search=",
-        };      // Check if we should suggest an autocorrection
+        };
         // If the query ends with a question mark, perform the search directly on Perplexity
         if (query.endsWith('?')) {
           const cleaned = query.slice(0, -1).trim();
@@ -984,26 +986,7 @@
       // Get the currently selected search engine
       let selectedEngine = document.getElementById("searchEngine").value;
 
-      // Directly extract search URLs to avoid going through the autocorrection process again
-      const searchEngines = {
-        g: "https://www.google.com/search?q=",
-        yt: "https://www.youtube.com/results?search_query=",
-        gh: "https://github.com/search?q=",
-        w: "https://en.wikipedia.org/wiki/Special:Search?search=",
-        r: "https://www.reddit.com/search/?q=",
-        so: "https://stackoverflow.com/search?q=",
-        a: "https://www.amazon.fr/s?k=",
-        n: "https://www.netflix.com/search?q=",
-        sp: "https://open.spotify.com/search/results",
-        tw: "https://twitter.com/search?q=",
-        ig: "https://www.instagram.com/explore/tags/",
-        maps: "https://www.google.com/maps/search/",
-        i: "https://www.google.com/images?q=",
-        ddg: "https://duckduckgo.com/?q=",
-        px: "https://www.perplexity.ai/search?q=",
-        ph: "https://fr.pornhub.com/video/search?search=",
-        gpt: "https://chatgpt.com/?q="
-      };
+      // Use the searchEngines variable from the outer scope
 
       // Check if the query starts with a specific command
       if (originalQuery.startsWith("/")) {
@@ -1030,24 +1013,7 @@
         const command = parts[0].toLowerCase();
         const searchTerms = parts.slice(1).join(' ');
 
-        const searchEngines = {
-          g: "https://www.google.com/search?q=",
-          yt: "https://www.youtube.com/results?search_query=",
-          gh: "https://github.com/search?q=",
-          w: "https://en.wikipedia.org/wiki/Special:Search?search=",
-          r: "https://www.reddit.com/search/?q=",
-          so: "https://stackoverflow.com/search?q=",
-          a: "https://www.amazon.fr/s?k=",
-          n: "https://www.netflix.com/search?q=",
-          sp: "https://open.spotify.com/search/results",
-          tw: "https://twitter.com/search?q=",
-          ig: "https://www.instagram.com/explore/tags/",
-          maps: "https://www.google.com/maps/search/",
-          i: "https://www.google.com/images?q=",
-          ddg: "https://duckduckgo.com/?q=",
-          px: "https://www.perplexity.ai/search?q=",
-          ph: "https://fr.pornhub.com/video/search?search=",
-        };
+        // Use the searchEngines variable from the outer scope
 
         // If the command is valid, execute the search directly
         if (searchEngines[command]) {
