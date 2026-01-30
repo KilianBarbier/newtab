@@ -837,6 +837,7 @@
         let selectedEngine = document.getElementById("searchEngine").value;
 
         const searchEngines = {
+          gpt: "https://chatgpt.com/?q=",
           g: "https://www.google.com/search?q=",
           yt: "https://www.youtube.com/results?search_query=",
           gh: "https://github.com/search?q=",
@@ -853,7 +854,7 @@
           ddg: "https://duckduckgo.com/?q=",
           px: "https://www.perplexity.ai/search?q=",
           ph: "https://fr.pornhub.com/video/search?search=",
-        };      // Check if we should suggest an autocorrection
+        };
         // If the query ends with a question mark, perform the search directly on Perplexity
         if (query.endsWith('?')) {
           const cleaned = query.slice(0, -1).trim();
@@ -1006,9 +1007,7 @@
       // Get the currently selected search engine
       let selectedEngine = document.getElementById("searchEngine").value;
 
-      // Directly extract search URLs to avoid going through the autocorrection process again
       // Use the searchEngines variable from the outer scope
-
       // Check if the query starts with a specific command
       if (originalQuery.startsWith("/")) {
         const parts = originalQuery.substring(1).split(" ");
