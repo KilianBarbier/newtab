@@ -121,12 +121,15 @@
     async function handleDrop(event, newPosition) {
       event.preventDefault();
       const container = event.currentTarget;
-      container.querySelector("a").classList.remove("bg-white/40"); const oldPosition = event.dataTransfer.getData('text/plain');
+      container.querySelector("a").classList.remove("bg-white/40");
+      const textPlain = event.dataTransfer.getData('text/plain') || '';
+      const oldPosition = /^\d+$/.test(textPlain) ? textPlain : '';
+      const activeTab = localStorage.getItem("activeTab") || "personal";
 
       // If it's an external drag (URL)
       if (oldPosition === '') {
         // Keep the existing logic for URL drop
-        const data = event.dataTransfer.getData("text");
+        const data = event.dataTransfer.getData("text") || textPlain;
         if (!data) return;
         try {
           const url = new URL(data);
@@ -140,11 +143,10 @@
             title = url.hostname;
           }
 
-          const shortcuts = JSON.parse(
-            localStorage.getItem("shortcuts") || "{}"
-          );
+          const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || localStorage.getItem("shortcuts") || "{}");
           const faviconUrl = await getFaviconUrl(url.href);
           shortcuts[newPosition] = { title, url: url.href, faviconUrl };
+          localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
           localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
           reloadShortcuts(); // Instead of reloadWithTransition()
@@ -153,7 +155,6 @@
         }
         return;
       }      // If it's an internal drag (rearrangement)
-      const activeTab = localStorage.getItem("activeTab") || "personal";
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
 
       // Exchange shortcuts
@@ -162,7 +163,7 @@
       shortcuts[newPosition] = temp;
 
       // Save changes
-      localStorage.setItem(`shortcuts_${currentActiveTab}`, JSON.stringify(shortcuts));
+      localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts

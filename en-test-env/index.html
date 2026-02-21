@@ -121,17 +121,26 @@
 
     async function handleDrop(event, newPosition) {
       event.preventDefault();
-      const container = event.currentTarget;
-      container.querySelector("a").classList.remove("bg-white/40"); const oldPosition = event.dataTransfer.getData('text/plain');
 
-      // If it's an external drag (URL)
-      if (oldPosition === '') {
-        // Keep the existing logic for URL drop
-        const data = event.dataTransfer.getData("text");
+      const container = event.currentTarget;
+      container.querySelector("a")?.classList.remove("bg-white/40");
+
+      const activeTab = localStorage.getItem("activeTab") || "personal";
+      const currentView = localStorage.getItem('currentView');
+      const currentFolderId = localStorage.getItem('currentFolderId');
+
+      const textPlain = event.dataTransfer.getData('text/plain') || '';
+      const isInternalDrag = /^\d+$/.test(textPlain);
+
+      // External drag (URL)
+      if (!isInternalDrag) {
+        const data = event.dataTransfer.getData("text") || textPlain;
         if (!data) return;
+
         try {
           const url = new URL(data);
           let title = "";
+
           try {
             const response = await fetch(url.href);
             const html = await response.text();
@@ -141,30 +150,57 @@
             title = url.hostname;
           }
 
-          const shortcuts = JSON.parse(
-            localStorage.getItem("shortcuts") || "{}"
-          );
           const faviconUrl = await getFaviconUrl(url.href);
-          shortcuts[newPosition] = { title, url: url.href, faviconUrl };
-          localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+          const newEntry = { title, url: url.href, faviconUrl };
+
+          if (currentView === 'folder' && currentFolderId) {
+            const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+            const folder = folders[currentFolderId];
+            if (folder) {
+              if (!folder.shortcuts) folder.shortcuts = {};
+              folder.shortcuts[newPosition] = newEntry;
+              localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+            }
+          } else {
+            const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+            shortcuts[newPosition] = newEntry;
+            localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+            localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+          }
 
           reloadShortcuts(); // Instead of reloadWithTransition()
         } catch (e) {
           console.error("Invalid URL dropped:", e);
         }
+
         return;
-      }      // If it's an internal drag (rearrangement)
-      const activeTab = localStorage.getItem("activeTab") || "personal";
-      const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+      }
 
-      // Exchange shortcuts
-      const temp = shortcuts[oldPosition];
-      shortcuts[oldPosition] = shortcuts[newPosition];
-      shortcuts[newPosition] = temp;
+      // Internal drag (rearrangement)
+      const oldPosition = textPlain;
 
-      // Save changes
-      localStorage.setItem(`shortcuts_${currentActiveTab}`, JSON.stringify(shortcuts));
-      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      if (currentView === 'folder' && currentFolderId) {
+        const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+        const folder = folders[currentFolderId];
+        if (folder) {
+          if (!folder.shortcuts) folder.shortcuts = {};
+          const temp = folder.shortcuts[oldPosition];
+          folder.shortcuts[oldPosition] = folder.shortcuts[newPosition];
+          folder.shortcuts[newPosition] = temp;
+          localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+        }
+      } else {
+        const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+
+        // Exchange shortcuts
+        const temp = shortcuts[oldPosition];
+        shortcuts[oldPosition] = shortcuts[newPosition];
+        shortcuts[newPosition] = temp;
+
+        // Save changes
+        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
+        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      }
 
       // Reload shortcuts
       reloadShortcuts();
