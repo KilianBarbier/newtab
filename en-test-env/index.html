@@ -541,8 +541,8 @@
 
       closeContextMenu();
 
-      // Reload shortcuts to update the display
-      reloadShortcuts();
+      // Force a full page reload after delete (expected behavior)
+      window.location.reload();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
