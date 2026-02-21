@@ -168,7 +168,7 @@
             localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
           }
 
-          reloadShortcuts(); // Instead of reloadWithTransition()
+          refreshAfterModification(); // In-page reload with fallback
         } catch (e) {
           console.error("Invalid URL dropped:", e);
         }
@@ -203,7 +203,7 @@
       }
 
       // Reload shortcuts
-      reloadShortcuts();
+      refreshAfterModification();
 
       // Remove temporary style classes
       document.querySelectorAll('.shortcut-container a').forEach(el => {
@@ -244,7 +244,7 @@
       }
 
       localStorage.setItem("shortcutCount", currentCount + 4);
-      reloadShortcuts(); // Au lieu de reloadWithTransition()
+      refreshAfterModification(); // In-page reload with fallback
     } async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
@@ -321,7 +321,7 @@
         }
 
         closeConfigModal();
-        reloadShortcuts(); // Instead of reloadWithTransition()
+        refreshAfterModification(); // In-page reload with fallback
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
@@ -468,7 +468,7 @@
       showNotification(`Shortcut "${shortcutData.title}" pinned to both tabs!`);
 
       // Recharger les raccourcis pour refléter les changements
-      reloadShortcuts();
+      refreshAfterModification();
     }
 
     function showNotification(message) {
@@ -542,7 +542,7 @@
       closeContextMenu();
 
       // Force a full page reload after delete (expected behavior)
-      window.location.reload();
+      refreshAfterModification();
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -1168,7 +1168,7 @@
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
-      reloadShortcuts();
+      window.location.reload();
 
       // Update widget order based on pins for the new tab
       const orderedWidgets = getPinnedWidgetOrder();
@@ -1310,7 +1310,7 @@
         closeImportModal();
 
         // Recharger l'affichage et réorganiser les widgets
-        reloadShortcuts();
+        refreshAfterModification();
 
         // Update widget order based on imported pins
         const orderedWidgets = getPinnedWidgetOrder();
@@ -1919,7 +1919,7 @@
       localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
       
       closeCreateFolderModal();
-      reloadShortcuts();
+      refreshAfterModification();
       
       showNotification(`Folder "${folderName}" created!`);
     }
@@ -2053,7 +2053,7 @@
     function exitFolderView() {
       localStorage.removeItem('currentView');
       localStorage.removeItem('currentFolderId');
-      reloadShortcuts();
+      refreshAfterModification();
     }
 
     // Add more shortcuts to a folder
@@ -2099,7 +2099,7 @@
         folder.name = newName.trim();
         localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
         closeFolderContextMenu();
-        reloadShortcuts();
+        refreshAfterModification();
         showNotification(`Folder renamed to "${newName}"`);
       }
     }
@@ -2121,7 +2121,7 @@
       if (localStorage.getItem('currentFolderId') === folderId) {
         exitFolderView();
       } else {
-        reloadShortcuts();
+        refreshAfterModification();
       }
       
       showNotification('Folder deleted');
@@ -2160,7 +2160,6 @@
           <path
             d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
         </svg>
-        <a id="perso" class="block w-full">Personal</a>
       </div>
       <div
         class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
@@ -2169,7 +2168,6 @@
           <path
             d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
         </svg>
-        <a id="pro" class="block w-full">Professional</a>
       </div>
 
       <!-- Widgets Slider -->
