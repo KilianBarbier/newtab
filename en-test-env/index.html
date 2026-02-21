@@ -1033,25 +1033,67 @@
       document.getElementById("autocorrectionModal").querySelector("p.mt-2").textContent =
         `The search will be performed on ${currentEngineName}`;
       return `/${currentEngine} ${lowercaseQuery}`;
-    }    // Function to execute the original search
+    }
+
+    function refreshAfterModification() {
+      try {
+        reloadShortcuts();
+      } catch (error) {
+        console.error("reloadShortcuts failed, forcing full page reload", error);
+        window.location.reload();
+      }
+    }
+
     function executeOriginalSearch() {
-      const originalQuery = document.getElementById("autocorrectionModal").getAttribute("data-original-query");
-      document.getElementById("autocorrectionModal").classList.add("hidden");
+      const modal = document.getElementById("autocorrectionModal");
+      const originalQuery = modal.getAttribute("data-original-query") || "";
+      modal.classList.add("hidden");
 
-      // Get the currently selected search engine
       let selectedEngine = document.getElementById("searchEngine").value;
+      let query = originalQuery.trim();
 
-      // Use the searchEngines variable from the outer scope
-      // Check if the query starts with a specific command
-      if (originalQuery.startsWith("/")) {
-        const parts = originalQuery.substring(1).split(" ");
-        if (parts.length > 0 && searchEngines[parts[0].toLowerCase()]) {
-          selectedEngine = parts[0].toLowerCase();
-          const query = parts.slice(1).join(" ");
-          performSearchRedirect(searchEngines[selectedEngine] + encodeURIComponent(query), query);
-          return;
+      if (query.startsWith("/")) {
+        const parts = query.substring(1).split(" ");
+        const command = (parts[0] || "").toLowerCase();
+        if (searchEngines[command]) {
+          selectedEngine = command;
+          query = parts.slice(1).join(" ").trim();
         }
       }
+
+      if (query.startsWith(":")) {
+        query = query.substring(1).trim();
+      }
+
+      if (!query) return;
+      const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
+      performSearchRedirect(searchUrl + encodeURIComponent(query), query);
+    }
+
+    function executeCorrectedSearch() {
+      const modal = document.getElementById("autocorrectionModal");
+      const correctedQuery = modal.getAttribute("data-corrected-query") || "";
+      modal.classList.add("hidden");
+
+      let selectedEngine = document.getElementById("searchEngine").value;
+      let query = correctedQuery.trim();
+
+      if (query.startsWith("/")) {
+        const parts = query.substring(1).split(" ");
+        const command = (parts[0] || "").toLowerCase();
+        if (searchEngines[command]) {
+          selectedEngine = command;
+          query = parts.slice(1).join(" ").trim();
+        }
+      }
+
+      if (!query) return;
+      const searchUrl = searchEngines[selectedEngine] || searchEngines["g"];
+      performSearchRedirect(searchUrl + encodeURIComponent(query), query);
+    }
+
+    function reloadShortcuts() {
+
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
       
@@ -1168,7 +1210,7 @@
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
-      window.location.reload();
+      refreshAfterModification();
 
       // Update widget order based on pins for the new tab
       const orderedWidgets = getPinnedWidgetOrder();
