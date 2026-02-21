@@ -321,7 +321,11 @@
         }
 
         closeConfigModal();
-        refreshAfterModification(); // In-page reload with fallback
+        refreshAfterModification(() => {
+          const slot = document.querySelector(`a[data-position="${position}"]`);
+          const titleEl = slot?.querySelector(".shortcut-title");
+          return !!titleEl && titleEl.textContent.trim() === title;
+        }); // In-page reload with fallback
       } catch (e) {
         console.error("Error saving shortcut:", e);
       }
@@ -501,11 +505,32 @@
         .getElementById("contextMenu")
         .getAttribute("data-position");
       const activeTab = localStorage.getItem("activeTab") || "personal";
+      const currentView = localStorage.getItem("currentView");
+      const currentFolderId = localStorage.getItem("currentFolderId");
 
-      // Get shortcuts from localStorage
-      const shortcuts = JSON.parse(
-        localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
-      );
+      let shortcuts = {};
+      let shortcutCountKey = "shortcutCount";
+      let saveShortcuts;
+
+      if (currentView === "folder" && currentFolderId) {
+        const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+        const folder = folders[currentFolderId];
+        if (!folder) return;
+
+        if (!folder.shortcuts) folder.shortcuts = {};
+        shortcuts = folder.shortcuts;
+        shortcutCountKey = `folderShortcutCount_${currentFolderId}`;
+        saveShortcuts = (nextShortcuts) => {
+          folder.shortcuts = nextShortcuts;
+          localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+        };
+      } else {
+        shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        saveShortcuts = (nextShortcuts) => {
+          localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(nextShortcuts));
+          localStorage.setItem("shortcuts", JSON.stringify(nextShortcuts));
+        };
+      }
 
       // Check if the shortcut is already empty (placeholder)
       const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
@@ -514,7 +539,7 @@
 
       if (isEmpty) {
         // If it's already empty, remove it completely from the grid
-        const currentShortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
+        const currentShortcutCount = parseInt(localStorage.getItem(shortcutCountKey) || "8");
         const positionNum = parseInt(position);
 
         // Shift all shortcuts after this position down by one
@@ -529,20 +554,22 @@
         });
 
         // Reduce shortcut count by 1
-        localStorage.setItem("shortcutCount", (currentShortcutCount - 1).toString());
-        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(newShortcuts));
-        localStorage.setItem("shortcuts", JSON.stringify(newShortcuts));
+        localStorage.setItem(shortcutCountKey, (currentShortcutCount - 1).toString());
+        saveShortcuts(newShortcuts);
       } else {
         // If it has content, just clear it (make it a placeholder)
         delete shortcuts[position];
-        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+        saveShortcuts(shortcuts);
       }
 
       closeContextMenu();
 
-      // Force a full page reload after delete (expected behavior)
-      refreshAfterModification();
+      refreshAfterModification(() => {
+        const slot = document.querySelector(`a[data-position="${position}"]`);
+        const icon = slot?.querySelector(".shortcut-icon");
+        // After deletion, the slot is usually empty (placeholder) in current UX.
+        return !slot || icon?.getAttribute("data-empty") === "true";
+      });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -1035,9 +1062,15 @@
       return `/${currentEngine} ${lowercaseQuery}`;
     }
 
-    function refreshAfterModification() {
+    function refreshAfterModification(verifyFn) {
       try {
         reloadShortcuts();
+        if (typeof verifyFn === "function") {
+          const ok = verifyFn();
+          if (!ok) {
+            window.location.reload();
+          }
+        }
       } catch (error) {
         console.error("reloadShortcuts failed, forcing full page reload", error);
         window.location.reload();
@@ -2196,7 +2229,7 @@
       class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
 
       <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
         onclick="switchTab('personal')" id="personalTab">
         <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -2204,7 +2237,7 @@
         </svg>
       </div>
       <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+        class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
         onclick="switchTab('professional')" id="professionalTab">
         <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path
