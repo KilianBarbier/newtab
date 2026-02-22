@@ -914,9 +914,45 @@
       "google-shopping": { name: "Google Shopping", accentClass: "text-indigo-200" }
     };
 
+    const comparatorFacetDefinitions = {
+      brand: { label: "Brand", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
+      color: { label: "Color", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
+      condition: { label: "Condition", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
+      storage_gb: { label: "Storage", categories: ["laptop", "phone", "tablet"], numeric: true, unit: "GB" },
+      ram_gb: { label: "RAM", categories: ["laptop", "phone", "tablet"], numeric: true, unit: "GB" },
+      screen_in: { label: "Screen", categories: ["laptop", "phone", "tablet", "display"], numeric: true, unit: "\"" },
+      capacity_l: { label: "Capacity", categories: ["bag"], numeric: true, unit: "L" }
+    };
+
+    const comparatorKnownBrands = [
+      "Apple", "Samsung", "Asus", "Acer", "Lenovo", "HP", "Dell", "MSI", "Razer", "Huawei", "Xiaomi", "Sony",
+      "LG", "Honor", "Google", "OnePlus", "Realme", "Nothing", "Canon", "Nikon", "JBL", "Bose", "Logitech",
+      "Sandisk", "Kingston", "Patagonia", "Eastpak", "Deuter", "Osprey", "The North Face"
+    ];
+
+    const comparatorColorMap = {
+      black: ["black", "noir"],
+      white: ["white", "blanc"],
+      blue: ["blue", "bleu"],
+      red: ["red", "rouge"],
+      green: ["green", "vert"],
+      gray: ["gray", "grey", "gris", "argent", "silver"],
+      pink: ["pink", "rose"],
+      yellow: ["yellow", "jaune"],
+      purple: ["purple", "violet"],
+      orange: ["orange"],
+      brown: ["brown", "marron"],
+      beige: ["beige"],
+      gold: ["gold", "or"]
+    };
+
     const comparatorState = {
       query: "",
-      rawOffers: [],
+      rawProducts: [],
+      sourceDiagnostics: [],
+      availableFacets: [],
+      selectedFacetValues: {},
+      detectedCategory: "generic",
       isLoading: false,
       activeRequestId: 0,
       initialized: false
@@ -933,6 +969,77 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+    }
+
+    function normalizeWhitespace(value) {
+      return String(value || "").replace(/\s+/g, " ").trim();
+    }
+
+    function normalizeTextForMatch(value) {
+      return normalizeWhitespace(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function safeHttpUrl(url) {
+      if (!url) return null;
+      const candidate = String(url).trim();
+      if (!/^https?:\/\//i.test(candidate)) return null;
+      return candidate;
+    }
+
+    function normalizeProductUrl(url) {
+      const safeUrl = safeHttpUrl(url);
+      if (!safeUrl) return null;
+      try {
+        const parsed = new URL(safeUrl);
+        const removable = [];
+        parsed.searchParams.forEach((_, key) => {
+          if (key.toLowerCase().startsWith("utm_")) removable.push(key);
+        });
+        removable.forEach((key) => parsed.searchParams.delete(key));
+        return parsed.toString();
+      } catch (error) {
+        return safeUrl;
+      }
+    }
+
+    function extractMarkdownLinks(line) {
+      if (!line) return [];
+      const links = [];
+      const regex = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        if (match.index > 0 && line[match.index - 1] === "!") continue;
+        links.push({ title: match[1], url: match[2] });
+      }
+      return links;
+    }
+
+    function extractImageUrlFromContext(context) {
+      if (!context) return null;
+      const match = context.match(/!\[[^\]]*]\((https?:\/\/[^)\s]+)\)/i);
+      return match ? safeHttpUrl(match[1]) : null;
+    }
+
+    function cleanProductTitle(rawTitle) {
+      return normalizeWhitespace(String(rawTitle || "")
+        .replace(/\s*\|\s*dealabs.*$/i, "")
+        .replace(/\s*-\s*ledenicheur.*$/i, "")
+        .replace(/\s*-\s*idealo.*$/i, ""));
+    }
+
+    function contextToSnippet(context, title) {
+      const snippet = normalizeWhitespace(
+        String(context || "")
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1")
+          .replace(/!\[[^\]]*]\(([^)]+)\)/g, "")
+          .replace(/[*`>#_]/g, "")
+      );
+      if (!snippet) return "";
+      const trimmed = title ? snippet.replace(title, "").trim() : snippet;
+      return normalizeWhitespace(trimmed).slice(0, 180);
     }
 
     function getSelectedComparatorSourceIds() {
@@ -1022,56 +1129,256 @@
       return "";
     }
 
-    async function fetchComparatorOffer(sourceId, query, requestId) {
-      const meta = comparatorSourceMeta[sourceId] || { name: sourceId, accentClass: "text-white/80" };
-      const openUrl = buildComparatorSearchUrl(sourceId, query);
-      const proxyUrl = buildComparatorProxyUrl(sourceId, query);
+    function isLikelyComparatorProductLink(sourceId, title, url, query) {
+      const cleanTitle = normalizeWhitespace(title);
+      const titleNorm = normalizeTextForMatch(cleanTitle);
+      const urlNorm = normalizeTextForMatch(url || "");
+      if (!cleanTitle || cleanTitle.length < 8) return false;
+      if (!safeHttpUrl(url)) return false;
 
-      const baseOffer = {
+      const blockedTitleTokens = [
+        "accueil", "menu", "categories", "code promo", "codes promo", "discussions", "magazine",
+        "guide", "aide", "faq", "privacy", "terms", "conditions", "newsletter", "connexion", "inscription",
+        "application mobile", "club", "forum", "voir plus", "tout voir"
+      ];
+      if (blockedTitleTokens.some((token) => titleNorm.includes(token))) return false;
+
+      const blockedUrlTokens = [
+        "/groupe", "/categories", "/codes-promo", "/discussions", "/magazine", "/account", "/compte", "/login",
+        "/signup", "/privacy", "/terms", "/about", "/a-propos", "/contact", "/help", "/faq", "/forum", "/sitemap"
+      ];
+      if (blockedUrlTokens.some((token) => urlNorm.includes(token))) return false;
+
+      if (sourceId === "dealabs" && urlNorm.includes("dealabs.com") && !urlNorm.includes("/bons-plans/")) return false;
+      if (sourceId === "ledenicheur" && urlNorm.includes("/search?")) return false;
+
+      const stopWords = new Set(["pour", "avec", "sans", "dans", "the", "for", "and", "sur", "les", "des"]);
+      const queryTokens = normalizeTextForMatch(query)
+        .split(/\s+/)
+        .filter((token) => token.length > 2 && !stopWords.has(token))
+        .slice(0, 6);
+      if (!queryTokens.length) return true;
+
+      const combined = `${titleNorm} ${urlNorm}`;
+      return queryTokens.some((token) => combined.includes(token));
+    }
+
+    function parseComparatorProductsFromContent(sourceId, query, content) {
+      const lines = String(content || "").split(/\r?\n/);
+      const collected = [];
+
+      for (let i = 0; i < lines.length; i += 1) {
+        const line = lines[i];
+        const links = extractMarkdownLinks(line);
+        if (!links.length) continue;
+
+        const context = [lines[i - 1] || "", lines[i] || "", lines[i + 1] || "", lines[i + 2] || ""].join(" ");
+        const contextPrices = extractPricesFromText(context);
+        const imageUrl = extractImageUrlFromContext(context);
+
+        links.forEach((link) => {
+          const title = cleanProductTitle(link.title);
+          const productUrl = normalizeProductUrl(link.url);
+          if (!isLikelyComparatorProductLink(sourceId, title, productUrl, query)) return;
+
+          const detailedContext = `${title} ${context}`;
+          const detailedPrices = extractPricesFromText(detailedContext);
+          const price = detailedPrices.length ? detailedPrices[0] : (contextPrices.length ? contextPrices[0] : null);
+          const snippet = contextToSnippet(detailedContext, title);
+
+          collected.push({
+            id: `${sourceId}_${collected.length + 1}`,
+            sourceId,
+            sourceName: comparatorSourceMeta[sourceId]?.name || sourceId,
+            sourceAccentClass: comparatorSourceMeta[sourceId]?.accentClass || "text-white/70",
+            title,
+            productUrl: productUrl || buildComparatorSearchUrl(sourceId, query),
+            searchUrl: buildComparatorSearchUrl(sourceId, query),
+            price,
+            snippet,
+            imageUrl
+          });
+        });
+      }
+
+      const seen = new Set();
+      const deduped = [];
+      collected.forEach((product) => {
+        const key = product.productUrl
+          ? `url:${product.productUrl}`
+          : `title:${normalizeTextForMatch(product.title)}|price:${product.price || "na"}|src:${product.sourceId}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        deduped.push(product);
+      });
+
+      deduped.sort((a, b) => {
+        const aPrice = Number.isFinite(a.price) ? a.price : Number.POSITIVE_INFINITY;
+        const bPrice = Number.isFinite(b.price) ? b.price : Number.POSITIVE_INFINITY;
+        if (aPrice !== bPrice) return aPrice - bPrice;
+        return a.title.localeCompare(b.title);
+      });
+
+      return deduped.slice(0, 48);
+    }
+
+    function detectComparatorCategory(query, products) {
+      const corpus = normalizeTextForMatch(`${query} ${products.slice(0, 30).map((product) => product.title).join(" ")}`);
+      if (/(sac|backpack|bag|randonnee|valise|cartable|cabas|travel pack)/.test(corpus)) return "bag";
+      if (/(pc portable|ordinateur|laptop|notebook|ultrabook|macbook)/.test(corpus)) return "laptop";
+      if (/(iphone|smartphone|telephone|galaxy|pixel|redmi|oneplus)/.test(corpus)) return "phone";
+      if (/(tablette|tablet|ipad)/.test(corpus)) return "tablet";
+      if (/(tv|televiseur|monitor|moniteur|ecran)/.test(corpus)) return "display";
+      return "generic";
+    }
+
+    function inferComparatorAttributes(title, category) {
+      const attrs = {};
+      const text = normalizeWhitespace(title || "");
+      const textNorm = normalizeTextForMatch(text);
+
+      const brand = comparatorKnownBrands.find((candidate) => new RegExp(`\\b${candidate.toLowerCase().replace(/\s+/g, "\\s+")}\\b`, "i").test(textNorm));
+      if (brand) attrs.brand = brand;
+
+      Object.entries(comparatorColorMap).some(([canonical, aliases]) => {
+        const found = aliases.some((alias) => new RegExp(`\\b${alias}\\b`, "i").test(textNorm));
+        if (found) attrs.color = canonical;
+        return found;
+      });
+
+      if (/(reconditionne|refurbished)/.test(textNorm)) attrs.condition = "refurbished";
+      else if (/(neuf|new)/.test(textNorm)) attrs.condition = "new";
+
+      const storageCandidates = [];
+      const storageRegex = /(\d+(?:[.,]\d+)?)\s?(tb|to|gb|go)\b/gi;
+      let storageMatch;
+      while ((storageMatch = storageRegex.exec(text)) !== null) {
+        const amount = Number.parseFloat(String(storageMatch[1]).replace(",", "."));
+        if (!Number.isFinite(amount)) continue;
+        const unit = String(storageMatch[2]).toLowerCase();
+        const asGb = (unit === "tb" || unit === "to") ? amount * 1024 : amount;
+        if (asGb >= 8 && asGb <= 8192) storageCandidates.push(Math.round(asGb));
+      }
+
+      const ramRegex = /(\d+(?:[.,]\d+)?)\s?(gb|go)\s?(ram|memory|memoire)/i;
+      const ramMatch = text.match(ramRegex);
+      if (ramMatch) {
+        const ramValue = Number.parseFloat(String(ramMatch[1]).replace(",", "."));
+        if (Number.isFinite(ramValue) && ramValue >= 2 && ramValue <= 128) attrs.ram_gb = Math.round(ramValue);
+      }
+
+      if (storageCandidates.length) {
+        const sorted = [...storageCandidates].sort((a, b) => a - b);
+        const largest = sorted[sorted.length - 1];
+        if (largest >= 32) attrs.storage_gb = largest;
+
+        if ((category === "laptop" || category === "phone" || category === "tablet") && !attrs.ram_gb) {
+          const maybeRam = sorted.find((value) => value >= 4 && value <= 64);
+          if (maybeRam && maybeRam !== largest) attrs.ram_gb = maybeRam;
+        }
+      }
+
+      const screenMatch = text.match(/(\d{1,2}(?:[.,]\d)?)\s?(?:"|pouces?|inch|in\b)/i);
+      if (screenMatch) {
+        const screenSize = Number.parseFloat(String(screenMatch[1]).replace(",", "."));
+        if (Number.isFinite(screenSize) && screenSize >= 4 && screenSize <= 90) attrs.screen_in = Number(screenSize.toFixed(1));
+      }
+
+      const capacityMatch = text.match(/(\d{1,3})\s?(?:l|litre|litres|liter|liters)\b/i);
+      if (capacityMatch) {
+        const capacity = Number.parseInt(capacityMatch[1], 10);
+        if (Number.isFinite(capacity) && capacity >= 3 && capacity <= 180) attrs.capacity_l = capacity;
+      }
+
+      return attrs;
+    }
+
+    function formatComparatorFacetValue(key, rawValue) {
+      const def = comparatorFacetDefinitions[key];
+      if (!def) return String(rawValue);
+      if (!def.numeric) return String(rawValue);
+      if (def.unit === "\"") return `${rawValue}"`;
+      return `${rawValue} ${def.unit || ""}`.trim();
+    }
+
+    function buildComparatorFacets(products, category) {
+      const facets = [];
+      Object.entries(comparatorFacetDefinitions).forEach(([facetKey, def]) => {
+        const allowed = def.categories.includes("generic") || def.categories.includes(category);
+        if (!allowed) return;
+
+        const counts = new Map();
+        products.forEach((product) => {
+          const value = product.attributes?.[facetKey];
+          if (value === undefined || value === null || value === "") return;
+          const key = String(value);
+          counts.set(key, (counts.get(key) || 0) + 1);
+        });
+
+        if (counts.size < 2) return;
+        const values = Array.from(counts.entries()).map(([value, count]) => ({
+          value,
+          count,
+          label: formatComparatorFacetValue(facetKey, value)
+        }));
+        values.sort((a, b) => {
+          if (def.numeric) return Number.parseFloat(a.value) - Number.parseFloat(b.value);
+          return a.label.localeCompare(b.label);
+        });
+
+        facets.push({ key: facetKey, label: def.label, values });
+      });
+
+      return facets;
+    }
+
+    async function fetchComparatorOffer(sourceId, query, requestId) {
+      const sourceName = comparatorSourceMeta[sourceId]?.name || sourceId;
+      const proxyUrl = buildComparatorProxyUrl(sourceId, query);
+      const searchUrl = buildComparatorSearchUrl(sourceId, query);
+
+      const basePayload = {
         sourceId,
-        sourceName: meta.name,
-        sourceAccentClass: meta.accentClass,
-        openUrl,
-        query,
-        bestPrice: null,
-        detectedPrices: 0,
-        snippet: "",
-        fetchStatus: proxyUrl ? "pending" : "manual"
+        sourceName,
+        status: proxyUrl ? "pending" : "manual",
+        productCount: 0,
+        products: [],
+        message: ""
       };
 
       if (!proxyUrl) {
         return {
-          ...baseOffer,
-          fetchStatus: "manual",
-          snippet: "Live parsing unavailable for this source. Open the source to check current prices."
+          ...basePayload,
+          status: "manual",
+          message: "Live parsing unavailable for this source"
         };
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       try {
         const response = await fetch(proxyUrl, { signal: controller.signal, cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const content = await response.text();
-
         if (requestId !== comparatorState.activeRequestId) return null;
 
-        const prices = extractPricesFromText(content);
-        const bestPrice = prices.length ? prices[0] : null;
-        const snippet = extractSnippet(content);
+        const products = parseComparatorProductsFromContent(sourceId, query, content).map((product) => ({
+          ...product,
+          searchUrl
+        }));
 
         return {
-          ...baseOffer,
-          bestPrice,
-          detectedPrices: prices.length,
-          snippet: snippet || (bestPrice !== null ? `${prices.length} price matches detected on this source.` : "No clear price detected from the fetched page."),
-          fetchStatus: "live"
+          ...basePayload,
+          status: "live",
+          productCount: products.length,
+          products,
+          message: products.length ? `${products.length} parsed` : "No parseable product found"
         };
       } catch (error) {
         return {
-          ...baseOffer,
-          fetchStatus: "error",
-          snippet: "Source blocked or timed out. Open the source manually for live prices."
+          ...basePayload,
+          status: "error",
+          message: "Source blocked or timed out"
         };
       } finally {
         clearTimeout(timeoutId);
@@ -1084,6 +1391,73 @@
       grid.className = isComparator
         ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto w-full"
         : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full";
+    }
+
+    function renderComparatorFacetControls() {
+      const container = document.getElementById("comparatorDynamicFacets");
+      if (!container) return;
+      const facets = comparatorState.availableFacets || [];
+
+      if (!facets.length) {
+        container.innerHTML = `<div class="text-xs text-white/70">No extra filters detected for this product type yet.</div>`;
+        return;
+      }
+
+      const hasActiveSelection = Object.keys(comparatorState.selectedFacetValues || {}).length > 0;
+      const controlsHtml = facets.map((facet) => {
+        const currentValue = comparatorState.selectedFacetValues?.[facet.key] || "";
+        const optionsHtml = facet.values.map((option) => `
+          <option value="${escapeHtml(option.value)}" ${currentValue === option.value ? "selected" : ""}>
+            ${escapeHtml(option.label)} (${option.count})
+          </option>
+        `).join("");
+
+        return `
+          <div class="space-y-1">
+            <label class="block text-xs text-white/80">${escapeHtml(facet.label)}</label>
+            <select data-facet-key="${escapeHtml(facet.key)}" class="comparator-facet-select w-full px-3 py-2 bg-white/20 rounded-lg text-white border border-white/20 focus:border-white/40 focus:outline-none text-xs">
+              <option value="">All</option>
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+      }).join("");
+
+      container.innerHTML = controlsHtml + (hasActiveSelection
+        ? `<button id="resetComparatorFacetFilters" class="w-full mt-2 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs transition-colors">Reset smart filters</button>`
+        : "");
+
+      container.querySelectorAll(".comparator-facet-select").forEach((select) => {
+        select.addEventListener("change", (event) => {
+          const key = event.currentTarget.getAttribute("data-facet-key");
+          const value = event.currentTarget.value;
+          if (!key) return;
+          if (!value) delete comparatorState.selectedFacetValues[key];
+          else comparatorState.selectedFacetValues[key] = value;
+          renderComparatorProducts();
+        });
+      });
+
+      const resetButton = document.getElementById("resetComparatorFacetFilters");
+      if (resetButton) {
+        resetButton.addEventListener("click", () => {
+          comparatorState.selectedFacetValues = {};
+          renderComparatorProducts();
+        });
+      }
+    }
+
+    function getComparatorProductChips(product) {
+      const chipOrder = ["brand", "ram_gb", "storage_gb", "screen_in", "capacity_l", "color", "condition"];
+      return chipOrder
+        .filter((key) => product.attributes && product.attributes[key] !== undefined && product.attributes[key] !== null && product.attributes[key] !== "")
+        .slice(0, 5)
+        .map((key) => {
+          const label = comparatorFacetDefinitions[key]?.label || key;
+          const value = formatComparatorFacetValue(key, product.attributes[key]);
+          return `<span class="px-2 py-1 rounded-full bg-white/15 text-[11px] text-white/85">${escapeHtml(label)}: ${escapeHtml(value)}</span>`;
+        })
+        .join("");
     }
 
     function getComparatorFilterBounds() {
@@ -1101,24 +1475,26 @@
       const summary = document.getElementById("comparatorResultSummary");
       if (!summary) return;
 
-      const priced = filteredOffers.filter((offer) => Number.isFinite(offer.bestPrice));
       if (!comparatorState.query) {
-        summary.innerHTML = "Mode shopping: compare prices from several sources in one view.";
+        summary.innerHTML = "Mode shopping: search a product to get real product cards and smart filters.";
         return;
       }
 
       if (!filteredOffers.length) {
-        summary.innerHTML = `No result for <strong>${escapeHtml(comparatorState.query)}</strong> with current filters.`;
+        summary.innerHTML = `No product found for <strong>${escapeHtml(comparatorState.query)}</strong> with current filters.`;
         return;
       }
 
+      const priced = filteredOffers.filter((product) => Number.isFinite(product.price));
+      const sourceCount = new Set(filteredOffers.map((product) => product.sourceId)).size;
+      const categoryLabel = comparatorState.detectedCategory === "generic" ? "generic" : comparatorState.detectedCategory;
       if (!priced.length) {
-        summary.innerHTML = `${filteredOffers.length} source(s) loaded for <strong>${escapeHtml(comparatorState.query)}</strong> (no live price extracted).`;
+        summary.innerHTML = `${filteredOffers.length} product(s) from ${sourceCount} source(s) | category: <strong>${escapeHtml(categoryLabel)}</strong> | no explicit price parsed yet.`;
         return;
       }
 
-      const cheapest = priced.reduce((best, offer) => (offer.bestPrice < best.bestPrice ? offer : best), priced[0]);
-      summary.innerHTML = `${filteredOffers.length} source(s) | ${priced.length} priced source(s) | Best detected: <strong>${formatEuroPrice(cheapest.bestPrice)}</strong> on <strong>${escapeHtml(cheapest.sourceName)}</strong>.`;
+      const cheapest = priced.reduce((best, product) => (product.price < best.price ? product : best), priced[0]);
+      summary.innerHTML = `${filteredOffers.length} product(s) from ${sourceCount} source(s) | category: <strong>${escapeHtml(categoryLabel)}</strong> | best detected price: <strong>${formatEuroPrice(cheapest.price)}</strong> on <strong>${escapeHtml(cheapest.sourceName)}</strong>.`;
     }
 
     function renderComparatorGridContent(offers) {
@@ -1129,8 +1505,8 @@
         grid.innerHTML = Object.entries(comparatorSourceMeta).map(([sourceId, meta]) => `
           <div class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20">
             <div class="text-xs uppercase tracking-wide text-white/70 mb-1">${escapeHtml(meta.name)}</div>
-            <div class="text-lg font-semibold text-white mb-2">Ready to compare</div>
-            <p class="text-white/80 text-sm mb-4">Type a product name, model, or EAN in the search bar.</p>
+            <div class="text-lg font-semibold text-white mb-2">Ready for product cards</div>
+            <p class="text-white/80 text-sm mb-4">Run a search to load products, prices, and dynamic filters.</p>
             <a href="${buildComparatorSearchUrl(sourceId, "iphone 15")}" target="_blank" rel="noopener"
               class="inline-flex items-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
               Open ${escapeHtml(meta.name)}
@@ -1143,34 +1519,41 @@
       if (comparatorState.isLoading) {
         grid.innerHTML = `<div class="col-span-full p-8 rounded-2xl bg-white/10 backdrop-blur-xl text-center text-white">
           <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto mb-3"></div>
-          Loading offers for <strong>${escapeHtml(comparatorState.query)}</strong>...
+          Loading product cards for <strong>${escapeHtml(comparatorState.query)}</strong>...
         </div>`;
         return;
       }
 
       if (!offers.length) {
         grid.innerHTML = `<div class="col-span-full p-8 rounded-2xl bg-white/10 backdrop-blur-xl text-center text-white">
-          No offer card matches your current filters.
+          No product card matches your current filters.
         </div>`;
         return;
       }
 
-      grid.innerHTML = offers.map((offer) => `
-        <article class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20 flex flex-col gap-3">
-          <div class="flex items-center justify-between gap-3">
-            <div class="text-xs uppercase tracking-wide ${offer.sourceAccentClass}">${escapeHtml(offer.sourceName)}</div>
-            <span class="text-[11px] px-2 py-1 rounded-full bg-white/15 text-white/80">${offer.fetchStatus === "live" ? "live" : "manual"}</span>
-          </div>
-          <h3 class="text-lg text-white font-semibold leading-tight">${escapeHtml(offer.query)}</h3>
-          <div class="text-2xl font-bold text-white">${Number.isFinite(offer.bestPrice) ? formatEuroPrice(offer.bestPrice) : "Price not detected"}</div>
-          <div class="text-sm text-white/80">${escapeHtml(offer.snippet || "Open the source to see all current offers.")}</div>
-          <div class="text-xs text-white/70">${offer.detectedPrices > 0 ? `${offer.detectedPrices} price match(es) extracted` : "No precise amount extracted from this source."}</div>
-          <a href="${offer.openUrl}" target="_blank" rel="noopener"
-            class="mt-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
-            Open on ${escapeHtml(offer.sourceName)}
-          </a>
-        </article>
-      `).join("");
+      grid.innerHTML = offers.map((product) => {
+        const productUrl = safeHttpUrl(product.productUrl) || product.searchUrl || "#";
+        const imageHtml = product.imageUrl
+          ? `<img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.title)}" class="w-full h-full object-cover rounded-xl" loading="lazy">`
+          : `<div class="w-full h-full rounded-xl bg-white/15 flex items-center justify-center text-xs text-white/80 px-3 text-center">${escapeHtml(product.sourceName)}</div>`;
+
+        return `
+          <article class="p-4 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20 flex flex-col gap-3">
+            <div class="h-32">${imageHtml}</div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="text-xs uppercase tracking-wide ${product.sourceAccentClass}">${escapeHtml(product.sourceName)}</div>
+              <div class="text-xs text-white/80">${Number.isFinite(product.price) ? formatEuroPrice(product.price) : "Price N/A"}</div>
+            </div>
+            <h3 class="text-sm text-white font-semibold leading-tight min-h-[2.8rem]">${escapeHtml(product.title)}</h3>
+            <div class="flex flex-wrap gap-1">${getComparatorProductChips(product)}</div>
+            <div class="text-xs text-white/75 min-h-[2.6rem]">${escapeHtml(product.snippet || "Open the product page for details.")}</div>
+            <a href="${escapeHtml(productUrl)}" target="_blank" rel="noopener"
+              class="mt-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+              Open product
+            </a>
+          </article>
+        `;
+      }).join("");
     }
 
     function getComparatorFilteredOffers() {
@@ -1178,26 +1561,35 @@
       const sortMode = document.getElementById("comparatorSort")?.value || "best-price";
       const bounds = getComparatorFilterBounds();
 
-      let offers = comparatorState.rawOffers.filter((offer) => selectedSources.has(offer.sourceId));
+      let offers = comparatorState.rawProducts.filter((product) => selectedSources.has(product.sourceId));
 
       if (bounds.min !== null) {
-        offers = offers.filter((offer) => Number.isFinite(offer.bestPrice) && offer.bestPrice >= bounds.min);
+        offers = offers.filter((product) => Number.isFinite(product.price) && product.price >= bounds.min);
       }
       if (bounds.max !== null) {
-        offers = offers.filter((offer) => Number.isFinite(offer.bestPrice) && offer.bestPrice <= bounds.max);
+        offers = offers.filter((product) => Number.isFinite(product.price) && product.price <= bounds.max);
       }
 
+      Object.entries(comparatorState.selectedFacetValues || {}).forEach(([facetKey, selectedValue]) => {
+        offers = offers.filter((product) => String(product.attributes?.[facetKey] ?? "") === selectedValue);
+      });
+
       offers.sort((a, b) => {
-        if (sortMode === "source") return a.sourceName.localeCompare(b.sourceName);
+        if (sortMode === "source") {
+          const sourceCmp = a.sourceName.localeCompare(b.sourceName);
+          if (sourceCmp !== 0) return sourceCmp;
+          return a.title.localeCompare(b.title);
+        }
         if (sortMode === "highest-price") {
-          const aPrice = Number.isFinite(a.bestPrice) ? a.bestPrice : -1;
-          const bPrice = Number.isFinite(b.bestPrice) ? b.bestPrice : -1;
+          const aPrice = Number.isFinite(a.price) ? a.price : -1;
+          const bPrice = Number.isFinite(b.price) ? b.price : -1;
           return bPrice - aPrice;
         }
 
-        const aPrice = Number.isFinite(a.bestPrice) ? a.bestPrice : Number.POSITIVE_INFINITY;
-        const bPrice = Number.isFinite(b.bestPrice) ? b.bestPrice : Number.POSITIVE_INFINITY;
-        return aPrice - bPrice;
+        const aPrice = Number.isFinite(a.price) ? a.price : Number.POSITIVE_INFINITY;
+        const bPrice = Number.isFinite(b.price) ? b.price : Number.POSITIVE_INFINITY;
+        if (aPrice !== bPrice) return aPrice - bPrice;
+        return a.title.localeCompare(b.title);
       });
 
       return offers;
@@ -1210,23 +1602,33 @@
 
       if (status) {
         if (!selectedCount) status.textContent = "Select at least one source.";
-        else if (comparatorState.isLoading) status.textContent = `Scanning ${selectedCount} source(s)...`;
-        else if (comparatorState.query) status.textContent = `Showing ${selectedCount} selected source(s) for "${comparatorState.query}".`;
+        else if (comparatorState.isLoading) status.textContent = `Scanning ${selectedCount} source(s) for product cards...`;
+        else if (comparatorState.query) {
+          const bySource = (comparatorState.sourceDiagnostics || [])
+            .map((diag) => `${diag.sourceName}: ${diag.productCount}${diag.status === "error" ? " (blocked)" : ""}`)
+            .join(" | ");
+          status.textContent = bySource || `Products loaded for "${comparatorState.query}".`;
+        }
         else status.textContent = "Search for a product to compare prices.";
       }
 
+      renderComparatorFacetControls();
       const offers = getComparatorFilteredOffers();
       renderComparatorSummary(offers);
       renderComparatorGridContent(offers);
     }
 
     async function runComparatorSearch(rawQuery) {
-      const query = (rawQuery || "").trim();
+      const query = normalizeWhitespace(rawQuery || "");
       comparatorState.query = query;
       localStorage.setItem("comparatorLastQuery", query);
 
       if (!query) {
-        comparatorState.rawOffers = [];
+        comparatorState.rawProducts = [];
+        comparatorState.sourceDiagnostics = [];
+        comparatorState.availableFacets = [];
+        comparatorState.selectedFacetValues = {};
+        comparatorState.detectedCategory = "generic";
         comparatorState.isLoading = false;
         renderComparatorProducts();
         return;
@@ -1234,7 +1636,11 @@
 
       const sourceIds = getSelectedComparatorSourceIds();
       if (!sourceIds.length) {
-        comparatorState.rawOffers = [];
+        comparatorState.rawProducts = [];
+        comparatorState.sourceDiagnostics = [];
+        comparatorState.availableFacets = [];
+        comparatorState.selectedFacetValues = {};
+        comparatorState.detectedCategory = "generic";
         comparatorState.isLoading = false;
         renderComparatorProducts();
         return;
@@ -1245,12 +1651,42 @@
       const requestId = comparatorState.activeRequestId;
       renderComparatorProducts();
 
-      const offers = (await Promise.all(sourceIds.map((sourceId) => fetchComparatorOffer(sourceId, query, requestId))))
+      const sourceData = (await Promise.all(sourceIds.map((sourceId) => fetchComparatorOffer(sourceId, query, requestId))))
         .filter(Boolean);
 
       if (requestId !== comparatorState.activeRequestId) return;
 
-      comparatorState.rawOffers = offers;
+      const products = [];
+      const seen = new Set();
+      sourceData.forEach((entry) => {
+        (entry.products || []).forEach((product) => {
+          const key = product.productUrl
+            ? `url:${product.productUrl}`
+            : `title:${normalizeTextForMatch(product.title)}|price:${product.price || "na"}|src:${product.sourceId}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          products.push(product);
+        });
+      });
+
+      const detectedCategory = detectComparatorCategory(query, products);
+      const enrichedProducts = products.map((product) => ({
+        ...product,
+        attributes: inferComparatorAttributes(product.title, detectedCategory)
+      }));
+
+      const facets = buildComparatorFacets(enrichedProducts, detectedCategory);
+      const allowedFacetValues = new Map(facets.map((facet) => [facet.key, new Set(facet.values.map((value) => value.value))]));
+      Object.keys(comparatorState.selectedFacetValues || {}).forEach((facetKey) => {
+        const selected = comparatorState.selectedFacetValues[facetKey];
+        if (!allowedFacetValues.has(facetKey)) delete comparatorState.selectedFacetValues[facetKey];
+        else if (!allowedFacetValues.get(facetKey).has(selected)) delete comparatorState.selectedFacetValues[facetKey];
+      });
+
+      comparatorState.rawProducts = enrichedProducts;
+      comparatorState.sourceDiagnostics = sourceData;
+      comparatorState.availableFacets = facets;
+      comparatorState.detectedCategory = detectedCategory;
       comparatorState.isLoading = false;
       renderComparatorProducts();
     }
