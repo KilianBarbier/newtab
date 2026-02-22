@@ -2227,22 +2227,24 @@
   <div class="flex min-h-screen p-6">
     <aside id="sidebar"
       class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
-
-      <div
-        class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
-        onclick="switchTab('personal')" id="personalTab">
-        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-        </svg>
-      </div>
-      <div
-        class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
-        onclick="switchTab('professional')" id="professionalTab">
-        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
-        </svg>
+      
+      <div class="flex items-center gap-3">
+        <div
+          class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+          onclick="switchTab('personal')" id="personalTab">
+          <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+        </div>
+        <div
+          class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+          onclick="switchTab('professional')" id="professionalTab">
+          <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+          </svg>
+        </div>
       </div>
 
       <!-- Widgets Slider -->
