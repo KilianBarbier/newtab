@@ -1012,6 +1012,38 @@ select option[value="i"] {
     flex-direction: column;
     gap: 8px;
 }
+
+#comparatorFiltersPanel .comparator-source-checkbox {
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+#comparatorFiltersPanel select#comparatorSort {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 0.5rem 0.75rem !important;
+    text-indent: 0 !important;
+    background-image: none !important;
+    background-position: initial !important;
+    background-size: initial !important;
+}
+
+#comparatorFiltersPanel select#comparatorSort option {
+    color: #111827 !important;
+    background: #ffffff !important;
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+}
 /* Stable base sizing to avoid layout jumps on hover */
 .bg-bg {
     padding-inline: 10px;

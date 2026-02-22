@@ -887,6 +887,431 @@
       setTimeout(() => { window.location.href = url; }, 60);
     }
 
+    const searchEngines = {
+      gpt: "https://chatgpt.com/?q=",
+      g: "https://www.google.com/search?q=",
+      yt: "https://www.youtube.com/results?search_query=",
+      gh: "https://github.com/search?q=",
+      w: "https://en.wikipedia.org/wiki/Special:Search?search=",
+      r: "https://www.reddit.com/search/?q=",
+      so: "https://stackoverflow.com/search?q=",
+      a: "https://www.amazon.fr/s?k=",
+      n: "https://www.netflix.com/search?q=",
+      sp: "https://open.spotify.com/search/results",
+      tw: "https://twitter.com/search?q=",
+      ig: "https://www.instagram.com/explore/tags/",
+      maps: "https://www.google.com/maps/search/",
+      i: "https://www.google.com/images?q=",
+      ddg: "https://duckduckgo.com/?q=",
+      px: "https://www.perplexity.ai/search?q=",
+      ph: "https://fr.pornhub.com/video/search?search=",
+    };
+
+    const comparatorSourceMeta = {
+      "dealabs": { name: "Dealabs", accentClass: "text-yellow-200" },
+      "idealo": { name: "Idealo", accentClass: "text-cyan-200" },
+      "ledenicheur": { name: "LeDenicheur", accentClass: "text-green-200" },
+      "google-shopping": { name: "Google Shopping", accentClass: "text-indigo-200" }
+    };
+
+    const comparatorState = {
+      query: "",
+      rawOffers: [],
+      isLoading: false,
+      activeRequestId: 0,
+      initialized: false
+    };
+
+    function isComparatorModeActive() {
+      return (localStorage.getItem("activeTab") || "personal") === "comparator";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function getSelectedComparatorSourceIds() {
+      return Array.from(document.querySelectorAll(".comparator-source-checkbox:checked"))
+        .map((input) => input.value);
+    }
+
+    function buildComparatorSearchUrl(sourceId, query) {
+      const encodedQuery = encodeURIComponent(query);
+      if (sourceId === "dealabs") return `https://www.dealabs.com/search?q=${encodedQuery}`;
+      if (sourceId === "idealo") return `https://duckduckgo.com/?q=${encodeURIComponent(`site:idealo.fr ${query}`)}`;
+      if (sourceId === "ledenicheur") return `https://www.ledenicheur.fr/search?search=${encodedQuery}`;
+      if (sourceId === "google-shopping") return `https://www.google.com/search?tbm=shop&q=${encodedQuery}`;
+      return `https://duckduckgo.com/?q=${encodedQuery}`;
+    }
+
+    function buildComparatorProxyUrl(sourceId, query) {
+      const encodedQuery = encodeURIComponent(query);
+      if (sourceId === "dealabs") return `https://r.jina.ai/http://www.dealabs.com/search?q=${encodedQuery}`;
+      if (sourceId === "idealo") return `https://r.jina.ai/http://duckduckgo.com/?q=${encodeURIComponent(`site:idealo.fr ${query} prix`)}`;
+      if (sourceId === "ledenicheur") return `https://r.jina.ai/http://www.ledenicheur.fr/search?search=${encodedQuery}`;
+      return null;
+    }
+
+    function normalizeEuroPrice(rawValue) {
+      if (!rawValue) return null;
+      let value = String(rawValue).replace(/[\s\u00A0\u202F]/g, "");
+      value = value.replace(/[^0-9.,]/g, "");
+      if (!value) return null;
+
+      const lastComma = value.lastIndexOf(",");
+      const lastDot = value.lastIndexOf(".");
+      if (lastComma > -1 && lastDot > -1) {
+        if (lastComma > lastDot) {
+          value = value.replace(/\./g, "").replace(",", ".");
+        } else {
+          value = value.replace(/,/g, "");
+        }
+      } else if (lastComma > -1) {
+        const decimalPartLength = value.length - lastComma - 1;
+        if (decimalPartLength === 2) value = value.replace(",", ".");
+        else value = value.replace(/,/g, "");
+      }
+
+      const parsed = Number.parseFloat(value);
+      if (!Number.isFinite(parsed)) return null;
+      if (parsed < 0.01 || parsed > 50000) return null;
+      return parsed;
+    }
+
+    function extractPricesFromText(content) {
+      if (!content) return [];
+      const regex = /(?:€|EUR)\s*((?:\d{1,3}(?:[ .,\u00A0\u202F]\d{3})*|\d+)(?:[.,]\d{2})?)|((?:\d{1,3}(?:[ .,\u00A0\u202F]\d{3})*|\d+)(?:[.,]\d{2})?)\s*(?:€|EUR)/gi;
+      const results = [];
+      let match;
+      while ((match = regex.exec(content)) !== null) {
+        const candidate = match[1] || match[2];
+        const normalized = normalizeEuroPrice(candidate);
+        if (normalized !== null) results.push(normalized);
+      }
+
+      const unique = Array.from(new Set(results.map((price) => Number(price.toFixed(2)))));
+      unique.sort((a, b) => a - b);
+      return unique;
+    }
+
+    function formatEuroPrice(value) {
+      return new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 2
+      }).format(value);
+    }
+
+    function extractSnippet(content) {
+      if (!content) return "";
+      const lines = content.split("\n");
+      for (const line of lines) {
+        const cleaned = line
+          .replace(/\[(.*?)\]\((.*?)\)/g, "$1")
+          .replace(/[*`>#]/g, "")
+          .trim();
+        if (!cleaned) continue;
+        if (cleaned.startsWith("Title:") || cleaned.startsWith("URL Source:") || cleaned.startsWith("Markdown Content:")) continue;
+        if (cleaned.length >= 24 && cleaned.length <= 160) return cleaned;
+      }
+      return "";
+    }
+
+    async function fetchComparatorOffer(sourceId, query, requestId) {
+      const meta = comparatorSourceMeta[sourceId] || { name: sourceId, accentClass: "text-white/80" };
+      const openUrl = buildComparatorSearchUrl(sourceId, query);
+      const proxyUrl = buildComparatorProxyUrl(sourceId, query);
+
+      const baseOffer = {
+        sourceId,
+        sourceName: meta.name,
+        sourceAccentClass: meta.accentClass,
+        openUrl,
+        query,
+        bestPrice: null,
+        detectedPrices: 0,
+        snippet: "",
+        fetchStatus: proxyUrl ? "pending" : "manual"
+      };
+
+      if (!proxyUrl) {
+        return {
+          ...baseOffer,
+          fetchStatus: "manual",
+          snippet: "Live parsing unavailable for this source. Open the source to check current prices."
+        };
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
+      try {
+        const response = await fetch(proxyUrl, { signal: controller.signal, cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const content = await response.text();
+
+        if (requestId !== comparatorState.activeRequestId) return null;
+
+        const prices = extractPricesFromText(content);
+        const bestPrice = prices.length ? prices[0] : null;
+        const snippet = extractSnippet(content);
+
+        return {
+          ...baseOffer,
+          bestPrice,
+          detectedPrices: prices.length,
+          snippet: snippet || (bestPrice !== null ? `${prices.length} price matches detected on this source.` : "No clear price detected from the fetched page."),
+          fetchStatus: "live"
+        };
+      } catch (error) {
+        return {
+          ...baseOffer,
+          fetchStatus: "error",
+          snippet: "Source blocked or timed out. Open the source manually for live prices."
+        };
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    }
+
+    function setShortcutGridLayout(isComparator) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+      grid.className = isComparator
+        ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto w-full"
+        : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full";
+    }
+
+    function getComparatorFilterBounds() {
+      const minInput = document.getElementById("comparatorMinPrice");
+      const maxInput = document.getElementById("comparatorMaxPrice");
+      const min = minInput && minInput.value !== "" ? Number.parseFloat(minInput.value) : null;
+      const max = maxInput && maxInput.value !== "" ? Number.parseFloat(maxInput.value) : null;
+      return {
+        min: Number.isFinite(min) ? min : null,
+        max: Number.isFinite(max) ? max : null
+      };
+    }
+
+    function renderComparatorSummary(filteredOffers) {
+      const summary = document.getElementById("comparatorResultSummary");
+      if (!summary) return;
+
+      const priced = filteredOffers.filter((offer) => Number.isFinite(offer.bestPrice));
+      if (!comparatorState.query) {
+        summary.innerHTML = "Mode shopping: compare prices from several sources in one view.";
+        return;
+      }
+
+      if (!filteredOffers.length) {
+        summary.innerHTML = `No result for <strong>${escapeHtml(comparatorState.query)}</strong> with current filters.`;
+        return;
+      }
+
+      if (!priced.length) {
+        summary.innerHTML = `${filteredOffers.length} source(s) loaded for <strong>${escapeHtml(comparatorState.query)}</strong> (no live price extracted).`;
+        return;
+      }
+
+      const cheapest = priced.reduce((best, offer) => (offer.bestPrice < best.bestPrice ? offer : best), priced[0]);
+      summary.innerHTML = `${filteredOffers.length} source(s) | ${priced.length} priced source(s) | Best detected: <strong>${formatEuroPrice(cheapest.bestPrice)}</strong> on <strong>${escapeHtml(cheapest.sourceName)}</strong>.`;
+    }
+
+    function renderComparatorGridContent(offers) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+
+      if (!comparatorState.query) {
+        grid.innerHTML = Object.entries(comparatorSourceMeta).map(([sourceId, meta]) => `
+          <div class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20">
+            <div class="text-xs uppercase tracking-wide text-white/70 mb-1">${escapeHtml(meta.name)}</div>
+            <div class="text-lg font-semibold text-white mb-2">Ready to compare</div>
+            <p class="text-white/80 text-sm mb-4">Type a product name, model, or EAN in the search bar.</p>
+            <a href="${buildComparatorSearchUrl(sourceId, "iphone 15")}" target="_blank" rel="noopener"
+              class="inline-flex items-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+              Open ${escapeHtml(meta.name)}
+            </a>
+          </div>
+        `).join("");
+        return;
+      }
+
+      if (comparatorState.isLoading) {
+        grid.innerHTML = `<div class="col-span-full p-8 rounded-2xl bg-white/10 backdrop-blur-xl text-center text-white">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-white mx-auto mb-3"></div>
+          Loading offers for <strong>${escapeHtml(comparatorState.query)}</strong>...
+        </div>`;
+        return;
+      }
+
+      if (!offers.length) {
+        grid.innerHTML = `<div class="col-span-full p-8 rounded-2xl bg-white/10 backdrop-blur-xl text-center text-white">
+          No offer card matches your current filters.
+        </div>`;
+        return;
+      }
+
+      grid.innerHTML = offers.map((offer) => `
+        <article class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20 flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-xs uppercase tracking-wide ${offer.sourceAccentClass}">${escapeHtml(offer.sourceName)}</div>
+            <span class="text-[11px] px-2 py-1 rounded-full bg-white/15 text-white/80">${offer.fetchStatus === "live" ? "live" : "manual"}</span>
+          </div>
+          <h3 class="text-lg text-white font-semibold leading-tight">${escapeHtml(offer.query)}</h3>
+          <div class="text-2xl font-bold text-white">${Number.isFinite(offer.bestPrice) ? formatEuroPrice(offer.bestPrice) : "Price not detected"}</div>
+          <div class="text-sm text-white/80">${escapeHtml(offer.snippet || "Open the source to see all current offers.")}</div>
+          <div class="text-xs text-white/70">${offer.detectedPrices > 0 ? `${offer.detectedPrices} price match(es) extracted` : "No precise amount extracted from this source."}</div>
+          <a href="${offer.openUrl}" target="_blank" rel="noopener"
+            class="mt-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+            Open on ${escapeHtml(offer.sourceName)}
+          </a>
+        </article>
+      `).join("");
+    }
+
+    function getComparatorFilteredOffers() {
+      const selectedSources = new Set(getSelectedComparatorSourceIds());
+      const sortMode = document.getElementById("comparatorSort")?.value || "best-price";
+      const bounds = getComparatorFilterBounds();
+
+      let offers = comparatorState.rawOffers.filter((offer) => selectedSources.has(offer.sourceId));
+
+      if (bounds.min !== null) {
+        offers = offers.filter((offer) => Number.isFinite(offer.bestPrice) && offer.bestPrice >= bounds.min);
+      }
+      if (bounds.max !== null) {
+        offers = offers.filter((offer) => Number.isFinite(offer.bestPrice) && offer.bestPrice <= bounds.max);
+      }
+
+      offers.sort((a, b) => {
+        if (sortMode === "source") return a.sourceName.localeCompare(b.sourceName);
+        if (sortMode === "highest-price") {
+          const aPrice = Number.isFinite(a.bestPrice) ? a.bestPrice : -1;
+          const bPrice = Number.isFinite(b.bestPrice) ? b.bestPrice : -1;
+          return bPrice - aPrice;
+        }
+
+        const aPrice = Number.isFinite(a.bestPrice) ? a.bestPrice : Number.POSITIVE_INFINITY;
+        const bPrice = Number.isFinite(b.bestPrice) ? b.bestPrice : Number.POSITIVE_INFINITY;
+        return aPrice - bPrice;
+      });
+
+      return offers;
+    }
+
+    function renderComparatorProducts() {
+      if (!isComparatorModeActive()) return;
+      const status = document.getElementById("comparatorStatus");
+      const selectedCount = getSelectedComparatorSourceIds().length;
+
+      if (status) {
+        if (!selectedCount) status.textContent = "Select at least one source.";
+        else if (comparatorState.isLoading) status.textContent = `Scanning ${selectedCount} source(s)...`;
+        else if (comparatorState.query) status.textContent = `Showing ${selectedCount} selected source(s) for "${comparatorState.query}".`;
+        else status.textContent = "Search for a product to compare prices.";
+      }
+
+      const offers = getComparatorFilteredOffers();
+      renderComparatorSummary(offers);
+      renderComparatorGridContent(offers);
+    }
+
+    async function runComparatorSearch(rawQuery) {
+      const query = (rawQuery || "").trim();
+      comparatorState.query = query;
+      localStorage.setItem("comparatorLastQuery", query);
+
+      if (!query) {
+        comparatorState.rawOffers = [];
+        comparatorState.isLoading = false;
+        renderComparatorProducts();
+        return;
+      }
+
+      const sourceIds = getSelectedComparatorSourceIds();
+      if (!sourceIds.length) {
+        comparatorState.rawOffers = [];
+        comparatorState.isLoading = false;
+        renderComparatorProducts();
+        return;
+      }
+
+      comparatorState.isLoading = true;
+      comparatorState.activeRequestId += 1;
+      const requestId = comparatorState.activeRequestId;
+      renderComparatorProducts();
+
+      const offers = (await Promise.all(sourceIds.map((sourceId) => fetchComparatorOffer(sourceId, query, requestId))))
+        .filter(Boolean);
+
+      if (requestId !== comparatorState.activeRequestId) return;
+
+      comparatorState.rawOffers = offers;
+      comparatorState.isLoading = false;
+      renderComparatorProducts();
+    }
+
+    function openAllComparatorSources() {
+      if (!comparatorState.query) return;
+      getSelectedComparatorSourceIds().forEach((sourceId) => {
+        const url = buildComparatorSearchUrl(sourceId, comparatorState.query);
+        window.open(url, "_blank", "noopener");
+      });
+    }
+
+    function initializeComparatorMode() {
+      if (comparatorState.initialized) return;
+
+      const minInput = document.getElementById("comparatorMinPrice");
+      const maxInput = document.getElementById("comparatorMaxPrice");
+      const sortInput = document.getElementById("comparatorSort");
+      const sourceInputs = document.querySelectorAll(".comparator-source-checkbox");
+      const openAllBtn = document.getElementById("openAllComparatorSources");
+
+      if (minInput) minInput.addEventListener("input", renderComparatorProducts);
+      if (maxInput) maxInput.addEventListener("input", renderComparatorProducts);
+      if (sortInput) sortInput.addEventListener("change", renderComparatorProducts);
+      sourceInputs.forEach((input) => {
+        input.addEventListener("change", () => {
+          if (comparatorState.query) runComparatorSearch(comparatorState.query);
+          else renderComparatorProducts();
+        });
+      });
+      if (openAllBtn) openAllBtn.addEventListener("click", openAllComparatorSources);
+
+      comparatorState.initialized = true;
+    }
+
+    function updateComparatorModeUi(isComparator) {
+      document.body.classList.toggle("comparator-mode", isComparator);
+      const widgetsSection = document.getElementById("widgetsSection");
+      const filtersPanel = document.getElementById("comparatorFiltersPanel");
+      const browserSearchControls = document.getElementById("browserSearchControls");
+      const comparatorSearchTag = document.getElementById("comparatorSearchModeTag");
+      const searchCounter = document.getElementById("searchCounter");
+      const searchHelpButton = document.getElementById("searchHelpButton");
+      const searchInput = document.getElementById("searchInput");
+      const summary = document.getElementById("comparatorResultSummary");
+      const searchDropdown = document.getElementById("searchEngineDropdown");
+
+      if (widgetsSection) widgetsSection.classList.toggle("hidden", isComparator);
+      if (filtersPanel) filtersPanel.classList.toggle("hidden", !isComparator);
+      if (browserSearchControls) browserSearchControls.classList.toggle("hidden", isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("hidden", !isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("flex", isComparator);
+      if (searchCounter) searchCounter.classList.toggle("hidden", isComparator);
+      if (searchHelpButton) searchHelpButton.classList.toggle("hidden", isComparator);
+      if (summary) summary.classList.toggle("hidden", !isComparator);
+      if (searchInput) searchInput.placeholder = isComparator ? "Search products, model, or EAN..." : "Search...";
+      if (searchDropdown && isComparator) searchDropdown.classList.add("hidden");
+
+      setShortcutGridLayout(isComparator);
+    }
+
     function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
@@ -894,28 +1319,13 @@
       ) {
         event.preventDefault();
 
+        if (isComparatorModeActive()) {
+          runComparatorSearch(document.getElementById("searchInput").value);
+          return;
+        }
+
         let query = document.getElementById("searchInput").value.trim();
         let selectedEngine = document.getElementById("searchEngine").value;
-
-        const searchEngines = {
-          gpt: "https://chatgpt.com/?q=",
-          g: "https://www.google.com/search?q=",
-          yt: "https://www.youtube.com/results?search_query=",
-          gh: "https://github.com/search?q=",
-          w: "https://en.wikipedia.org/wiki/Special:Search?search=",
-          r: "https://www.reddit.com/search/?q=",
-          so: "https://stackoverflow.com/search?q=",
-          a: "https://www.amazon.fr/s?k=",
-          n: "https://www.netflix.com/search?q=",
-          sp: "https://open.spotify.com/search/results",
-          tw: "https://twitter.com/search?q=",
-          ig: "https://www.instagram.com/explore/tags/",
-          maps: "https://www.google.com/maps/search/",
-          i: "https://www.google.com/images?q=",
-          ddg: "https://duckduckgo.com/?q=",
-          px: "https://www.perplexity.ai/search?q=",
-          ph: "https://fr.pornhub.com/video/search?search=",
-        };
         // If the query ends with a question mark, perform the search directly on Perplexity
         if (query.endsWith('?')) {
           const cleaned = query.slice(0, -1).trim();
@@ -949,6 +1359,9 @@
       }
     }    // Function to check if we should suggest an autocorrection
     function shouldSuggestAutocorrection(query) {
+      if (isComparatorModeActive()) {
+        return false;
+      }
       // Only suggest autocorrection IF the query starts with ":"
       if (!query.startsWith(":")) {
         return false;
@@ -1129,6 +1542,13 @@
 
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
+
+      if (activeTab === "comparator") {
+        updateComparatorModeUi(true);
+        initializeComparatorMode();
+        renderComparatorProducts();
+        return;
+      }
       
       // Check if we're in a folder view
       const currentView = localStorage.getItem('currentView');
@@ -1221,14 +1641,10 @@
     }
 
     function switchTab(tab) {
-      // Don't do anything if we're already on the selected tab
-      if (localStorage.getItem("activeTab") === tab) {
-        return;
-      }
-
       // Update visual interface
       document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
       document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
+      document.getElementById("comparatorTab").classList.toggle("bg-white/60", tab === "comparator");
 
       // Move the morphing indicator
       if (typeof window.updateTabIndicator === 'function') {
@@ -1237,6 +1653,21 @@
 
       // Save active tab
       localStorage.setItem("activeTab", tab);
+      updateComparatorModeUi(tab === "comparator");
+
+      if (tab === "comparator") {
+        localStorage.removeItem("currentView");
+        localStorage.removeItem("currentFolderId");
+        initializeComparatorMode();
+        const rememberedQuery = localStorage.getItem("comparatorLastQuery") || "";
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput && rememberedQuery && !searchInput.value.trim()) {
+          searchInput.value = rememberedQuery;
+        }
+        if (rememberedQuery) runComparatorSearch(rememberedQuery);
+        else renderComparatorProducts();
+        return;
+      }
 
       // Load corresponding shortcuts
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${tab}`) || "{}");
@@ -2248,13 +2679,66 @@
         <div
           class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30 relative group"
           onclick="switchTab('comparator')" id="comparatorTab">
-          <img src="/media/shopping-cart.svg" alt="" class="pl-2 w-20 h-7 text-white transition-opacity duration-200 group-hover:opacity-0">
-          <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 text-center">Coming<br>soon</span>
+          <img src="/media/shopping-cart.svg" alt="" class="pl-2 w-9 h-9 text-white">
         </div>
       </div>
 
       <!-- Widgets Slider -->
-      <div class="mt-6">
+      <div id="comparatorFiltersPanel" class="hidden mt-6">
+        <div class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+          style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-white font-medium text-lg">Shopping filters</h3>
+            <span class="text-xs text-white/70">Live beta</span>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <label class="flex items-center gap-2">
+              <input type="checkbox" class="comparator-source-checkbox" value="dealabs" checked>
+              <span>Dealabs</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" class="comparator-source-checkbox" value="idealo" checked>
+              <span>Idealo</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" class="comparator-source-checkbox" value="ledenicheur" checked>
+              <span>LeDénicheur</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" class="comparator-source-checkbox" value="google-shopping" checked>
+              <span>Google Shopping</span>
+            </label>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-2">
+            <input id="comparatorMinPrice" type="number" min="0" step="1" placeholder="Min €"
+              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm">
+            <input id="comparatorMaxPrice" type="number" min="0" step="1" placeholder="Max €"
+              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm">
+          </div>
+
+          <div class="mt-3">
+            <select id="comparatorSort"
+              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white border border-white/20 focus:border-white/40 focus:outline-none text-sm">
+              <option value="best-price">Lowest price first</option>
+              <option value="highest-price">Highest price first</option>
+              <option value="source">Source (A-Z)</option>
+            </select>
+          </div>
+
+          <button id="openAllComparatorSources"
+            class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors">
+            Open all selected sources
+          </button>
+
+          <div id="comparatorStatus" class="mt-3 text-xs text-white/80">
+            Search for a product to compare prices.
+          </div>
+        </div>
+      </div>
+
+      <div id="widgetsSection" class="mt-6">
         <!-- Slider Header with Navigation -->
         <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
           <div class="flex items-center gap-2">
@@ -2576,7 +3060,7 @@
     <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0">
       
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
-        <div class="relative"> <button id="currentSearch"
+        <div id="browserSearchControls" class="relative"> <button id="currentSearch"
             class="relative z-[999999] px-5 h-12 bg-white/20  rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Search on:</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
@@ -2638,6 +3122,11 @@
           </select>
         </div>
 
+        <div id="comparatorSearchModeTag"
+          class="hidden px-3 h-12 bg-white/20 rounded-xl border-0 outline-none text-white text-sm items-center justify-center whitespace-nowrap">
+          Product search
+        </div>
+
         <div class="relative flex-1">
           <input type="text" placeholder="Search..." id="searchInput"
             class="w-full px-6 py-4 rounded-2xl shadow-lg border-0 bg-white/90 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-400/30 transition-all duration-300 placeholder-white/50" />
@@ -2650,10 +3139,14 @@
         <div id="searchCounter"
           class="relative z-[999999] px-5 h-12 bg-white/20 rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
           0s</div>
-        <button onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 flex items-center justify-center
+        <button id="searchHelpButton" onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 flex items-center justify-center
            transition-all duration-300">
           ?
         </button>
+      </div>
+
+      <div id="comparatorResultSummary"
+        class="hidden max-w-5xl mx-auto w-full mb-4 px-4 py-3 rounded-xl bg-white/15 backdrop-blur-xl text-white text-sm">
       </div>
 
       <!-- Grid Shortcuts -->
@@ -4733,6 +5226,9 @@
 
     // Keyboard navigation
     function handleKeyNavigation(e) {
+      if (isComparatorModeActive()) {
+        return;
+      }
       if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
         return; // Don't interfere with input fields
       }
