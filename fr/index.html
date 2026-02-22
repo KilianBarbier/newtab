@@ -828,6 +828,236 @@
       setTimeout(() => { window.location.href = url; }, 60);
     }
 
+    const searchEngines = {
+      gpt: "https://chatgpt.com/?q=",
+      g: "https://www.google.com/search?q=",
+      yt: "https://www.youtube.com/results?search_query=",
+      gh: "https://github.com/search?q=",
+      w: "https://en.wikipedia.org/wiki/Special:Search?search=",
+      r: "https://www.reddit.com/search/?q=",
+      so: "https://stackoverflow.com/search?q=",
+      a: "https://www.amazon.fr/s?k=",
+      n: "https://www.netflix.com/search?q=",
+      sp: "https://open.spotify.com/search/results",
+      tw: "https://twitter.com/search?q=",
+      ig: "https://www.instagram.com/explore/tags/",
+      maps: "https://www.google.com/maps/search/",
+      i: "https://www.google.com/images?q=",
+      ddg: "https://duckduckgo.com/?q=",
+      px: "https://www.perplexity.ai/search?q=",
+      ph: "https://fr.pornhub.com/video/search?search=",
+    };
+
+    const comparatorState = {
+      query: "",
+      initialized: false
+    };
+
+    const comparatorQuickSources = [
+      { id: "idealo", name: "Idealo", homeUrl: "https://www.idealo.fr/", logoUrl: "https://favicone.com/idealo.fr?s=128" },
+      { id: "dealabs", name: "Dealabs", homeUrl: "https://www.dealabs.com/", logoUrl: "https://favicone.com/dealabs.com?s=128" },
+      { id: "ledenicheur", name: "LeDenicheur", homeUrl: "https://www.ledenicheur.fr/", logoUrl: "https://favicone.com/ledenicheur.fr?s=128" },
+      { id: "leboncoin", name: "Leboncoin", homeUrl: "https://www.leboncoin.fr/", logoUrl: "https://favicone.com/leboncoin.fr?s=128" },
+      { id: "amazon", name: "Amazon", homeUrl: "https://www.amazon.fr/", logoUrl: "https://favicone.com/amazon.fr?s=128" },
+      { id: "fnac", name: "Fnac", homeUrl: "https://www.fnac.com/", logoUrl: "https://favicone.com/fnac.com?s=128" },
+      { id: "rakuten", name: "Rakuten", homeUrl: "https://fr.shopping.rakuten.com/", logoUrl: "https://favicone.com/rakuten.com?s=128" },
+      { id: "ebay", name: "eBay", homeUrl: "https://www.ebay.fr/", logoUrl: "https://favicone.com/ebay.fr?s=128" },
+      { id: "google-shopping", name: "Google Shopping", homeUrl: "https://www.google.com/shopping", logoUrl: "https://favicone.com/google.com?s=128" }
+    ];
+
+    function isComparatorModeActive() {
+      return (localStorage.getItem("activeTab") || "personal") === "comparator";
+    }
+
+    function getComparatorRecentQueries() {
+      try {
+        const value = JSON.parse(localStorage.getItem("comparatorRecentQueries") || "[]");
+        if (!Array.isArray(value)) return [];
+        return value.filter((q) => typeof q === "string" && q.trim().length > 0).slice(0, 8);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveComparatorRecentQuery(query) {
+      const cleaned = (query || "").trim();
+      if (!cleaned) return;
+      const current = getComparatorRecentQueries().filter((item) => item.toLowerCase() !== cleaned.toLowerCase());
+      const next = [cleaned, ...current].slice(0, 8);
+      localStorage.setItem("comparatorRecentQueries", JSON.stringify(next));
+    }
+
+    function clearComparatorRecentQueries() {
+      localStorage.removeItem("comparatorRecentQueries");
+      renderComparatorProducts();
+    }
+
+    function renderComparatorSidePanel(query) {
+      const currentQueryEl = document.getElementById("comparatorCurrentQuery");
+      if (currentQueryEl) {
+        currentQueryEl.textContent = query || "Aucun produit saisi.";
+      }
+
+      const recentListEl = document.getElementById("comparatorRecentList");
+      if (!recentListEl) return;
+
+      const recents = getComparatorRecentQueries();
+      if (!recents.length) {
+        recentListEl.innerHTML = `<div class="text-xs text-white/70">Aucune recherche récente.</div>`;
+        return;
+      }
+
+      recentListEl.innerHTML = recents.map((item) => `
+        <button data-query="${escapeHtml(item)}"
+          class="comparator-recent-item w-full text-left px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors">
+          ${escapeHtml(item)}
+        </button>
+      `).join("");
+    }
+
+    function buildComparatorSearchUrl(sourceId, query) {
+      const encodedQuery = encodeURIComponent((query || "").trim());
+      if (sourceId === "idealo") return `https://duckduckgo.com/?q=${encodeURIComponent(`site:idealo.fr ${query}`)}`;
+      if (sourceId === "dealabs") return `https://www.dealabs.com/search?q=${encodedQuery}`;
+      if (sourceId === "ledenicheur") return `https://www.ledenicheur.fr/search?search=${encodedQuery}`;
+      if (sourceId === "leboncoin") return `https://www.leboncoin.fr/recherche?text=${encodedQuery}`;
+      if (sourceId === "amazon") return `https://www.amazon.fr/s?k=${encodedQuery}`;
+      if (sourceId === "fnac") return `https://www.fnac.com/SearchResult/ResultList.aspx?Search=${encodedQuery}`;
+      if (sourceId === "rakuten") return `https://fr.shopping.rakuten.com/s/${encodedQuery}`;
+      if (sourceId === "ebay") return `https://www.ebay.fr/sch/i.html?_nkw=${encodedQuery}`;
+      if (sourceId === "google-shopping") return `https://www.google.com/search?tbm=shop&q=${encodedQuery}`;
+      return `https://www.google.com/search?q=${encodedQuery}`;
+    }
+
+    function setShortcutGridLayout(isComparator) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+      grid.className = isComparator
+        ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full"
+        : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full";
+    }
+
+    function renderComparatorSummary(cards) {
+      const summary = document.getElementById("comparatorResultSummary");
+      if (!summary) return;
+      if (!comparatorState.query) {
+        summary.innerHTML = "Tapez un produit, puis choisissez où lancer la recherche.";
+        return;
+      }
+      summary.innerHTML = `${cards.length} sources prêtes pour <strong>${escapeHtml(comparatorState.query)}</strong>.`;
+    }
+
+    function renderComparatorGridContent(cards) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+
+      grid.innerHTML = cards.map((card) => `
+        <article class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20 flex flex-col gap-3">
+          <div class="flex items-center gap-3">
+            <img src="${escapeHtml(card.logoUrl)}" alt="${escapeHtml(card.name)}" class="w-10 h-10 rounded-lg bg-white/20 p-1 object-contain">
+            <h3 class="text-base text-white font-semibold leading-tight">${escapeHtml(card.cta)}</h3>
+          </div>
+          <p class="text-xs text-white/75">${escapeHtml(card.helper)}</p>
+          <a href="${escapeHtml(card.url)}" target="_blank" rel="noopener"
+            class="mt-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+            Ouvrir
+          </a>
+        </article>
+      `).join("");
+    }
+
+    function renderComparatorProducts() {
+      if (!isComparatorModeActive()) return;
+
+      const query = (comparatorState.query || "").trim();
+      const status = document.getElementById("comparatorStatus");
+
+      const cards = comparatorQuickSources.map((source) => ({
+        id: source.id,
+        name: source.name,
+        logoUrl: source.logoUrl,
+        url: query ? buildComparatorSearchUrl(source.id, query) : source.homeUrl,
+        cta: `Chercher sur ${source.name}`,
+        helper: query ? `Recherche : "${query}"` : "Tapez un produit dans la barre de recherche."
+      }));
+
+      if (status) {
+        status.textContent = query
+          ? `Cliquez sur une source pour chercher "${query}".`
+          : "Tapez un produit pour afficher les cartes de recherche.";
+      }
+
+      renderComparatorSidePanel(query);
+      renderComparatorSummary(cards);
+      renderComparatorGridContent(cards);
+    }
+
+    async function runComparatorSearch(rawQuery) {
+      comparatorState.query = (rawQuery || "").trim();
+      localStorage.setItem("comparatorLastQuery", comparatorState.query);
+      saveComparatorRecentQuery(comparatorState.query);
+      renderComparatorProducts();
+    }
+
+    function openAllComparatorSources() {
+      const query = (comparatorState.query || "").trim();
+      if (!query) return;
+      comparatorQuickSources.forEach((source) => {
+        const url = buildComparatorSearchUrl(source.id, query);
+        window.open(url, "_blank", "noopener");
+      });
+    }
+
+    function initializeComparatorMode() {
+      if (comparatorState.initialized) return;
+      comparatorState.initialized = true;
+
+      const openAllBtn = document.getElementById("openAllComparatorSources");
+      if (openAllBtn) openAllBtn.addEventListener("click", openAllComparatorSources);
+
+      const clearHistoryBtn = document.getElementById("clearComparatorHistoryBtn");
+      if (clearHistoryBtn) clearHistoryBtn.addEventListener("click", clearComparatorRecentQueries);
+
+      const recentListEl = document.getElementById("comparatorRecentList");
+      if (recentListEl) {
+        recentListEl.addEventListener("click", (event) => {
+          const btn = event.target.closest(".comparator-recent-item");
+          if (!btn) return;
+          const query = (btn.getAttribute("data-query") || "").trim();
+          if (!query) return;
+          const input = document.getElementById("searchInput");
+          if (input) input.value = query;
+          runComparatorSearch(query);
+        });
+      }
+    }
+
+    function updateComparatorModeUi(isComparator) {
+      document.body.classList.toggle("comparator-mode", isComparator);
+      const widgetsSection = document.getElementById("widgetsSection");
+      const filtersPanel = document.getElementById("comparatorFiltersPanel");
+      const browserSearchControls = document.getElementById("browserSearchControls");
+      const comparatorSearchTag = document.getElementById("comparatorSearchModeTag");
+      const searchCounter = document.getElementById("searchCounter");
+      const searchHelpButton = document.getElementById("searchHelpButton");
+      const searchInput = document.getElementById("searchInput");
+      const summary = document.getElementById("comparatorResultSummary");
+      const searchDropdown = document.getElementById("searchEngineDropdown");
+
+      if (widgetsSection) widgetsSection.classList.toggle("hidden", isComparator);
+      if (filtersPanel) filtersPanel.classList.toggle("hidden", !isComparator);
+      if (browserSearchControls) browserSearchControls.classList.toggle("hidden", isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("hidden", !isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("flex", isComparator);
+      if (searchCounter) searchCounter.classList.toggle("hidden", isComparator);
+      if (searchHelpButton) searchHelpButton.classList.toggle("hidden", isComparator);
+      if (summary) summary.classList.toggle("hidden", !isComparator);
+      if (searchInput) searchInput.placeholder = isComparator ? "Recherche produit..." : "Rechercher...";
+      if (searchDropdown && isComparator) searchDropdown.classList.add("hidden");
+
+      setShortcutGridLayout(isComparator);
+    }
+
     function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
@@ -835,28 +1065,13 @@
       ) {
         event.preventDefault();
 
+        if (isComparatorModeActive()) {
+          runComparatorSearch(document.getElementById("searchInput").value);
+          return;
+        }
+
         let query = document.getElementById("searchInput").value.trim();
         let selectedEngine = document.getElementById("searchEngine").value;
-
-        const searchEngines = {
-          gpt: "https://chatgpt.com/?q=",
-          g: "https://www.google.com/search?q=",
-          yt: "https://www.youtube.com/results?search_query=",
-          gh: "https://github.com/search?q=",
-          w: "https://en.wikipedia.org/wiki/Special:Search?search=",
-          r: "https://www.reddit.com/search/?q=",
-          so: "https://stackoverflow.com/search?q=",
-          a: "https://www.amazon.fr/s?k=",
-          n: "https://www.netflix.com/search?q=",
-          sp: "https://open.spotify.com/search/results",
-          tw: "https://twitter.com/search?q=",
-          ig: "https://www.instagram.com/explore/tags/",
-          maps: "https://www.google.com/maps/search/",
-          i: "https://www.google.com/images?q=",
-          ddg: "https://duckduckgo.com/?q=",
-          px: "https://www.perplexity.ai/search?q=",
-          ph: "https://fr.pornhub.com/video/search?search=",
-        };
         // If the query ends with a question mark, perform the search directly on Perplexity
         if (query.endsWith('?')) {
           const cleaned = query.slice(0, -1).trim();
@@ -890,6 +1105,9 @@
       }
     }    // Function to check if we should suggest an autocorrection
     function shouldSuggestAutocorrection(query) {
+      if (isComparatorModeActive()) {
+        return false;
+      }
       // Only suggest autocorrection IF the query starts with ":"
       if (!query.startsWith(":")) {
         return false;
@@ -1307,6 +1525,13 @@
     function reloadShortcuts() {
       const grid = document.getElementById("shortcutGrid");
       const activeTab = localStorage.getItem("activeTab") || "personal";
+
+      if (activeTab === "comparator") {
+        updateComparatorModeUi(true);
+        initializeComparatorMode();
+        renderComparatorProducts();
+        return;
+      }
       
       // Check if we're in a folder view
       const currentView = localStorage.getItem('currentView');
@@ -1396,14 +1621,10 @@
     }
 
     function switchTab(tab) {
-      // Don't do anything if we're already on the selected tab
-      if (localStorage.getItem("activeTab") === tab) {
-        return;
-      }
-
       // Update visual interface
       document.getElementById("personalTab").classList.toggle("bg-white/60", tab === "personal");
       document.getElementById("professionalTab").classList.toggle("bg-white/60", tab === "professional");
+      document.getElementById("comparatorTab").classList.toggle("bg-white/60", tab === "comparator");
 
       // Move the morphing indicator
       if (typeof window.updateTabIndicator === 'function') {
@@ -1412,6 +1633,21 @@
 
       // Save active tab
       localStorage.setItem("activeTab", tab);
+      updateComparatorModeUi(tab === "comparator");
+
+      if (tab === "comparator") {
+        localStorage.removeItem("currentView");
+        localStorage.removeItem("currentFolderId");
+        initializeComparatorMode();
+        const rememberedQuery = localStorage.getItem("comparatorLastQuery") || "";
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput && rememberedQuery && !searchInput.value.trim()) {
+          searchInput.value = rememberedQuery;
+        }
+        if (rememberedQuery) runComparatorSearch(rememberedQuery);
+        else renderComparatorProducts();
+        return;
+      }
 
       // Load corresponding shortcuts
       const shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${tab}`) || "{}");
@@ -1820,13 +2056,46 @@
         <div
           class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30 relative group"
           onclick="switchTab('comparator')" id="comparatorTab">
-          <img src="/media/shopping-cart.svg" alt="" class="pl-2 w-20 h-7 text-white transition-opacity duration-200 group-hover:opacity-0">
-          <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 text-center">Bientot</span>
+          <img src="/media/shopping-cart.svg" alt="" class="pl-2 w-20 h-7 text-white">
+        </div>
+      </div>
+
+      <div id="comparatorFiltersPanel" class="hidden mt-6">
+        <div class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
+          style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-white font-medium text-lg">Sources shopping</h3>
+            <span class="text-xs text-white/70">Mode simple</span>
+          </div>
+          <div class="mb-4">
+            <div class="text-xs uppercase tracking-wide text-white/70 mb-2">Produit actuel</div>
+            <div id="comparatorCurrentQuery"
+              class="px-3 py-2 rounded-lg bg-white/15 text-white/90 text-sm min-h-[2.25rem] flex items-center">
+              Aucun produit saisi.
+            </div>
+          </div>
+          <div class="mb-4">
+            <div class="text-xs uppercase tracking-wide text-white/70 mb-2">Recherches récentes</div>
+            <div id="comparatorRecentList" class="space-y-2">
+              <div class="text-xs text-white/70">Aucune recherche récente.</div>
+            </div>
+          </div>
+          <button id="openAllComparatorSources"
+            class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors">
+            Ouvrir toutes les recherches
+          </button>
+          <button id="clearComparatorHistoryBtn"
+            class="w-full mt-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs transition-colors">
+            Vider l'historique
+          </button>
+          <div id="comparatorStatus" class="mt-3 text-xs text-white/80">
+            Tapez un produit pour afficher les cartes de recherche.
+          </div>
         </div>
       </div>
 
       <!-- Carrousel de widgets -->
-      <div class="mt-6">
+      <div id="widgetsSection" class="mt-6">
         <!-- En-tête du carrousel avec navigation -->
         <div class="flex items-center justify-between mb-4 pr-4 pt-4 pb-2 pl-2">
           <div class="flex items-center gap-2">
@@ -2148,7 +2417,7 @@
     <main class="flex-1 flex flex-col lg:ml-80 pb-20 lg:pb-0">
       
       <div class="max-w-2xl mx-auto w-full mb-12 flex items-center gap-4 search-container relative z-30">
-        <div class="relative"> <button id="currentSearch"
+        <div id="browserSearchControls" class="relative"> <button id="currentSearch"
             class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
             <span class="pr-3 shortcut-title font-sf" style="font-weight: 400">Rechercher sur :</span>
             <img src="https://www.google.com/images/branding/product/ico/googleg_lodp.ico" class="w-6 h-6"
@@ -2213,6 +2482,10 @@
             <!-- ... keep the values for search functionality ... -->
           </select>
         </div>
+        <div id="comparatorSearchModeTag"
+          class="hidden px-4 h-12 rounded-xl bg-white/20 text-white text-sm items-center justify-center whitespace-nowrap">
+          Recherche produit
+        </div>
 
         <div class="relative flex-1">
           <input type="text" placeholder="Rechercher..." id="searchInput"
@@ -2226,10 +2499,14 @@
         <div id="searchCounter"
           class="relative z-[999999] px-5 h-12 bg-white/20 backdrop-blur-xl rounded-xl border-0 outline-none cursor-pointer transition-all duration-300 flex items-center justify-center">
           0s</div>
-        <button onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
+        <button id="searchHelpButton" onclick="showSearchHelp()" class="text-white text-xl font-medium w-10 h-10 rounded-full bg-white/20 backdrop-blur-xl flex items-center justify-center
            transition-all duration-300">
           ?
         </button>
+      </div>
+      <div id="comparatorResultSummary"
+        class="hidden max-w-5xl mx-auto w-full mb-6 px-4 py-3 rounded-xl bg-white/10 text-white text-sm border border-white/20">
+        Tapez un produit, puis choisissez où lancer la recherche.
       </div>
 
       <!-- Grid Shortcuts -->
