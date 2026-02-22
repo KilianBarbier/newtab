@@ -1759,6 +1759,145 @@
       setShortcutGridLayout(isComparator);
     }
 
+    // Simple comparator mode: one card per marketplace/source.
+    const comparatorQuickSources = [
+      { id: "idealo", name: "Idealo" },
+      { id: "dealabs", name: "Dealabs" },
+      { id: "ledenicheur", name: "LeDenicheur" },
+      { id: "leboncoin", name: "Leboncoin" },
+      { id: "amazon", name: "Amazon" },
+      { id: "fnac", name: "Fnac" },
+      { id: "rakuten", name: "Rakuten" },
+      { id: "ebay", name: "eBay" },
+      { id: "google-shopping", name: "Google Shopping" }
+    ];
+
+    function getSelectedComparatorSourceIds() {
+      return comparatorQuickSources.map((source) => source.id);
+    }
+
+    function buildComparatorSearchUrl(sourceId, query) {
+      const encodedQuery = encodeURIComponent((query || "").trim());
+      if (sourceId === "idealo") return `https://duckduckgo.com/?q=${encodeURIComponent(`site:idealo.fr ${query}`)}`;
+      if (sourceId === "dealabs") return `https://www.dealabs.com/search?q=${encodedQuery}`;
+      if (sourceId === "ledenicheur") return `https://www.ledenicheur.fr/search?search=${encodedQuery}`;
+      if (sourceId === "leboncoin") return `https://www.leboncoin.fr/recherche?text=${encodedQuery}`;
+      if (sourceId === "amazon") return `https://www.amazon.fr/s?k=${encodedQuery}`;
+      if (sourceId === "fnac") return `https://www.fnac.com/SearchResult/ResultList.aspx?Search=${encodedQuery}`;
+      if (sourceId === "rakuten") return `https://fr.shopping.rakuten.com/s/${encodedQuery}`;
+      if (sourceId === "ebay") return `https://www.ebay.fr/sch/i.html?_nkw=${encodedQuery}`;
+      if (sourceId === "google-shopping") return `https://www.google.com/search?tbm=shop&q=${encodedQuery}`;
+      return `https://www.google.com/search?q=${encodedQuery}`;
+    }
+
+    function setShortcutGridLayout(isComparator) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+      grid.className = isComparator
+        ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full"
+        : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto w-full";
+    }
+
+    function renderComparatorSummary(cards) {
+      const summary = document.getElementById("comparatorResultSummary");
+      if (!summary) return;
+      if (!comparatorState.query) {
+        summary.innerHTML = "Tape un produit, puis choisis où lancer la recherche.";
+        return;
+      }
+      summary.innerHTML = `${cards.length} sources prêtes pour <strong>${escapeHtml(comparatorState.query)}</strong>.`;
+    }
+
+    function renderComparatorGridContent(cards) {
+      const grid = document.getElementById("shortcutGrid");
+      if (!grid) return;
+
+      grid.innerHTML = cards.map((card) => `
+        <article class="p-5 bg-white/10 rounded-2xl shadow-lg backdrop-blur-xl border border-white/20 flex flex-col gap-3">
+          <div class="text-xs uppercase tracking-wide text-white/70">${escapeHtml(card.name)}</div>
+          <h3 class="text-base text-white font-semibold leading-tight">${escapeHtml(card.cta)}</h3>
+          <p class="text-xs text-white/75">${escapeHtml(card.helper)}</p>
+          <a href="${escapeHtml(card.url)}" target="_blank" rel="noopener"
+            class="mt-1 inline-flex items-center justify-center px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30 text-white text-sm">
+            ${escapeHtml(card.cta)}
+          </a>
+        </article>
+      `).join("");
+    }
+
+    function renderComparatorProducts() {
+      if (!isComparatorModeActive()) return;
+
+      const query = (comparatorState.query || "").trim();
+      const status = document.getElementById("comparatorStatus");
+
+      const cards = comparatorQuickSources.map((source) => ({
+        id: source.id,
+        name: source.name,
+        url: buildComparatorSearchUrl(source.id, query || "iphone 15"),
+        cta: `Chercher sur ${source.name}`,
+        helper: query ? `Recherche: "${query}"` : "Tape un produit dans la barre de recherche."
+      }));
+
+      if (status) {
+        status.textContent = query
+          ? `Clique sur une source pour chercher "${query}".`
+          : "Tape un produit pour afficher les cartes de recherche.";
+      }
+
+      renderComparatorSummary(cards);
+      renderComparatorGridContent(cards);
+    }
+
+    async function runComparatorSearch(rawQuery) {
+      comparatorState.query = (rawQuery || "").trim();
+      localStorage.setItem("comparatorLastQuery", comparatorState.query);
+      renderComparatorProducts();
+    }
+
+    function openAllComparatorSources() {
+      const query = (comparatorState.query || "").trim();
+      if (!query) return;
+      comparatorQuickSources.forEach((source) => {
+        const url = buildComparatorSearchUrl(source.id, query);
+        window.open(url, "_blank", "noopener");
+      });
+    }
+
+    function initializeComparatorMode() {
+      if (comparatorState.initialized) return;
+      comparatorState.initialized = true;
+
+      const openAllBtn = document.getElementById("openAllComparatorSources");
+      if (openAllBtn) openAllBtn.addEventListener("click", openAllComparatorSources);
+    }
+
+    function updateComparatorModeUi(isComparator) {
+      document.body.classList.toggle("comparator-mode", isComparator);
+      const widgetsSection = document.getElementById("widgetsSection");
+      const filtersPanel = document.getElementById("comparatorFiltersPanel");
+      const browserSearchControls = document.getElementById("browserSearchControls");
+      const comparatorSearchTag = document.getElementById("comparatorSearchModeTag");
+      const searchCounter = document.getElementById("searchCounter");
+      const searchHelpButton = document.getElementById("searchHelpButton");
+      const searchInput = document.getElementById("searchInput");
+      const summary = document.getElementById("comparatorResultSummary");
+      const searchDropdown = document.getElementById("searchEngineDropdown");
+
+      if (widgetsSection) widgetsSection.classList.toggle("hidden", isComparator);
+      if (filtersPanel) filtersPanel.classList.toggle("hidden", !isComparator);
+      if (browserSearchControls) browserSearchControls.classList.toggle("hidden", isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("hidden", !isComparator);
+      if (comparatorSearchTag) comparatorSearchTag.classList.toggle("flex", isComparator);
+      if (searchCounter) searchCounter.classList.toggle("hidden", isComparator);
+      if (searchHelpButton) searchHelpButton.classList.toggle("hidden", isComparator);
+      if (summary) summary.classList.toggle("hidden", !isComparator);
+      if (searchInput) searchInput.placeholder = isComparator ? "Recherche produit..." : "Search...";
+      if (searchDropdown && isComparator) searchDropdown.classList.add("hidden");
+
+      setShortcutGridLayout(isComparator);
+    }
+
     function handleSearch(event) {
       if (
         (event.type === "keydown" && event.key === "Enter") ||
@@ -3135,59 +3274,29 @@
         <div class="pr-4 pt-4 pb-4 pl-2 rounded-xl text-white transition-all duration-300 border-2 border-white-500/60"
           style="background: linear-gradient(135deg, #6578FF 0%, #B1B8EF 100%);">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-white font-medium text-lg">Shopping filters</h3>
-            <span class="text-xs text-white/70">Live beta</span>
+            <h3 class="text-white font-medium text-lg">Shopping sources</h3>
+            <span class="text-xs text-white/70">Simple mode</span>
           </div>
 
-          <div class="space-y-3 text-sm">
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="comparator-source-checkbox" value="dealabs" checked>
-              <span>Dealabs</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="comparator-source-checkbox" value="idealo" checked>
-              <span>Idealo</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="comparator-source-checkbox" value="ledenicheur" checked>
-              <span>LeDénicheur</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="checkbox" class="comparator-source-checkbox" value="google-shopping" checked>
-              <span>Google Shopping</span>
-            </label>
-          </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-2">
-            <input id="comparatorMinPrice" type="number" min="0" step="1" placeholder="Min €"
-              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm">
-            <input id="comparatorMaxPrice" type="number" min="0" step="1" placeholder="Max €"
-              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white placeholder-white/60 border border-white/20 focus:border-white/40 focus:outline-none text-sm">
-          </div>
-
-          <div class="mt-3">
-            <select id="comparatorSort"
-              class="w-full px-3 py-2 bg-white/20 rounded-lg text-white border border-white/20 focus:border-white/40 focus:outline-none text-sm">
-              <option value="best-price">Lowest price first</option>
-              <option value="highest-price">Highest price first</option>
-              <option value="source">Source (A-Z)</option>
-            </select>
-          </div>
-
-          <div class="mt-4">
-            <div class="text-xs uppercase tracking-wide text-white/70 mb-2">Smart filters</div>
-            <div id="comparatorDynamicFacets" class="space-y-2">
-              <div class="text-xs text-white/70">Search a product to load relevant filters.</div>
-            </div>
+          <div class="space-y-2 text-sm text-white/85">
+            <div>Idealo</div>
+            <div>Dealabs</div>
+            <div>LeDenicheur</div>
+            <div>Leboncoin</div>
+            <div>Amazon</div>
+            <div>Fnac</div>
+            <div>Rakuten</div>
+            <div>eBay</div>
+            <div>Google Shopping</div>
           </div>
 
           <button id="openAllComparatorSources"
             class="w-full mt-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm transition-colors">
-            Open all selected sources
+            Ouvrir toutes les recherches
           </button>
 
           <div id="comparatorStatus" class="mt-3 text-xs text-white/80">
-            Search for a product to compare prices.
+            Tape un produit pour afficher les cartes de recherche.
           </div>
         </div>
       </div>
