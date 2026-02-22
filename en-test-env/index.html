@@ -918,6 +918,7 @@
       brand: { label: "Brand", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
       color: { label: "Color", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
       condition: { label: "Condition", categories: ["generic", "laptop", "phone", "tablet", "bag", "display"], numeric: false },
+      chip: { label: "Chip", categories: ["laptop"], numeric: false },
       storage_gb: { label: "Storage", categories: ["laptop", "phone", "tablet"], numeric: true, unit: "GB" },
       ram_gb: { label: "RAM", categories: ["laptop", "phone", "tablet"], numeric: true, unit: "GB" },
       screen_in: { label: "Screen", categories: ["laptop", "phone", "tablet", "display"], numeric: true, unit: "\"" },
@@ -1232,9 +1233,9 @@
       return "generic";
     }
 
-    function inferComparatorAttributes(title, category) {
+    function inferComparatorAttributes(title, category, extraText) {
       const attrs = {};
-      const text = normalizeWhitespace(title || "");
+      const text = normalizeWhitespace(`${title || ""} ${extraText || ""}`);
       const textNorm = normalizeTextForMatch(text);
 
       const brand = comparatorKnownBrands.find((candidate) => new RegExp(`\\b${candidate.toLowerCase().replace(/\s+/g, "\\s+")}\\b`, "i").test(textNorm));
@@ -1249,6 +1250,11 @@
       if (/(reconditionne|refurbished)/.test(textNorm)) attrs.condition = "refurbished";
       else if (/(neuf|new)/.test(textNorm)) attrs.condition = "new";
 
+      const chipMatch = textNorm.match(/\b(m1|m2|m3|m4|max|pro|ultra|intel core i[3579]|ryzen\s?[3579])\b/i);
+      if (chipMatch && category === "laptop") {
+        attrs.chip = chipMatch[1].toUpperCase().replace(/\s+/g, " ");
+      }
+
       const storageCandidates = [];
       const storageRegex = /(\d+(?:[.,]\d+)?)\s?(tb|to|gb|go)\b/gi;
       let storageMatch;
@@ -1260,8 +1266,8 @@
         if (asGb >= 8 && asGb <= 8192) storageCandidates.push(Math.round(asGb));
       }
 
-      const ramRegex = /(\d+(?:[.,]\d+)?)\s?(gb|go)\s?(ram|memory|memoire)/i;
-      const ramMatch = text.match(ramRegex);
+      const ramRegex = /(\d+(?:[.,]\d+)?)\s?(gb|go)\s?(ram|memory|memoire|unified memory)/i;
+      const ramMatch = textNorm.match(ramRegex);
       if (ramMatch) {
         const ramValue = Number.parseFloat(String(ramMatch[1]).replace(",", "."));
         if (Number.isFinite(ramValue) && ramValue >= 2 && ramValue <= 128) attrs.ram_gb = Math.round(ramValue);
@@ -1315,7 +1321,8 @@
           counts.set(key, (counts.get(key) || 0) + 1);
         });
 
-        if (counts.size < 2) return;
+        const minDistinctValues = category === "generic" ? 2 : 1;
+        if (counts.size < minDistinctValues) return;
         const values = Array.from(counts.entries()).map(([value, count]) => ({
           value,
           count,
@@ -1672,7 +1679,11 @@
       const detectedCategory = detectComparatorCategory(query, products);
       const enrichedProducts = products.map((product) => ({
         ...product,
-        attributes: inferComparatorAttributes(product.title, detectedCategory)
+        attributes: inferComparatorAttributes(
+          product.title,
+          detectedCategory,
+          `${product.snippet || ""} ${product.productUrl || ""}`
+        )
       }));
 
       const facets = buildComparatorFacets(enrichedProducts, detectedCategory);
