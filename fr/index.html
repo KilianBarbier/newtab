@@ -149,7 +149,7 @@
           localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
           localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
-          reloadShortcuts(); // Instead of reloadWithTransition()
+          refreshAfterModification(); // In-page reload with fallback
         } catch (e) {
           console.error("URL déposée invalide :", e);
         }
@@ -167,7 +167,7 @@
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
-      reloadShortcuts();
+      refreshAfterModification();
 
       // Remove temporary style classes
       document.querySelectorAll('.shortcut-container a').forEach(el => {
@@ -208,7 +208,7 @@
       }
 
       localStorage.setItem("shortcutCount", currentCount + 4);
-      reloadShortcuts(); // Au lieu de reloadWithTransition()
+      refreshAfterModification(); // In-page reload with fallback
     } async function saveShortcut() {
       const modal = document.getElementById("configModal");
       const position = modal.getAttribute("data-position");
@@ -310,7 +310,7 @@
         }
 
         closeConfigModal();
-        reloadShortcuts(); // Instead of reloadWithTransition()
+        refreshAfterModification(); // In-page reload with fallback
       } catch (e) {
         console.error("Erreur lors de l'enregistrement du raccourci :", e);
       }
@@ -459,7 +459,7 @@
       showNotification(`Le raccourci "${shortcutData.title}" a été épinglé dans les deux onglets !`);
 
       // Recharger les raccourcis pour refléter les changements
-      reloadShortcuts();
+      refreshAfterModification();
     }
 
     function showNotification(message) {
@@ -492,11 +492,32 @@
         .getElementById("contextMenu")
         .getAttribute("data-position");
       const activeTab = localStorage.getItem("activeTab") || "personal";
+      const currentView = localStorage.getItem("currentView");
+      const currentFolderId = localStorage.getItem("currentFolderId");
 
-      // Get shortcuts from localStorage
-      const shortcuts = JSON.parse(
-        localStorage.getItem(`shortcuts_${activeTab}`) || "{}"
-      );
+      let shortcuts = {};
+      let shortcutCountKey = "shortcutCount";
+      let saveShortcuts;
+
+      if (currentView === "folder" && currentFolderId) {
+        const folders = JSON.parse(localStorage.getItem(`folders_${activeTab}`) || "{}");
+        const folder = folders[currentFolderId];
+        if (!folder) return;
+
+        if (!folder.shortcuts) folder.shortcuts = {};
+        shortcuts = folder.shortcuts;
+        shortcutCountKey = `folderShortcutCount_${currentFolderId}`;
+        saveShortcuts = (nextShortcuts) => {
+          folder.shortcuts = nextShortcuts;
+          localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
+        };
+      } else {
+        shortcuts = JSON.parse(localStorage.getItem(`shortcuts_${activeTab}`) || "{}");
+        saveShortcuts = (nextShortcuts) => {
+          localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(nextShortcuts));
+          localStorage.setItem("shortcuts", JSON.stringify(nextShortcuts));
+        };
+      }
 
       // Check if the shortcut is already empty (placeholder)
       const shortcutElement = document.querySelector(`a[data-position="${position}"]`);
@@ -505,7 +526,7 @@
 
       if (isEmpty) {
         // If it's already empty, remove it completely from the grid
-        const currentShortcutCount = parseInt(localStorage.getItem("shortcutCount") || "8");
+        const currentShortcutCount = parseInt(localStorage.getItem(shortcutCountKey) || "8");
         const positionNum = parseInt(position);
 
         // Shift all shortcuts after this position down by one
@@ -520,20 +541,21 @@
         });
 
         // Reduce shortcut count by 1
-        localStorage.setItem("shortcutCount", (currentShortcutCount - 1).toString());
-        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(newShortcuts));
-        localStorage.setItem("shortcuts", JSON.stringify(newShortcuts));
+        localStorage.setItem(shortcutCountKey, (currentShortcutCount - 1).toString());
+        saveShortcuts(newShortcuts);
       } else {
         // If it has content, just clear it (make it a placeholder)
         delete shortcuts[position];
-        localStorage.setItem(`shortcuts_${activeTab}`, JSON.stringify(shortcuts));
-        localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+        saveShortcuts(shortcuts);
       }
 
       closeContextMenu();
 
-      // Reload shortcuts to update the display
-      reloadShortcuts();
+      refreshAfterModification(() => {
+        const slot = document.querySelector(`a[data-position="${position}"]`);
+        const icon = slot?.querySelector(".shortcut-icon");
+        return !slot || icon?.getAttribute("data-empty") === "true";
+      });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -979,7 +1001,24 @@
       document.getElementById("autocorrectionModal").querySelector("p.mt-2").textContent =
         `La recherche sera effectuée sur ${currentEngineName}`;
       return `/${currentEngine} ${lowercaseQuery}`;
-    }    // Function to execute the original search
+    }
+
+    function refreshAfterModification(verifyFn) {
+      try {
+        reloadShortcuts();
+        if (typeof verifyFn === "function") {
+          const ok = verifyFn();
+          if (!ok) {
+            window.location.reload();
+          }
+        }
+      } catch (error) {
+        console.error("reloadShortcuts failed, forcing full page reload", error);
+        window.location.reload();
+      }
+    }
+
+    // Function to execute the original search
     function executeOriginalSearch() {
       const originalQuery = document.getElementById("autocorrectionModal").getAttribute("data-original-query");
       document.getElementById("autocorrectionModal").classList.add("hidden");
@@ -1082,7 +1121,7 @@
       localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
       
       closeCreateFolderModal();
-      reloadShortcuts();
+      refreshAfterModification();
       
       showNotification(`Dossier "${folderName}" créé !`);
     }
@@ -1197,7 +1236,7 @@
     function exitFolderView() {
       localStorage.removeItem('currentView');
       localStorage.removeItem('currentFolderId');
-      reloadShortcuts();
+      refreshAfterModification();
     }
 
     function addMoreShortcutsToFolder(folderId) {
@@ -1239,7 +1278,7 @@
         folder.name = newName.trim();
         localStorage.setItem(`folders_${activeTab}`, JSON.stringify(folders));
         closeFolderContextMenu();
-        reloadShortcuts();
+        refreshAfterModification();
         showNotification(`Dossier renommé en "${newName}"`);
       }
     }
@@ -1259,7 +1298,7 @@
       if (localStorage.getItem('currentFolderId') === folderId) {
         exitFolderView();
       } else {
-        reloadShortcuts();
+        refreshAfterModification();
       }
       
       showNotification('Dossier supprimé');
@@ -1379,7 +1418,7 @@
       localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
 
       // Reload shortcuts
-      reloadShortcuts();
+      refreshAfterModification();
 
       // Update widget order based on pins for the new tab
       const orderedWidgets = getPinnedWidgetOrder();
@@ -1521,7 +1560,7 @@
         closeImportModal();
 
         // Recharger l'affichage et réorganiser les widgets
-        reloadShortcuts();
+      refreshAfterModification();
 
         // Update widget order based on imported pins
         const orderedWidgets = getPinnedWidgetOrder();
@@ -1759,23 +1798,31 @@
     <aside id="sidebar"
       class="w-80 backdrop-blur-xl bg-white/90 rounded-3xl p-6 space-y-4 shadow-2xl transition-all duration-300 mr-6 fixed lg:relative z-40 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block scrollbar-hide">
 
-      <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
-        onclick="switchTab('personal')" id="personalTab">
-        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-        </svg>
-        <a id="perso" class="block w-full">Personnel</a>
-      </div>
-      <div
-        class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
-        onclick="switchTab('professional')" id="professionalTab">
-        <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path
-            d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
-        </svg>
-        <a id="pro" class="block w-full">Professionnel</a>
+      <div class="flex items-center justify-center gap-3">
+        <div
+          class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+          onclick="switchTab('personal')" id="personalTab">
+          <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+          </svg>
+          <a id="perso" class="block w-full">Personnel</a>
+        </div>
+        <div
+          class="pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30"
+          onclick="switchTab('professional')" id="professionalTab">
+          <svg class="pl-2 w-9 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z" />
+          </svg>
+          <a id="pro" class="block w-full">Professionnel</a>
+        </div>
+        <div
+          class="max-w-max pr-4 pt-4 pb-4 pl-2 hover:bg-white/60 rounded-xl cursor-pointer text-white transition-all duration-300 flex items-center gap-3 bg-white/30 relative group"
+          onclick="switchTab('comparator')" id="comparatorTab">
+          <img src="/media/shopping-cart.svg" alt="" class="pl-2 w-20 h-7 text-white transition-opacity duration-200 group-hover:opacity-0">
+          <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 text-center">Bientot</span>
+        </div>
       </div>
 
       <!-- Carrousel de widgets -->
@@ -2753,32 +2800,40 @@
       );
       const sidebarContent = document.getElementById("sidebarContent");
 
-      sidebarChildren.forEach((child) => {
-        sidebarContent.appendChild(child.cloneNode(true));
-      });
+      if (sidebarContent) {
+        sidebarChildren.forEach((child) => {
+          sidebarContent.appendChild(child.cloneNode(true));
+        });
+      }
 
       // Modal display management
       const showSidebarBtn = document.getElementById("showSidebar");
       const closeSidebarBtn = document.getElementById("closeSidebar");
       const sidebarModal = document.getElementById("sidebarModal");
 
-      showSidebarBtn.addEventListener("click", function () {
-        sidebarModal.classList.remove("hidden");
-        document.body.style.overflow = "hidden"; // Prevent body scrolling
-      });
+      if (showSidebarBtn && sidebarModal) {
+        showSidebarBtn.addEventListener("click", function () {
+          sidebarModal.classList.remove("hidden");
+          document.body.style.overflow = "hidden"; // Prevent body scrolling
+        });
+      }
 
-      closeSidebarBtn.addEventListener("click", function () {
-        sidebarModal.classList.add("hidden");
-        document.body.style.overflow = ""; // Re-enable scrolling
-      });
+      if (closeSidebarBtn && sidebarModal) {
+        closeSidebarBtn.addEventListener("click", function () {
+          sidebarModal.classList.add("hidden");
+          document.body.style.overflow = ""; // Re-enable scrolling
+        });
+      }
 
       // Close modal if clicked outside content
-      sidebarModal.addEventListener("click", function (e) {
-        if (e.target === sidebarModal) {
-          sidebarModal.classList.add("hidden");
-          document.body.style.overflow = "";
-        }
-      });
+      if (sidebarModal) {
+        sidebarModal.addEventListener("click", function (e) {
+          if (e.target === sidebarModal) {
+            sidebarModal.classList.add("hidden");
+            document.body.style.overflow = "";
+          }
+        });
+      }
 
       // Check if there's a saved city and load its weather, otherwise show input
       // This will work with either localStorage or cookies fallback
@@ -3147,7 +3202,10 @@
       try {
         // Get coordinates for the city using a geocoding API
         const geocodeResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&_ts=${Date.now()}`,
+          {
+            cache: 'no-store'
+          }
         );
 
         let latitude, longitude, locationDisplayName, countryName;
@@ -3172,7 +3230,10 @@
 
         // Fetch weather data with forecast using Open-Meteo API
         const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3&_ts=${Date.now()}`,
+          {
+            cache: 'no-store'
+          }
         );
 
         if (!weatherResponse.ok) {
