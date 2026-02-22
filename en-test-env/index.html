@@ -3425,32 +3425,40 @@
       );
       const sidebarContent = document.getElementById("sidebarContent");
 
-      sidebarChildren.forEach((child) => {
-        sidebarContent.appendChild(child.cloneNode(true));
-      });
+      if (sidebarContent) {
+        sidebarChildren.forEach((child) => {
+          sidebarContent.appendChild(child.cloneNode(true));
+        });
+      }
 
       // Modal display management
       const showSidebarBtn = document.getElementById("showSidebar");
       const closeSidebarBtn = document.getElementById("closeSidebar");
       const sidebarModal = document.getElementById("sidebarModal");
 
-      showSidebarBtn.addEventListener("click", function () {
-        sidebarModal.classList.remove("hidden");
-        document.body.style.overflow = "hidden"; // Prevent body scrolling
-      });
+      if (showSidebarBtn && sidebarModal) {
+        showSidebarBtn.addEventListener("click", function () {
+          sidebarModal.classList.remove("hidden");
+          document.body.style.overflow = "hidden"; // Prevent body scrolling
+        });
+      }
 
-      closeSidebarBtn.addEventListener("click", function () {
-        sidebarModal.classList.add("hidden");
-        document.body.style.overflow = ""; // Re-enable scrolling
-      });
+      if (closeSidebarBtn && sidebarModal) {
+        closeSidebarBtn.addEventListener("click", function () {
+          sidebarModal.classList.add("hidden");
+          document.body.style.overflow = ""; // Re-enable scrolling
+        });
+      }
 
       // Close modal if clicked outside content
-      sidebarModal.addEventListener("click", function (e) {
-        if (e.target === sidebarModal) {
-          sidebarModal.classList.add("hidden");
-          document.body.style.overflow = "";
-        }
-      });
+      if (sidebarModal) {
+        sidebarModal.addEventListener("click", function (e) {
+          if (e.target === sidebarModal) {
+            sidebarModal.classList.add("hidden");
+            document.body.style.overflow = "";
+          }
+        });
+      }
 
       // Check if there's a saved city and load its weather, otherwise show input
       // This will work with either localStorage or cookies fallback
@@ -3819,7 +3827,10 @@
       try {
         // Get coordinates for the city using a geocoding API
         const geocodeResponse = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1`
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(cityName)}&format=json&limit=1&_ts=${Date.now()}`,
+          {
+            cache: 'no-store'
+          }
         );
 
         let latitude, longitude, locationDisplayName, countryName;
@@ -3844,7 +3855,10 @@
 
         // Fetch weather data with forecast using Open-Meteo API
         const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3`
+          `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=3&_ts=${Date.now()}`,
+          {
+            cache: 'no-store'
+          }
         );
 
         if (!weatherResponse.ok) {
